@@ -62,5 +62,10 @@ dependencies {
 }
 
 tasks.named('test') {
-  useJUnitPlatform()
+  useJUnitPlatform {
+    // интеграционные тесты запускаются только с профилем tc
+    if (!System.getProperty('spring.profiles.active', '').contains('tc')) {
+      excludeTags 'integration'
+    }
+  }
 }
