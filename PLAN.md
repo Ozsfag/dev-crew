@@ -202,7 +202,7 @@ task/adapter/in/web/
 
 ---
 
-### Шаг 7 — notification (bounded context)
+### ~~Шаг 7 — notification (bounded context)~~ ✅ DONE
 ```
 notification/
 ├── domain/NotificationPort.java   ← sendApprovalRequest(String message): void
@@ -219,14 +219,22 @@ notification/
 ## Порядок приоритетов
 
 ```
-1. Шаг 1 (AgentJpaStore)      ← разблокирует интеграционные тесты
-2. Шаг 2 (TaskJpaStore)       ← разблокирует TaskCommandService
-3. Шаг 3 (task/app services)  ← бизнес-логика задач
-4. Шаг 4 (BackendDevAgent)    ← первый живой агент
-5. Шаг 5 (Orchestrator)       ← workflow целиком
-6. Шаг 6 (REST API)           ← внешний интерфейс
-7. Шаг 7 (Telegram)           ← уведомления архитектору
+✅ Шаг 1 (AgentJpaStore)
+✅ Шаг 2 (TaskJpaStore)
+✅ Шаг 3 (task/app services)
+✅ Шаг 4 (BackendDevAgent + Tools)
+✅ Шаг 5 (Orchestrator + ExecutionService)
+✅ Шаг 6 (REST API)
+✅ Шаг 7 (Telegram notifications)
 ```
+
+## Что осталось (следующие итерации)
+
+- [ ] Установить Docker → запустить интеграционные тесты (@Tag integration)
+- [ ] Добавить агентов: QaAgent, DevOpsAgent, PmAgent, AnalystAgent (по аналогии с BackendDevAgent)
+- [ ] GitTools (@Tool: gitCommit, gitPush, createBranch)
+- [ ] Добавить `ANTHROPIC_API_KEY` и `TELEGRAM_BOT_TOKEN` в .env, запустить приложение
+- [ ] Эндпоинт `GET /api/tasks?status=PENDING` для просмотра очереди
 
 ---
 
