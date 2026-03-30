@@ -169,7 +169,7 @@ Never hardcode values — use @ConfigurationProperties.
 
 ---
 
-### Шаг 5 — agent/app: AgentExecutionService + OrchestratorImpl
+### ~~Шаг 5 — agent/app: AgentExecutionService + OrchestratorImpl~~ ✅ DONE
 ```
 agent/app/service/
 ├── execution/AgentExecutionService.java   ← запускает агента на задачу
@@ -187,7 +187,7 @@ agent/app/service/
 
 ---
 
-### Шаг 6 — adapter/in: REST API
+### ~~Шаг 6 — adapter/in: REST API~~ ✅ DONE
 ```
 agent/adapter/in/web/
 ├── AgentController.java           ← GET /api/agents, GET /api/agents/{id}
