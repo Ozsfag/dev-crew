@@ -120,7 +120,7 @@ task/app/
 
 ---
 
-### Шаг 4 — LangChain4j: первый агент BackendDevAgent
+### ~~Шаг 4 — LangChain4j: первый агент BackendDevAgent~~ ✅ DONE
 ```
 agent/adapter/out/llm/
 ├── tools/

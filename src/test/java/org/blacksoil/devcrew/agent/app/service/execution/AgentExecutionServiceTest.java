@@ -1,0 +1,118 @@
+package org.blacksoil.devcrew.agent.app.service.execution;
+
+import org.blacksoil.devcrew.agent.domain.AgentRole;
+import org.blacksoil.devcrew.agent.domain.BackendDevAgent;
+import org.blacksoil.devcrew.agent.domain.PostAgentHook;
+import org.blacksoil.devcrew.task.app.service.command.TaskCommandService;
+import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
+import org.blacksoil.devcrew.task.domain.TaskModel;
+import org.blacksoil.devcrew.task.domain.TaskStatus;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class AgentExecutionServiceTest {
+
+    @Mock
+    private BackendDevAgent backendDevAgent;
+
+    @Mock
+    private TaskQueryService taskQueryService;
+
+    @Mock
+    private TaskCommandService taskCommandService;
+
+    @Mock
+    private PostAgentHook postAgentHook;
+
+    private AgentExecutionService agentExecutionService;
+
+    @BeforeEach
+    void setUp() {
+        // List<PostAgentHook> нельзя инжектировать через @InjectMocks из одного мока
+        agentExecutionService = new AgentExecutionService(
+            backendDevAgent, taskQueryService, taskCommandService, List.of(postAgentHook)
+        );
+    }
+
+    @Test
+    void execute_sets_task_in_progress_then_delegates_to_agent() {
+        var taskId = UUID.randomUUID();
+        var task = taskModel(taskId, TaskStatus.PENDING);
+        when(taskQueryService.getById(taskId)).thenReturn(task);
+        when(backendDevAgent.execute(any())).thenReturn("tests written");
+        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+        when(taskCommandService.complete(any(), any())).thenReturn(task);
+
+        agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "write unit tests");
+
+        verify(taskCommandService).updateStatus(taskId, TaskStatus.IN_PROGRESS);
+        verify(backendDevAgent).execute("write unit tests");
+    }
+
+    @Test
+    void execute_completes_task_with_agent_result() {
+        var taskId = UUID.randomUUID();
+        var task = taskModel(taskId, TaskStatus.IN_PROGRESS);
+        when(taskQueryService.getById(taskId)).thenReturn(task);
+        when(backendDevAgent.execute(any())).thenReturn("done: created FooTest.java");
+        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+        when(taskCommandService.complete(any(), any())).thenReturn(task);
+
+        agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "write unit tests");
+
+        verify(taskCommandService).complete(taskId, "done: created FooTest.java");
+    }
+
+    @Test
+    void execute_fails_task_when_agent_throws() {
+        var taskId = UUID.randomUUID();
+        var task = taskModel(taskId, TaskStatus.IN_PROGRESS);
+        when(taskQueryService.getById(taskId)).thenReturn(task);
+        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+        when(backendDevAgent.execute(any())).thenThrow(new RuntimeException("LLM error"));
+        when(taskCommandService.fail(any(), any())).thenReturn(task);
+
+        agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "write unit tests");
+
+        verify(taskCommandService).fail(eq(taskId), any());
+    }
+
+    @Test
+    void execute_calls_post_hooks_after_completion() {
+        var taskId = UUID.randomUUID();
+        var task = taskModel(taskId, TaskStatus.PENDING);
+        when(taskQueryService.getById(taskId)).thenReturn(task);
+        when(backendDevAgent.execute(any())).thenReturn("result");
+        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+        when(taskCommandService.complete(any(), any())).thenReturn(task);
+
+        agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "task prompt");
+
+        var hookCaptor = ArgumentCaptor.<String>captor();
+        verify(postAgentHook).onAgentCompleted(eq(taskId), eq(AgentRole.BACKEND_DEV), hookCaptor.capture());
+        assertThat(hookCaptor.getValue()).isEqualTo("result");
+    }
+
+    private TaskModel taskModel(UUID id, TaskStatus status) {
+        return new TaskModel(
+            id, null, "title", "description",
+            AgentRole.BACKEND_DEV, status, null,
+            Instant.now(), Instant.now()
+        );
+    }
+}
