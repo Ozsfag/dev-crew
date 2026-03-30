@@ -1,0 +1,40 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: dev-crew
+  datasource:
+    url: jdbc:postgresql://localhost:5432/devcrew
+    username: ${DB_USERNAME:devcrew}
+    password: ${DB_PASSWORD:devcrew}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: public
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+langchain4j:
+  anthropic:
+    api-key: ${ANTHROPIC_API_KEY}
+    model-name: claude-sonnet-4-6
+    max-tokens: 8096
+    log-requests: false
+    log-responses: false
+
+devcrew:
+  agent:
+    model: claude-sonnet-4-6
+    max-tokens: 8096
+    max-iterations: 20
+  notification:
+    telegram:
+      enabled: false
+      bot-token: ${TELEGRAM_BOT_TOKEN:}
+      chat-id: ${TELEGRAM_CHAT_ID:}
