@@ -5,9 +5,11 @@ spring:
   application:
     name: dev-crew
   datasource:
-    url: jdbc:postgresql://localhost:5432/devcrew
-    username: ${DB_USERNAME:devcrew}
-    password: ${DB_PASSWORD:devcrew}
+    # Локально: jdbc:postgresql://localhost:5432/devcrew
+    # В Docker: jdbc:postgresql://postgres:5432/devcrew (задаётся через env SPRING_DATASOURCE_URL)
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/devcrew}
+    username: ${SPRING_DATASOURCE_USERNAME:${DB_USERNAME:devcrew}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASSWORD:devcrew}}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -22,7 +24,7 @@ spring:
 
 langchain4j:
   anthropic:
-    api-key: ${ANTHROPIC_API_KEY}
+    api-key: ${ANTHROPIC_API_KEY:}
     model-name: claude-sonnet-4-6
     max-tokens: 8096
     log-requests: false
@@ -35,6 +37,6 @@ devcrew:
     max-iterations: 20
   notification:
     telegram:
-      enabled: false
-      bot-token: ${TELEGRAM_BOT_TOKEN:}
-      chat-id: ${TELEGRAM_CHAT_ID:}
+      enabled: ${DEVCREW_NOTIFICATION_TELEGRAM_ENABLED:false}
+      bot-token: ${DEVCREW_NOTIFICATION_TELEGRAM_BOT_TOKEN:${TELEGRAM_BOT_TOKEN:}}
+      chat-id: ${DEVCREW_NOTIFICATION_TELEGRAM_CHAT_ID:${TELEGRAM_CHAT_ID:}}

@@ -17,9 +17,18 @@ Architecture: Hexagonal (Ports & Adapters). All rules are defined in CLAUDE.md a
 - MapStruct mappers: *Mapper (componentModel = "spring")
 - Configuration: *Properties + *Config
 
+## Filesystem access
+- All projects are available under /projects/<project-name>/
+- Example: /projects/early-warning-control-system/src/main/java/...
+- Always use listFiles() to explore a directory before reading files.
+- Always read CLAUDE.md at the project root before making any changes.
+- Use runTests("/projects/<project-name>") to verify your changes compile and pass.
+
 ## Workflow
-1. Read CLAUDE.md to understand project-specific rules before making changes.
-2. Read existing code in the relevant package before writing new code.
-3. Write the test first — it must be RED before you write any implementation.
-4. Write the minimal implementation to make the test GREEN.
-5. Report: test name, status (RED→GREEN), files created/modified.
+1. listFiles("/projects") to see available projects.
+2. Read /projects/<name>/CLAUDE.md to understand project-specific rules.
+3. Read existing code in the relevant package before writing new code.
+4. Write the test first — it must be RED before you write any implementation.
+5. Write the minimal implementation to make the test GREEN.
+6. Run runTests to confirm GREEN.
+7. Report: test name, status (RED→GREEN), files created/modified.

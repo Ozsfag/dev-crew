@@ -1,0 +1,32 @@
+# Переопределения для удалённого сервера.
+# Запуск: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Отличия от локального:
+#   - volumes: папка с репозиториями на сервере вместо ~/IdeaProjects
+#   - postgres: данные хранятся на хосте (не в именованном volume)
+#   - app: лимиты памяти, нет проброса порта postgres наружу
+
+services:
+
+  app:
+    volumes:
+      # Репозитории, с которыми работают агенты.
+      # Заполняется через deploy/sync-repos.sh
+      - /opt/dev-crew/repos:/projects
+    deploy:
+      resources:
+        limits:
+          memory: 768m
+        reservations:
+          memory: 256m
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  postgres:
+    volumes:
+      # Данные БД вне именованных volumes — удобно для бэкапов
+      - /opt/dev-crew/pgdata:/var/lib/postgresql/data
+    ports: !reset []  # не пробрасываем postgres на сервере
