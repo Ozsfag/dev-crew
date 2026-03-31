@@ -31,6 +31,8 @@ langchain4j:
     log-responses: false
 
 devcrew:
+  sandbox:
+    root: /projects
   agent:
     model: claude-sonnet-4-6
     max-tokens: 8096
