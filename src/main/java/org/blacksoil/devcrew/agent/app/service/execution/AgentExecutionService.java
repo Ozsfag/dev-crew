@@ -8,6 +8,7 @@ import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.task.app.service.command.TaskCommandService;
 import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
 import org.blacksoil.devcrew.task.domain.TaskStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +16,8 @@ import java.util.UUID;
 
 /**
  * Запускает агента на задачу: переводит статус → вызывает агента → фиксирует результат → хуки.
+ * Метод execute помечен @Async — выполняется в VirtualThread (см. AsyncConfig).
+ * Контроллер получает 202 Accepted немедленно, клиент поллит GET /api/tasks/{id}.
  */
 @Slf4j
 @Service
@@ -26,6 +29,7 @@ public class AgentExecutionService {
     private final TaskCommandService taskCommandService;
     private final List<PostAgentHook> postAgentHooks;
 
+    @Async("agentExecutor")
     public void execute(UUID taskId, AgentRole role, String prompt) {
         taskQueryService.getById(taskId);
         taskCommandService.updateStatus(taskId, TaskStatus.IN_PROGRESS);
