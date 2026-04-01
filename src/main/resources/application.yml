@@ -31,6 +31,11 @@ langchain4j:
     log-responses: false
 
 devcrew:
+  auth:
+    jwt:
+      secret: ${DEVCREW_AUTH_JWT_SECRET:change-me-min-32-chars-long-secret!!}
+      access-token-ttl-seconds: ${DEVCREW_AUTH_JWT_ACCESS_TTL:3600}
+      refresh-token-ttl-seconds: ${DEVCREW_AUTH_JWT_REFRESH_TTL:604800}
   sandbox:
     root: /projects
   agent:
