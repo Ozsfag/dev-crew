@@ -3,7 +3,9 @@ package org.blacksoil.devcrew.agent.app.service.execution;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.blacksoil.devcrew.agent.domain.BackendDevAgent;
+import org.blacksoil.devcrew.agent.domain.CodeReviewAgent;
 import org.blacksoil.devcrew.agent.domain.PostAgentHook;
+import org.blacksoil.devcrew.agent.domain.QaAgent;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.task.app.service.command.TaskCommandService;
 import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
@@ -25,6 +27,8 @@ import java.util.UUID;
 public class AgentExecutionService {
 
     private final BackendDevAgent backendDevAgent;
+    private final QaAgent qaAgent;
+    private final CodeReviewAgent codeReviewAgent;
     private final TaskQueryService taskQueryService;
     private final TaskCommandService taskCommandService;
     private final List<PostAgentHook> postAgentHooks;
@@ -48,9 +52,10 @@ public class AgentExecutionService {
     }
 
     private String dispatchToAgent(AgentRole role, String prompt) {
-        // пока поддерживается только BACKEND_DEV; остальные роли — следующие шаги
         return switch (role) {
             case BACKEND_DEV -> backendDevAgent.execute(prompt);
+            case QA -> qaAgent.execute(prompt);
+            case CODE_REVIEWER -> codeReviewAgent.execute(prompt);
             default -> throw new UnsupportedOperationException("Агент " + role + " ещё не реализован");
         };
     }

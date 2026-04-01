@@ -2,7 +2,9 @@ package org.blacksoil.devcrew.agent.app.service.execution;
 
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.agent.domain.BackendDevAgent;
+import org.blacksoil.devcrew.agent.domain.CodeReviewAgent;
 import org.blacksoil.devcrew.agent.domain.PostAgentHook;
+import org.blacksoil.devcrew.agent.domain.QaAgent;
 import org.blacksoil.devcrew.task.app.service.command.TaskCommandService;
 import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
 import org.blacksoil.devcrew.task.domain.TaskModel;
@@ -31,6 +33,12 @@ class AgentExecutionServiceTest {
     private BackendDevAgent backendDevAgent;
 
     @Mock
+    private QaAgent qaAgent;
+
+    @Mock
+    private CodeReviewAgent codeReviewAgent;
+
+    @Mock
     private TaskQueryService taskQueryService;
 
     @Mock
@@ -45,7 +53,7 @@ class AgentExecutionServiceTest {
     void setUp() {
         // List<PostAgentHook> нельзя инжектировать через @InjectMocks из одного мока
         agentExecutionService = new AgentExecutionService(
-            backendDevAgent, taskQueryService, taskCommandService, List.of(postAgentHook)
+            backendDevAgent, qaAgent, codeReviewAgent, taskQueryService, taskCommandService, List.of(postAgentHook)
         );
     }
 
@@ -106,6 +114,34 @@ class AgentExecutionServiceTest {
         var hookCaptor = ArgumentCaptor.<String>captor();
         verify(postAgentHook).onAgentCompleted(eq(taskId), eq(AgentRole.BACKEND_DEV), hookCaptor.capture());
         assertThat(hookCaptor.getValue()).isEqualTo("result");
+    }
+
+    @Test
+    void execute_dispatches_CODE_REVIEWER_role_to_codeReviewAgent() {
+        var taskId = UUID.randomUUID();
+        var task = taskModel(taskId, TaskStatus.PENDING);
+        when(taskQueryService.getById(taskId)).thenReturn(task);
+        when(codeReviewAgent.execute(any())).thenReturn("## Review\n✅ APPROVE");
+        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+        when(taskCommandService.complete(any(), any())).thenReturn(task);
+
+        agentExecutionService.execute(taskId, AgentRole.CODE_REVIEWER, "review PR #42");
+
+        verify(codeReviewAgent).execute("review PR #42");
+    }
+
+    @Test
+    void execute_dispatches_QA_role_to_qaAgent() {
+        var taskId = UUID.randomUUID();
+        var task = taskModel(taskId, TaskStatus.PENDING);
+        when(taskQueryService.getById(taskId)).thenReturn(task);
+        when(qaAgent.execute(any())).thenReturn("tests written: 15 passing");
+        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+        when(taskCommandService.complete(any(), any())).thenReturn(task);
+
+        agentExecutionService.execute(taskId, AgentRole.QA, "write tests for UserService");
+
+        verify(qaAgent).execute("write tests for UserService");
     }
 
     private TaskModel taskModel(UUID id, TaskStatus status) {

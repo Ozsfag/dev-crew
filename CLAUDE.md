@@ -212,7 +212,7 @@ AppDto       ←→ WebMapper         ←→ Request/Response
 
 - Отступы: 4 пробела (Java), 2 пробела (YAML / Gradle)
 - Строки: LF, UTF-8, финальный newline
-- Lombok: `@RequiredArgsConstructor` для DI, `@Builder` там где нужен builder, `@Data` для `*Properties`
+- Lombok: `@RequiredArgsConstructor` для DI, `@Builder` там где нужен builder, `@Data` для `*Properties`, для утилитных классов `@UtilityClass`. Используй Lombok на полную.
 - MapStruct: для маппинга между слоями, `componentModel = "spring"`
 - Комментарии в коде — **на русском**
 - Без `I`-префикса у интерфейсов

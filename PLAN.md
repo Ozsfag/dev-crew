@@ -80,7 +80,7 @@ agent/app/config/
 
 ### Фаза 2 — Безопасность (нужна для первого показа компании)
 
-#### П2.1 — JWT аутентификация
+#### ~~П2.1 — JWT аутентификация~~ ✅ DONE
 ```
 auth/ (новый bounded context)
 ├── domain/
@@ -102,7 +102,7 @@ bootstrap/
 
 ---
 
-#### П2.2 — Audit log
+#### ~~П2.2 — Audit log~~ ✅ DONE
 **Зачем**: компании нужно знать кто запустил какого агента и что изменилось.
 
 ```
@@ -122,7 +122,7 @@ API: `GET /api/audit?from=...&to=...` — история действий.
 
 ### Фаза 3 — Полная команда агентов
 
-#### П3.1 — GitTools
+#### ~~П3.1 — GitTools~~ ✅ DONE
 ```
 agent/adapter/out/llm/tools/
 └── GitTools.java
@@ -136,14 +136,14 @@ agent/adapter/out/llm/tools/
 
 ---
 
-#### П3.2 — QaAgent
+#### ~~П3.2 — QaAgent~~ ✅ DONE
 System prompt: `prompts/qa.txt`
 Tools: FileTools, GradleTools (runTests, checkCoverage)
 Задача: получает путь к модулю → пишет тесты → прогоняет → репортит покрытие.
 
 ---
 
-#### П3.3 — CodeReviewAgent
+#### ~~П3.3 — CodeReviewAgent~~ ✅ DONE
 System prompt: `prompts/code-review.txt`
 Tools: FileTools, GitTools (gitDiff)
 Задача: получает PR diff → проверяет по чеклисту (архитектура, безопасность, N+1) → возвращает review.
@@ -212,9 +212,12 @@ LangChain4j TokenUsage → UsageRecordCommandService → monthly summary
 ```
 ✅ П1.1  Async выполнение агентов
 ✅ П1.2  SandboxPolicy для FileTools
-П2.1  JWT аутентификация               ← СЕЙЧАС
-П2.1  JWT аутентификация
-П2.2  Audit log
+✅ П2.1  JWT аутентификация
+✅ П2.2  Audit log
+✅ П3.1  GitTools
+✅ П3.2  QaAgent
+✅ П3.3  CodeReviewAgent
+П3.4  DevOpsAgent                      ← СЕЙЧАС
 П3.1  GitTools
 П3.2  QaAgent
 П3.3  CodeReviewAgent
