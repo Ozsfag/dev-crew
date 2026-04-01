@@ -3,6 +3,7 @@ package org.blacksoil.devcrew.agent.app.service.execution;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.agent.domain.BackendDevAgent;
 import org.blacksoil.devcrew.agent.domain.CodeReviewAgent;
+import org.blacksoil.devcrew.agent.domain.DevOpsAgent;
 import org.blacksoil.devcrew.agent.domain.PostAgentHook;
 import org.blacksoil.devcrew.agent.domain.QaAgent;
 import org.blacksoil.devcrew.task.app.service.command.TaskCommandService;
@@ -39,6 +40,9 @@ class AsyncAgentExecutionServiceTest {
     private CodeReviewAgent codeReviewAgent;
 
     @Mock
+    private DevOpsAgent devOpsAgent;
+
+    @Mock
     private TaskQueryService taskQueryService;
 
     @Mock
@@ -49,7 +53,7 @@ class AsyncAgentExecutionServiceTest {
     @BeforeEach
     void setUp() {
         agentExecutionService = new AgentExecutionService(
-            backendDevAgent, qaAgent, codeReviewAgent, taskQueryService, taskCommandService, List.of()
+            backendDevAgent, qaAgent, codeReviewAgent, devOpsAgent, taskQueryService, taskCommandService, List.of()
         );
     }
 

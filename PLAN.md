@@ -150,7 +150,7 @@ Tools: FileTools, GitTools (gitDiff)
 
 ---
 
-#### П3.4 — DevOpsAgent
+#### ~~П3.4 — DevOpsAgent~~ ✅ DONE
 System prompt: `prompts/devops.txt`
 Tools: FileTools, CommandRunner (docker build/push), GitTools
 Задача: обновляет docker-compose, Dockerfile, CI/CD конфиги.
@@ -217,7 +217,8 @@ LangChain4j TokenUsage → UsageRecordCommandService → monthly summary
 ✅ П3.1  GitTools
 ✅ П3.2  QaAgent
 ✅ П3.3  CodeReviewAgent
-П3.4  DevOpsAgent                      ← СЕЙЧАС
+✅ П3.4  DevOpsAgent
+П4    Мультитенантность                ← СЕЙЧАС
 П3.1  GitTools
 П3.2  QaAgent
 П3.3  CodeReviewAgent

@@ -3,6 +3,7 @@ package org.blacksoil.devcrew.agent.app.service.execution;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.agent.domain.BackendDevAgent;
 import org.blacksoil.devcrew.agent.domain.CodeReviewAgent;
+import org.blacksoil.devcrew.agent.domain.DevOpsAgent;
 import org.blacksoil.devcrew.agent.domain.PostAgentHook;
 import org.blacksoil.devcrew.agent.domain.QaAgent;
 import org.blacksoil.devcrew.task.app.service.command.TaskCommandService;
@@ -39,6 +40,9 @@ class AgentExecutionServiceTest {
     private CodeReviewAgent codeReviewAgent;
 
     @Mock
+    private DevOpsAgent devOpsAgent;
+
+    @Mock
     private TaskQueryService taskQueryService;
 
     @Mock
@@ -53,7 +57,7 @@ class AgentExecutionServiceTest {
     void setUp() {
         // List<PostAgentHook> нельзя инжектировать через @InjectMocks из одного мока
         agentExecutionService = new AgentExecutionService(
-            backendDevAgent, qaAgent, codeReviewAgent, taskQueryService, taskCommandService, List.of(postAgentHook)
+            backendDevAgent, qaAgent, codeReviewAgent, devOpsAgent, taskQueryService, taskCommandService, List.of(postAgentHook)
         );
     }
 
@@ -114,6 +118,20 @@ class AgentExecutionServiceTest {
         var hookCaptor = ArgumentCaptor.<String>captor();
         verify(postAgentHook).onAgentCompleted(eq(taskId), eq(AgentRole.BACKEND_DEV), hookCaptor.capture());
         assertThat(hookCaptor.getValue()).isEqualTo("result");
+    }
+
+    @Test
+    void execute_dispatches_DEVOPS_role_to_devOpsAgent() {
+        var taskId = UUID.randomUUID();
+        var task = taskModel(taskId, TaskStatus.PENDING);
+        when(taskQueryService.getById(taskId)).thenReturn(task);
+        when(devOpsAgent.execute(any())).thenReturn("OK: image built and pushed");
+        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+        when(taskCommandService.complete(any(), any())).thenReturn(task);
+
+        agentExecutionService.execute(taskId, AgentRole.DEVOPS, "build and push myapp:1.0");
+
+        verify(devOpsAgent).execute("build and push myapp:1.0");
     }
 
     @Test
