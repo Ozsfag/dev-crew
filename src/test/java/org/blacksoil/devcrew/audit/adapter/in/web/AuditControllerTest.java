@@ -1,8 +1,10 @@
 package org.blacksoil.devcrew.audit.adapter.in.web;
 
+import org.blacksoil.devcrew.audit.adapter.in.web.mapper.AuditWebMapper;
 import org.blacksoil.devcrew.audit.app.service.query.AuditQueryService;
 import org.blacksoil.devcrew.audit.domain.AuditEventModel;
 import org.blacksoil.devcrew.common.web.GlobalExceptionHandler;
+import org.mapstruct.factory.Mappers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +34,7 @@ class AuditControllerTest {
 
     @BeforeEach
     void setUp() {
-        var controller = new AuditController(auditQueryService);
+        var controller = new AuditController(auditQueryService, Mappers.getMapper(AuditWebMapper.class));
         mockMvc = MockMvcBuilders
             .standaloneSetup(controller)
             .setControllerAdvice(new GlobalExceptionHandler())

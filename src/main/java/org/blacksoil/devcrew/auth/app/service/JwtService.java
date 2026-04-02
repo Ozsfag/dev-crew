@@ -5,13 +5,13 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.auth.app.config.JwtProperties;
 import org.blacksoil.devcrew.auth.domain.UserRole;
+import org.blacksoil.devcrew.common.TimeProvider;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.Instant;
 import java.util.Date;
 import java.util.HexFormat;
 import java.util.UUID;
@@ -24,9 +24,10 @@ public class JwtService {
     private static final String CLAIM_ORG_ID = "orgId";
 
     private final JwtProperties properties;
+    private final TimeProvider timeProvider;
 
     public String generateAccessToken(UUID userId, UUID orgId, String email, UserRole role) {
-        var now = Instant.now();
+        var now = timeProvider.now();
         return Jwts.builder()
             .subject(userId.toString())
             .claim("email", email)
@@ -39,7 +40,7 @@ public class JwtService {
     }
 
     public String generateRefreshToken(UUID userId) {
-        var now = Instant.now();
+        var now = timeProvider.now();
         return Jwts.builder()
             .subject(userId.toString())
             .issuedAt(Date.from(now))

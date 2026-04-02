@@ -2,13 +2,13 @@ package org.blacksoil.devcrew.auth.app.service;
 
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.auth.domain.*;
+import org.blacksoil.devcrew.common.TimeProvider;
 import org.blacksoil.devcrew.common.exception.ConflictException;
 import org.blacksoil.devcrew.organization.app.service.OrganizationCommandService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -20,6 +20,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final OrganizationCommandService organizationCommandService;
+    private final TimeProvider timeProvider;
 
     @Transactional
     public LoginResult register(String email, String password, String orgName) {
@@ -29,7 +30,7 @@ public class AuthService {
         // Каждый новый пользователь создаёт свою организацию и становится ARCHITECT
         var name = (orgName != null && !orgName.isBlank()) ? orgName : defaultOrgName(email);
         var org = organizationCommandService.createOrganization(name);
-        var now = Instant.now();
+        var now = timeProvider.now();
         var user = userStore.save(new UserModel(
             UUID.randomUUID(), org.id(), email, passwordEncoder.encode(password), UserRole.ARCHITECT, now, now
         ));
@@ -59,7 +60,7 @@ public class AuthService {
         if (token.revoked()) {
             throw new AuthException("Refresh token отозван");
         }
-        if (token.expiresAt().isBefore(Instant.now())) {
+        if (token.expiresAt().isBefore(timeProvider.now())) {
             throw new AuthException("Refresh token истёк");
         }
         var user = userStore.findById(token.userId())
@@ -71,9 +72,10 @@ public class AuthService {
     private LoginResult issueTokens(UserModel user) {
         var rawRefresh = jwtService.generateRefreshToken(user.id());
         var tokenHash = jwtService.hashToken(rawRefresh);
-        var expiresAt = Instant.now().plusSeconds(jwtService.getRefreshTokenTtlSeconds());
+        var now = timeProvider.now();
+        var expiresAt = now.plusSeconds(jwtService.getRefreshTokenTtlSeconds());
         refreshTokenStore.save(new RefreshTokenModel(
-            UUID.randomUUID(), user.id(), tokenHash, expiresAt, false, Instant.now()
+            UUID.randomUUID(), user.id(), tokenHash, expiresAt, false, now
         ));
         var accessToken = jwtService.generateAccessToken(user.id(), user.orgId(), user.email(), user.role());
         return new LoginResult(accessToken, rawRefresh, jwtService.getAccessTokenTtlSeconds());

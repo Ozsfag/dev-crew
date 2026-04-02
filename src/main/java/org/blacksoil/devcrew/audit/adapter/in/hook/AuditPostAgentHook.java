@@ -5,10 +5,10 @@ import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.agent.domain.PostAgentHook;
 import org.blacksoil.devcrew.audit.app.service.command.AuditCommandService;
 import org.blacksoil.devcrew.audit.domain.AuditEventModel;
+import org.blacksoil.devcrew.common.TimeProvider;
 import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -21,6 +21,7 @@ public class AuditPostAgentHook implements PostAgentHook {
 
     private final AuditCommandService auditCommandService;
     private final TaskQueryService taskQueryService;
+    private final TimeProvider timeProvider;
 
     @Override
     public void onAgentCompleted(UUID taskId, AgentRole role, String result) {
@@ -33,7 +34,7 @@ public class AuditPostAgentHook implements PostAgentHook {
             "TASK_COMPLETED",
             taskId,
             "role=%s result=%s".formatted(role.name(), result),
-            Instant.now()
+            timeProvider.now()
         ));
     }
 }

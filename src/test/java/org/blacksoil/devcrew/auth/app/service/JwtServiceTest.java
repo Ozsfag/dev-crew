@@ -2,6 +2,7 @@ package org.blacksoil.devcrew.auth.app.service;
 
 import org.blacksoil.devcrew.auth.app.config.JwtProperties;
 import org.blacksoil.devcrew.auth.domain.UserRole;
+import org.blacksoil.devcrew.common.TimeProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +23,7 @@ class JwtServiceTest {
         props.setSecret("test-secret-min-32-chars-long-ok!");
         props.setAccessTokenTtlSeconds(3600);
         props.setRefreshTokenTtlSeconds(604800);
-        jwtService = new JwtService(props);
+        jwtService = new JwtService(props, new TimeProvider());
     }
 
     @Test

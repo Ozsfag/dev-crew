@@ -3,6 +3,7 @@ package org.blacksoil.devcrew.audit.adapter.in.hook;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.audit.app.service.command.AuditCommandService;
 import org.blacksoil.devcrew.audit.domain.AuditEventModel;
+import org.blacksoil.devcrew.common.TimeProvider;
 import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
 import org.blacksoil.devcrew.task.domain.TaskModel;
 import org.blacksoil.devcrew.task.domain.TaskStatus;
@@ -33,7 +34,7 @@ class AuditPostAgentHookTest {
 
     @BeforeEach
     void setUp() {
-        hook = new AuditPostAgentHook(auditCommandService, taskQueryService);
+        hook = new AuditPostAgentHook(auditCommandService, taskQueryService, new TimeProvider());
     }
 
     @Test

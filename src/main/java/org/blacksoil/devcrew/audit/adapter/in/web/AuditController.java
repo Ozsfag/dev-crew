@@ -1,8 +1,9 @@
 package org.blacksoil.devcrew.audit.adapter.in.web;
 
 import lombok.RequiredArgsConstructor;
+import org.blacksoil.devcrew.audit.adapter.in.web.dto.AuditResponse;
+import org.blacksoil.devcrew.audit.adapter.in.web.mapper.AuditWebMapper;
 import org.blacksoil.devcrew.audit.app.service.query.AuditQueryService;
-import org.blacksoil.devcrew.audit.domain.AuditEventModel;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,16 +17,17 @@ import java.util.UUID;
 public class AuditController {
 
     private final AuditQueryService auditQueryService;
+    private final AuditWebMapper auditWebMapper;
 
     @GetMapping
-    public List<AuditEventModel> getAuditEvents(
+    public List<AuditResponse> getAuditEvents(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
         @RequestParam(required = false) UUID projectId
     ) {
-        if (projectId != null) {
-            return auditQueryService.findByProjectId(projectId, from, to);
-        }
-        return auditQueryService.findByTimestampBetween(from, to);
+        var events = projectId != null
+            ? auditQueryService.findByProjectId(projectId, from, to)
+            : auditQueryService.findByTimestampBetween(from, to);
+        return events.stream().map(auditWebMapper::toResponse).toList();
     }
 }

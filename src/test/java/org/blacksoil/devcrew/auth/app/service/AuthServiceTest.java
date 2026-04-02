@@ -1,6 +1,7 @@
 package org.blacksoil.devcrew.auth.app.service;
 
 import org.blacksoil.devcrew.auth.domain.*;
+import org.blacksoil.devcrew.common.TimeProvider;
 import org.blacksoil.devcrew.common.exception.ConflictException;
 import org.blacksoil.devcrew.organization.app.service.OrganizationCommandService;
 import org.blacksoil.devcrew.organization.domain.OrgPlan;
@@ -44,7 +45,8 @@ class AuthServiceTest {
     void setUp() {
         authService = new AuthService(
             userStore, refreshTokenStore, jwtService,
-            new BCryptPasswordEncoder(), organizationCommandService
+            new BCryptPasswordEncoder(), organizationCommandService,
+            new TimeProvider()
         );
     }
 
