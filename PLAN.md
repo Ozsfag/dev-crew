@@ -219,8 +219,8 @@ LangChain4j TokenUsage → UsageRecordCommandService → monthly summary
 ✅ П3.3  CodeReviewAgent
 ✅ П3.4  DevOpsAgent
 ✅ П4    Мультитенантность
-П5    Observability (Prometheus + Grafana)    ← СЕЙЧАС
-П6    Монетизация (Stripe)
+✅ П5    Observability (Prometheus + Grafana)
+П6    Монетизация (Stripe)    ← СЕЙЧАС
 ```
 
 ---
