@@ -55,6 +55,46 @@ agent/app/
 
 ---
 
+## Структура пакетов: расположение файлов
+
+Каждый тип файла живёт в строго определённом подпакете. Пример для модуля `organization`:
+
+```
+organization/
+├── adapter/
+│   ├── in/web/
+│   │   ├── controller/   ← OrganizationController.java       (@RestController)
+│   │   ├── mapper/       ← OrganizationWebMapper.java        (*WebMapper)
+│   │   └── dto/          ← CreateOrganizationRequest.java    (*Request / *Response)
+│   └── out/persistence/
+│       ├── entity/       ← OrganizationEntity.java           (@Entity)
+│       ├── mapper/       ← OrganizationPersistenceMapper.java (*PersistenceMapper)
+│       ├── repository/   ← OrganizationRepository.java       (Spring Data JpaRepository)
+│       └── store/        ← OrganizationJpaStore.java         (*JpaStore — реализация порта)
+├── app/
+│   ├── config/           ← OrganizationConfig.java, OrganizationProperties.java
+│   └── service/
+│       ├── command/      ← OrganizationCommandService.java
+│       └── query/        ← OrganizationQueryService.java
+└── domain/               ← OrganizationModel.java, OrganizationStore.java (port-интерфейс)
+```
+
+| Тип | Подпакет |
+|-----|---------|
+| `@RestController` | `adapter/in/web/controller/` |
+| `*WebMapper` (MapStruct) | `adapter/in/web/mapper/` |
+| `*Request` / `*Response` | `adapter/in/web/dto/` |
+| `@Entity` | `adapter/out/persistence/entity/` |
+| `*PersistenceMapper` | `adapter/out/persistence/mapper/` |
+| `*Repository` (Spring Data) | `adapter/out/persistence/repository/` |
+| `*JpaStore` (реализация порта) | `adapter/out/persistence/store/` |
+| `*Store` (port-интерфейс) | `domain/` |
+| `*Model` (domain record) | `domain/` |
+
+**Запрещено**: класть в одну папку разнородные типы (например, `Entity` + `Repository` + `JpaStore` в одном плоском `persistence/`).
+
+---
+
 ## Соглашения по именованию
 
 | Суффикс                  | Что это                                             |
@@ -211,6 +251,34 @@ audit        → agent → domain
 - **НЕ** делать один класс/сервис ответственным за несколько несвязанных областей
 - **НЕ** объявлять «God-интерфейс» со всеми возможными методами — дробить на узкие порты
 - **НЕ** зависеть от конкретных реализаций (`*JpaStore`, `*AiService`) — только от абстракций (`*Store`, domain-интерфейсов)
+
+---
+
+## Принципы KISS / DRY / YAGNI
+
+### KISS — Keep It Simple
+
+- Простейшее решение, которое работает — предпочтительнее «умного»
+- Метод длиннее ~20 строк — сигнал, что он делает слишком много; разбить
+- Не обобщать до абстракции, пока нет второго конкретного случая
+
+### DRY — Don't Repeat Yourself
+
+- Повторяющаяся бизнес-логика → общий метод или сервис
+- Повторяющаяся конфигурация → `*Properties`
+- **Исключение**: дублирование в тестах допустимо — читаемость теста важнее DRY
+
+### YAGNI — You Ain't Gonna Need It
+
+- Реализовывать только то, что нужно прямо сейчас
+- Не добавлять поля, флаги, параметры «на будущее» без конкретной задачи в backlog
+- Не проектировать под гипотетические сценарии, которых нет в требованиях
+
+**Запрещено**:
+- **НЕ** добавлять `enabled: boolean` / `version: int` без явной необходимости (YAGNI)
+- **НЕ** создавать интерфейс, если есть только одна реализация и вторая не планируется — кроме port-интерфейсов в `domain/` (YAGNI + KISS)
+- **НЕ** копировать блок кода в третий раз без выноса в метод (DRY)
+- **НЕ** писать «универсальный» обработчик, когда нужен конкретный (KISS)
 
 ---
 
