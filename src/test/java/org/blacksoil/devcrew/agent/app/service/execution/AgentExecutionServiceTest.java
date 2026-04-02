@@ -1,5 +1,6 @@
 package org.blacksoil.devcrew.agent.app.service.execution;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.agent.domain.BackendDevAgent;
 import org.blacksoil.devcrew.agent.domain.CodeReviewAgent;
@@ -27,6 +28,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+
+
 @ExtendWith(MockitoExtension.class)
 class AgentExecutionServiceTest {
 
@@ -52,12 +55,16 @@ class AgentExecutionServiceTest {
     private PostAgentHook postAgentHook;
 
     private AgentExecutionService agentExecutionService;
+    private SimpleMeterRegistry meterRegistry;
 
     @BeforeEach
     void setUp() {
+        meterRegistry = new SimpleMeterRegistry();
         // List<PostAgentHook> нельзя инжектировать через @InjectMocks из одного мока
         agentExecutionService = new AgentExecutionService(
-            backendDevAgent, qaAgent, codeReviewAgent, devOpsAgent, taskQueryService, taskCommandService, List.of(postAgentHook)
+            backendDevAgent, qaAgent, codeReviewAgent, devOpsAgent,
+            taskQueryService, taskCommandService, List.of(postAgentHook),
+            meterRegistry
         );
     }
 
@@ -160,6 +167,62 @@ class AgentExecutionServiceTest {
         agentExecutionService.execute(taskId, AgentRole.QA, "write tests for UserService");
 
         verify(qaAgent).execute("write tests for UserService");
+    }
+
+    @Test
+    void execute_increments_COMPLETED_counter_on_success() {
+        var taskId = UUID.randomUUID();
+        var task = taskModel(taskId, TaskStatus.PENDING);
+        when(taskQueryService.getById(taskId)).thenReturn(task);
+        when(backendDevAgent.execute(any())).thenReturn("done");
+        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+        when(taskCommandService.complete(any(), any())).thenReturn(task);
+
+        agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "prompt");
+
+        var counter = meterRegistry.find("devcrew.task.total")
+            .tag("status", "COMPLETED")
+            .tag("role", AgentRole.BACKEND_DEV.name())
+            .counter();
+        assertThat(counter).isNotNull();
+        assertThat(counter.count()).isEqualTo(1.0);
+    }
+
+    @Test
+    void execute_increments_FAILED_counter_on_exception() {
+        var taskId = UUID.randomUUID();
+        var task = taskModel(taskId, TaskStatus.PENDING);
+        when(taskQueryService.getById(taskId)).thenReturn(task);
+        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+        when(backendDevAgent.execute(any())).thenThrow(new RuntimeException("LLM error"));
+        when(taskCommandService.fail(any(), any())).thenReturn(task);
+
+        agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "prompt");
+
+        var counter = meterRegistry.find("devcrew.task.total")
+            .tag("status", "FAILED")
+            .tag("role", AgentRole.BACKEND_DEV.name())
+            .counter();
+        assertThat(counter).isNotNull();
+        assertThat(counter.count()).isEqualTo(1.0);
+    }
+
+    @Test
+    void execute_records_agent_duration_timer_on_success() {
+        var taskId = UUID.randomUUID();
+        var task = taskModel(taskId, TaskStatus.PENDING);
+        when(taskQueryService.getById(taskId)).thenReturn(task);
+        when(backendDevAgent.execute(any())).thenReturn("done");
+        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+        when(taskCommandService.complete(any(), any())).thenReturn(task);
+
+        agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "prompt");
+
+        var timer = meterRegistry.find("devcrew.agent.duration")
+            .tag("role", AgentRole.BACKEND_DEV.name())
+            .timer();
+        assertThat(timer).isNotNull();
+        assertThat(timer.count()).isEqualTo(1);
     }
 
     private TaskModel taskModel(UUID id, TaskStatus status) {

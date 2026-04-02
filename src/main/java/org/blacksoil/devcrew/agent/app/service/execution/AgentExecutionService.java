@@ -1,5 +1,8 @@
 package org.blacksoil.devcrew.agent.app.service.execution;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.blacksoil.devcrew.agent.domain.BackendDevAgent;
@@ -34,23 +37,40 @@ public class AgentExecutionService {
     private final TaskQueryService taskQueryService;
     private final TaskCommandService taskCommandService;
     private final List<PostAgentHook> postAgentHooks;
+    private final MeterRegistry meterRegistry;
 
     @Async("agentExecutor")
     public void execute(UUID taskId, AgentRole role, String prompt) {
         taskQueryService.getById(taskId);
         taskCommandService.updateStatus(taskId, TaskStatus.IN_PROGRESS);
 
+        var sample = Timer.start(meterRegistry);
         String result;
         try {
             result = dispatchToAgent(role, prompt);
         } catch (Exception e) {
             log.error("Агент {} упал при выполнении задачи {}: {}", role, taskId, e.getMessage());
             taskCommandService.fail(taskId, e.getMessage());
+            recordTaskCounter(role, "FAILED");
             return;
         }
 
+        sample.stop(Timer.builder("devcrew.agent.duration")
+            .description("Время выполнения агента")
+            .tag("role", role.name())
+            .register(meterRegistry));
+        recordTaskCounter(role, "COMPLETED");
         taskCommandService.complete(taskId, result);
         notifyHooks(taskId, role, result);
+    }
+
+    private void recordTaskCounter(AgentRole role, String status) {
+        Counter.builder("devcrew.task.total")
+            .description("Количество задач по статусам и ролям")
+            .tag("role", role.name())
+            .tag("status", status)
+            .register(meterRegistry)
+            .increment();
     }
 
     private String dispatchToAgent(AgentRole role, String prompt) {

@@ -1,5 +1,6 @@
 package org.blacksoil.devcrew.agent.app.service.execution;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.agent.domain.BackendDevAgent;
 import org.blacksoil.devcrew.agent.domain.CodeReviewAgent;
@@ -53,7 +54,9 @@ class AsyncAgentExecutionServiceTest {
     @BeforeEach
     void setUp() {
         agentExecutionService = new AgentExecutionService(
-            backendDevAgent, qaAgent, codeReviewAgent, devOpsAgent, taskQueryService, taskCommandService, List.of()
+            backendDevAgent, qaAgent, codeReviewAgent, devOpsAgent,
+            taskQueryService, taskCommandService, List.of(),
+            new SimpleMeterRegistry()
         );
     }
 

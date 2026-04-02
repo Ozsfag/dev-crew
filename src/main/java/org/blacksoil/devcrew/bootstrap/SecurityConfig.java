@@ -33,7 +33,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/agents/**", "/api/tasks/**", "/api/audit/**").hasAnyRole("ARCHITECT", "VIEWER")
                 .requestMatchers(HttpMethod.GET, "/api/organizations/**").hasAnyRole("ARCHITECT", "VIEWER")
                 .requestMatchers(HttpMethod.POST, "/api/tasks/**").hasRole("ARCHITECT")
