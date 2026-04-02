@@ -18,4 +18,7 @@ public class TelegramProperties {
 
     /** ID чата архитектора. Задаётся через env-переменную TELEGRAM_CHAT_ID. */
     private String chatId = "";
+
+    /** Максимальная длина сообщения Telegram API. */
+    private int maxMessageLength = 4096;
 }

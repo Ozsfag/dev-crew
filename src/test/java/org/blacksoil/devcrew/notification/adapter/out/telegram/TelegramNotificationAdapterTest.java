@@ -31,6 +31,7 @@ class TelegramNotificationAdapterTest {
         var chatId = "123456";
         org.mockito.Mockito.when(telegramProperties.isEnabled()).thenReturn(true);
         org.mockito.Mockito.when(telegramProperties.getChatId()).thenReturn(chatId);
+        org.mockito.Mockito.when(telegramProperties.getMaxMessageLength()).thenReturn(4096);
 
         adapter.send("Hello architect");
 
@@ -53,6 +54,7 @@ class TelegramNotificationAdapterTest {
         var taskId = UUID.randomUUID();
         org.mockito.Mockito.when(telegramProperties.isEnabled()).thenReturn(true);
         org.mockito.Mockito.when(telegramProperties.getChatId()).thenReturn("999");
+        org.mockito.Mockito.when(telegramProperties.getMaxMessageLength()).thenReturn(4096);
 
         adapter.onAgentCompleted(taskId, AgentRole.BACKEND_DEV, "Tests written: FooTest.java");
 
@@ -79,6 +81,7 @@ class TelegramNotificationAdapterTest {
     void send_truncates_long_message_to_telegram_limit() {
         org.mockito.Mockito.when(telegramProperties.isEnabled()).thenReturn(true);
         org.mockito.Mockito.when(telegramProperties.getChatId()).thenReturn("1");
+        org.mockito.Mockito.when(telegramProperties.getMaxMessageLength()).thenReturn(4096);
 
         // Telegram лимит — 4096 символов
         var longMessage = "x".repeat(5000);

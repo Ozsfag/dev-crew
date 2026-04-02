@@ -18,8 +18,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TelegramNotificationAdapter implements NotificationPort, PostAgentHook {
 
-    private static final int TELEGRAM_MAX_LENGTH = 4096;
-
     private final TelegramApiClient telegramApiClient;
     private final TelegramProperties telegramProperties;
 
@@ -45,9 +43,10 @@ public class TelegramNotificationAdapter implements NotificationPort, PostAgentH
     }
 
     private String truncate(String message) {
-        if (message.length() <= TELEGRAM_MAX_LENGTH) {
+        var maxLen = telegramProperties.getMaxMessageLength();
+        if (message.length() <= maxLen) {
             return message;
         }
-        return message.substring(0, TELEGRAM_MAX_LENGTH - 3) + "...";
+        return message.substring(0, maxLen - 3) + "...";
     }
 }

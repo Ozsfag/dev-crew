@@ -1,7 +1,6 @@
 package org.blacksoil.devcrew.agent.app.policy;
 
 import org.blacksoil.devcrew.common.exception.DomainException;
-import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
 
@@ -9,7 +8,6 @@ import java.nio.file.Path;
  * Проверяет что путь находится внутри разрешённого корня (/projects по умолчанию).
  * Защищает от path traversal атак: ../../../etc/passwd и подобных.
  */
-@Component
 public class SandboxPolicy {
 
     private final Path sandboxRoot;
