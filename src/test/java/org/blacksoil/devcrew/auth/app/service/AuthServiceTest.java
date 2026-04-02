@@ -2,6 +2,9 @@ package org.blacksoil.devcrew.auth.app.service;
 
 import org.blacksoil.devcrew.auth.domain.*;
 import org.blacksoil.devcrew.common.exception.ConflictException;
+import org.blacksoil.devcrew.organization.app.service.OrganizationCommandService;
+import org.blacksoil.devcrew.organization.domain.OrgPlan;
+import org.blacksoil.devcrew.organization.domain.OrganizationModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,51 +35,59 @@ class AuthServiceTest {
     @Mock
     private JwtService jwtService;
 
+    @Mock
+    private OrganizationCommandService organizationCommandService;
+
     private AuthService authService;
 
     @BeforeEach
     void setUp() {
-        authService = new AuthService(userStore, refreshTokenStore, jwtService, new BCryptPasswordEncoder());
+        authService = new AuthService(
+            userStore, refreshTokenStore, jwtService,
+            new BCryptPasswordEncoder(), organizationCommandService
+        );
     }
 
     // --- register ---
 
     @Test
-    void register_first_user_gets_ARCHITECT_role() {
-        when(userStore.existsAny()).thenReturn(false);
+    void register_creates_organization_and_assigns_ARCHITECT_role() {
+        var orgId = UUID.randomUUID();
+        var org = new OrganizationModel(orgId, "admin's Organization", OrgPlan.FREE, Instant.now(), Instant.now());
+        when(organizationCommandService.createOrganization(anyString())).thenReturn(org);
         when(userStore.findByEmail(anyString())).thenReturn(Optional.empty());
         when(userStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(refreshTokenStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        when(jwtService.generateAccessToken(any(), anyString(), any())).thenReturn("access");
+        when(jwtService.generateAccessToken(any(), any(), anyString(), any())).thenReturn("access");
         when(jwtService.generateRefreshToken(any())).thenReturn("refresh");
         when(jwtService.hashToken(anyString())).thenReturn("hash");
         when(jwtService.getAccessTokenTtlSeconds()).thenReturn(3600L);
         when(jwtService.getRefreshTokenTtlSeconds()).thenReturn(604800L);
 
-        authService.register("admin@test.com", "password");
+        authService.register("admin@test.com", "password", null);
 
         var captor = ArgumentCaptor.<UserModel>captor();
         verify(userStore).save(captor.capture());
         assertThat(captor.getValue().role()).isEqualTo(UserRole.ARCHITECT);
+        assertThat(captor.getValue().orgId()).isEqualTo(orgId);
     }
 
     @Test
-    void register_second_user_gets_VIEWER_role() {
-        when(userStore.existsAny()).thenReturn(true);
+    void register_uses_provided_org_name() {
+        var org = new OrganizationModel(UUID.randomUUID(), "Acme Corp", OrgPlan.FREE, Instant.now(), Instant.now());
+        when(organizationCommandService.createOrganization("Acme Corp")).thenReturn(org);
         when(userStore.findByEmail(anyString())).thenReturn(Optional.empty());
         when(userStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(refreshTokenStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        when(jwtService.generateAccessToken(any(), anyString(), any())).thenReturn("access");
+        when(jwtService.generateAccessToken(any(), any(), anyString(), any())).thenReturn("access");
         when(jwtService.generateRefreshToken(any())).thenReturn("refresh");
         when(jwtService.hashToken(anyString())).thenReturn("hash");
         when(jwtService.getAccessTokenTtlSeconds()).thenReturn(3600L);
         when(jwtService.getRefreshTokenTtlSeconds()).thenReturn(604800L);
 
-        authService.register("viewer@test.com", "password");
+        authService.register("admin@test.com", "password", "Acme Corp");
 
-        var captor = ArgumentCaptor.<UserModel>captor();
-        verify(userStore).save(captor.capture());
-        assertThat(captor.getValue().role()).isEqualTo(UserRole.VIEWER);
+        verify(organizationCommandService).createOrganization("Acme Corp");
     }
 
     @Test
@@ -85,23 +96,24 @@ class AuthServiceTest {
             Optional.of(userModel("dup@test.com", UserRole.VIEWER))
         );
 
-        assertThatThrownBy(() -> authService.register("dup@test.com", "password"))
+        assertThatThrownBy(() -> authService.register("dup@test.com", "password", null))
             .isInstanceOf(ConflictException.class);
     }
 
     @Test
     void register_returns_login_result_with_tokens() {
-        when(userStore.existsAny()).thenReturn(false);
+        var org = new OrganizationModel(UUID.randomUUID(), "org", OrgPlan.FREE, Instant.now(), Instant.now());
+        when(organizationCommandService.createOrganization(anyString())).thenReturn(org);
         when(userStore.findByEmail(anyString())).thenReturn(Optional.empty());
         when(userStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
         when(refreshTokenStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        when(jwtService.generateAccessToken(any(), anyString(), any())).thenReturn("myAccess");
+        when(jwtService.generateAccessToken(any(), any(), anyString(), any())).thenReturn("myAccess");
         when(jwtService.generateRefreshToken(any())).thenReturn("myRefresh");
         when(jwtService.hashToken("myRefresh")).thenReturn("myHash");
         when(jwtService.getAccessTokenTtlSeconds()).thenReturn(3600L);
         when(jwtService.getRefreshTokenTtlSeconds()).thenReturn(604800L);
 
-        var result = authService.register("admin@test.com", "pass");
+        var result = authService.register("admin@test.com", "pass", null);
 
         assertThat(result.accessToken()).isEqualTo("myAccess");
         assertThat(result.refreshToken()).isEqualTo("myRefresh");
@@ -113,11 +125,10 @@ class AuthServiceTest {
     @Test
     void login_valid_credentials_returns_tokens() {
         var encoder = new BCryptPasswordEncoder();
-        var user = new UserModel(UUID.randomUUID(), "user@test.com",
-            encoder.encode("secret"), UserRole.ARCHITECT, Instant.now(), Instant.now());
+        var user = userModelWithPassword("user@test.com", encoder.encode("secret"), UserRole.ARCHITECT);
         when(userStore.findByEmail("user@test.com")).thenReturn(Optional.of(user));
         when(refreshTokenStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        when(jwtService.generateAccessToken(any(), anyString(), any())).thenReturn("at");
+        when(jwtService.generateAccessToken(any(), any(), anyString(), any())).thenReturn("at");
         when(jwtService.generateRefreshToken(any())).thenReturn("rt");
         when(jwtService.hashToken("rt")).thenReturn("rth");
         when(jwtService.getAccessTokenTtlSeconds()).thenReturn(3600L);
@@ -132,8 +143,7 @@ class AuthServiceTest {
     @Test
     void login_wrong_password_throws_AuthException() {
         var encoder = new BCryptPasswordEncoder();
-        var user = new UserModel(UUID.randomUUID(), "user@test.com",
-            encoder.encode("correct"), UserRole.VIEWER, Instant.now(), Instant.now());
+        var user = userModelWithPassword("user@test.com", encoder.encode("correct"), UserRole.VIEWER);
         when(userStore.findByEmail("user@test.com")).thenReturn(Optional.of(user));
 
         assertThatThrownBy(() -> authService.login("user@test.com", "wrong"))
@@ -160,7 +170,7 @@ class AuthServiceTest {
         when(jwtService.hashToken("raw")).thenReturn("hash");
         when(refreshTokenStore.findByTokenHash("hash")).thenReturn(Optional.of(tokenModel));
         when(userStore.findById(tokenModel.userId())).thenReturn(Optional.of(user));
-        when(jwtService.generateAccessToken(any(), anyString(), any())).thenReturn("newAt");
+        when(jwtService.generateAccessToken(any(), any(), anyString(), any())).thenReturn("newAt");
         when(jwtService.getAccessTokenTtlSeconds()).thenReturn(3600L);
 
         var result = authService.refresh("raw");
@@ -203,6 +213,10 @@ class AuthServiceTest {
     }
 
     private UserModel userModel(String email, UserRole role) {
-        return new UserModel(UUID.randomUUID(), email, "hash", role, Instant.now(), Instant.now());
+        return new UserModel(UUID.randomUUID(), UUID.randomUUID(), email, "hash", role, Instant.now(), Instant.now());
+    }
+
+    private UserModel userModelWithPassword(String email, String encodedPassword, UserRole role) {
+        return new UserModel(UUID.randomUUID(), UUID.randomUUID(), email, encodedPassword, role, Instant.now(), Instant.now());
     }
 }

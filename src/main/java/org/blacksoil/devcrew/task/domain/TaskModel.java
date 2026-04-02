@@ -10,6 +10,7 @@ import java.util.UUID;
  */
 public record TaskModel(
     UUID id,
+    UUID projectId,
     UUID parentTaskId,
     String title,
     String description,

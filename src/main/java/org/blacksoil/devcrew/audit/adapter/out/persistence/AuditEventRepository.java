@@ -9,4 +9,6 @@ import java.util.UUID;
 public interface AuditEventRepository extends JpaRepository<AuditEventEntity, UUID> {
 
     List<AuditEventEntity> findByTimestampBetweenOrderByTimestampAsc(Instant from, Instant to);
+
+    List<AuditEventEntity> findByProjectIdAndTimestampBetweenOrderByTimestampAsc(UUID projectId, Instant from, Instant to);
 }

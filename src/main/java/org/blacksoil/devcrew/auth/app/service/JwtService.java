@@ -21,15 +21,17 @@ import java.util.UUID;
 public class JwtService {
 
     private static final String CLAIM_ROLE = "role";
+    private static final String CLAIM_ORG_ID = "orgId";
 
     private final JwtProperties properties;
 
-    public String generateAccessToken(UUID userId, String email, UserRole role) {
+    public String generateAccessToken(UUID userId, UUID orgId, String email, UserRole role) {
         var now = Instant.now();
         return Jwts.builder()
             .subject(userId.toString())
             .claim("email", email)
             .claim(CLAIM_ROLE, role.name())
+            .claim(CLAIM_ORG_ID, orgId != null ? orgId.toString() : null)
             .issuedAt(Date.from(now))
             .expiration(Date.from(now.plusSeconds(properties.getAccessTokenTtlSeconds())))
             .signWith(signingKey())
@@ -69,6 +71,16 @@ public class JwtService {
             .parseSignedClaims(token)
             .getPayload();
         return UserRole.valueOf(claims.get(CLAIM_ROLE, String.class));
+    }
+
+    public UUID extractOrgId(String token) {
+        var claims = Jwts.parser()
+            .verifyWith(signingKey())
+            .build()
+            .parseSignedClaims(token)
+            .getPayload();
+        var orgIdStr = claims.get(CLAIM_ORG_ID, String.class);
+        return orgIdStr != null ? UUID.fromString(orgIdStr) : null;
     }
 
     public String hashToken(String rawToken) {

@@ -30,4 +30,8 @@ public class TaskQueryService {
     public List<TaskModel> getSubtasks(UUID parentTaskId) {
         return taskStore.findByParentTaskId(parentTaskId);
     }
+
+    public List<TaskModel> getByProjectId(UUID projectId) {
+        return taskStore.findByProjectId(projectId);
+    }
 }

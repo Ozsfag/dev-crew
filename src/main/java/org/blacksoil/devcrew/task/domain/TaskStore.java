@@ -16,4 +16,6 @@ public interface TaskStore {
     List<TaskModel> findByStatus(TaskStatus status);
 
     List<TaskModel> findByParentTaskId(UUID parentTaskId);
+
+    List<TaskModel> findByProjectId(UUID projectId);
 }

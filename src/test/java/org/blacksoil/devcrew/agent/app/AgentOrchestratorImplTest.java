@@ -39,9 +39,9 @@ class AgentOrchestratorImplTest {
     @Test
     void submit_creates_task_and_returns_its_id() {
         var expected = taskModel(UUID.randomUUID());
-        when(taskCommandService.create(any(), any(), any(), any())).thenReturn(expected);
+        when(taskCommandService.create(any(), any(), any(), any(), any())).thenReturn(expected);
 
-        var taskId = orchestrator.submit("Write tests", "TDD for UserService", AgentRole.BACKEND_DEV);
+        var taskId = orchestrator.submit("Write tests", "TDD for UserService", AgentRole.BACKEND_DEV, null);
 
         assertThat(taskId).isEqualTo(expected.id());
     }
@@ -49,14 +49,14 @@ class AgentOrchestratorImplTest {
     @Test
     void submit_creates_task_with_correct_role_and_no_parent() {
         var expected = taskModel(UUID.randomUUID());
-        when(taskCommandService.create(any(), any(), any(), any())).thenReturn(expected);
+        when(taskCommandService.create(any(), any(), any(), any(), any())).thenReturn(expected);
 
-        orchestrator.submit("Write tests", "TDD for UserService", AgentRole.QA);
+        orchestrator.submit("Write tests", "TDD for UserService", AgentRole.QA, null);
 
         var roleCaptor = ArgumentCaptor.<AgentRole>captor();
         verify(taskCommandService).create(
             eq("Write tests"), eq("TDD for UserService"),
-            roleCaptor.capture(), eq(null)
+            roleCaptor.capture(), eq(null), eq(null)
         );
         assertThat(roleCaptor.getValue()).isEqualTo(AgentRole.QA);
     }
@@ -74,7 +74,7 @@ class AgentOrchestratorImplTest {
 
     private TaskModel taskModel(UUID id) {
         return new TaskModel(
-            id, null, "title", "description",
+            id, null, null, "title", "description",
             AgentRole.BACKEND_DEV, TaskStatus.PENDING, null,
             Instant.now(), Instant.now()
         );

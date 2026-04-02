@@ -4,13 +4,16 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.agent.domain.AgentOrchestrator;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
+import org.blacksoil.devcrew.bootstrap.AuthenticatedUser;
 import org.blacksoil.devcrew.task.adapter.in.web.dto.CreateTaskRequest;
 import org.blacksoil.devcrew.task.adapter.in.web.dto.CreateTaskResponse;
 import org.blacksoil.devcrew.task.adapter.in.web.dto.TaskResponse;
 import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -25,8 +28,18 @@ public class TaskController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CreateTaskResponse create(@Valid @RequestBody CreateTaskRequest request) {
-        var taskId = agentOrchestrator.submit(request.title(), request.description(), request.role());
+        var taskId = agentOrchestrator.submit(request.title(), request.description(), request.role(), request.projectId());
         return new CreateTaskResponse(taskId);
+    }
+
+    @GetMapping
+    public List<TaskResponse> getByProject(
+            @RequestParam UUID projectId,
+            @AuthenticationPrincipal AuthenticatedUser currentUser
+    ) {
+        return taskQueryService.getByProjectId(projectId).stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 
     @PostMapping("/{id}/run")

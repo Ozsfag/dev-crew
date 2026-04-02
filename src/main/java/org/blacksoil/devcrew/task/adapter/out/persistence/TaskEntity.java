@@ -22,6 +22,9 @@ public class TaskEntity {
     @Id
     private UUID id;
 
+    @Column(name = "project_id")
+    private UUID projectId;
+
     @Column(name = "parent_task_id")
     private UUID parentTaskId;
 

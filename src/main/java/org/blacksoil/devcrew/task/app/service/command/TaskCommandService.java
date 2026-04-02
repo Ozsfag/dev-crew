@@ -20,10 +20,10 @@ public class TaskCommandService {
     private final TaskStore taskStore;
     private final TimeProvider timeProvider;
 
-    public TaskModel create(String title, String description, AgentRole assignedTo, UUID parentTaskId) {
+    public TaskModel create(String title, String description, AgentRole assignedTo, UUID projectId, UUID parentTaskId) {
         var now = timeProvider.now();
         var task = new TaskModel(
-            UUID.randomUUID(), parentTaskId,
+            UUID.randomUUID(), projectId, parentTaskId,
             title, description,
             assignedTo, TaskStatus.PENDING, null,
             now, now
@@ -34,7 +34,7 @@ public class TaskCommandService {
     public TaskModel updateStatus(UUID taskId, TaskStatus newStatus) {
         var task = findOrThrow(taskId);
         var updated = new TaskModel(
-            task.id(), task.parentTaskId(), task.title(), task.description(),
+            task.id(), task.projectId(), task.parentTaskId(), task.title(), task.description(),
             task.assignedTo(), newStatus, task.result(),
             task.createdAt(), timeProvider.now()
         );
@@ -44,7 +44,7 @@ public class TaskCommandService {
     public TaskModel complete(UUID taskId, String result) {
         var task = findOrThrow(taskId);
         var completed = new TaskModel(
-            task.id(), task.parentTaskId(), task.title(), task.description(),
+            task.id(), task.projectId(), task.parentTaskId(), task.title(), task.description(),
             task.assignedTo(), TaskStatus.COMPLETED, result,
             task.createdAt(), timeProvider.now()
         );
@@ -54,7 +54,7 @@ public class TaskCommandService {
     public TaskModel fail(UUID taskId, String reason) {
         var task = findOrThrow(taskId);
         var failed = new TaskModel(
-            task.id(), task.parentTaskId(), task.title(), task.description(),
+            task.id(), task.projectId(), task.parentTaskId(), task.title(), task.description(),
             task.assignedTo(), TaskStatus.FAILED, reason,
             task.createdAt(), timeProvider.now()
         );

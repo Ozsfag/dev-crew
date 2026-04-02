@@ -65,7 +65,7 @@ class RefreshTokenJpaStoreTest {
     }
 
     private UserModel userModel() {
-        return new UserModel(UUID.randomUUID(), UUID.randomUUID() + "@test.com",
+        return new UserModel(UUID.randomUUID(), null, UUID.randomUUID() + "@test.com",
             "hash", UserRole.VIEWER, Instant.now(), Instant.now());
     }
 

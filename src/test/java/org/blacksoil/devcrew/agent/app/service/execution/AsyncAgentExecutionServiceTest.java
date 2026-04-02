@@ -104,7 +104,7 @@ class AsyncAgentExecutionServiceTest {
 
     private TaskModel taskModel(UUID id) {
         return new TaskModel(
-            id, null, "title", "description",
+            id, null, null, "title", "description",
             AgentRole.BACKEND_DEV, TaskStatus.PENDING, null,
             Instant.now(), Instant.now()
         );

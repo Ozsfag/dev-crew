@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+import org.springframework.lang.Nullable;
+
 /**
  * Оркестратор агентов: принимает задачу, создаёт её в хранилище, запускает исполнение.
  */
@@ -22,8 +24,8 @@ public class AgentOrchestratorImpl implements AgentOrchestrator {
     private final AgentExecutionService agentExecutionService;
 
     @Override
-    public UUID submit(String title, String description, AgentRole role) {
-        var task = taskCommandService.create(title, description, role, null);
+    public UUID submit(String title, String description, AgentRole role, @Nullable UUID projectId) {
+        var task = taskCommandService.create(title, description, role, projectId, null);
         return task.id();
     }
 

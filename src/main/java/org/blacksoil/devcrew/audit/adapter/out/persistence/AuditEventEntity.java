@@ -20,6 +20,9 @@ public class AuditEventEntity {
     @Id
     private UUID id;
 
+    @Column(name = "project_id")
+    private UUID projectId;
+
     @Column(name = "actor_email")
     private String actorEmail;
 

@@ -5,6 +5,7 @@ import java.util.UUID;
 
 public record UserModel(
     UUID id,
+    UUID orgId,
     String email,
     String passwordHash,
     UserRole role,

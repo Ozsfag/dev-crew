@@ -63,6 +63,6 @@ class UserJpaStoreTest {
     }
 
     private UserModel userModel(String email, UserRole role) {
-        return new UserModel(UUID.randomUUID(), email, "hash", role, Instant.now(), Instant.now());
+        return new UserModel(UUID.randomUUID(), null, email, "hash", role, Instant.now(), Instant.now());
     }
 }

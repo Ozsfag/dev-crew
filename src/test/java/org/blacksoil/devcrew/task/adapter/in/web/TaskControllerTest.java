@@ -56,7 +56,7 @@ class TaskControllerTest {
     @Test
     void POST_tasks_returns_201_with_task_id() throws Exception {
         var taskId = UUID.randomUUID();
-        when(agentOrchestrator.submit(any(), any(), any())).thenReturn(taskId);
+        when(agentOrchestrator.submit(any(), any(), any(), any())).thenReturn(taskId);
 
         var body = """
             {"title":"Write tests","description":"TDD for UserService","role":"BACKEND_DEV"}
@@ -71,7 +71,7 @@ class TaskControllerTest {
 
     @Test
     void POST_tasks_delegates_to_orchestrator_with_correct_params() throws Exception {
-        when(agentOrchestrator.submit(any(), any(), any())).thenReturn(UUID.randomUUID());
+        when(agentOrchestrator.submit(any(), any(), any(), any())).thenReturn(UUID.randomUUID());
 
         var body = """
             {"title":"Write tests","description":"TDD","role":"QA"}
@@ -82,7 +82,7 @@ class TaskControllerTest {
                 .content(body))
             .andExpect(status().isCreated());
 
-        verify(agentOrchestrator).submit("Write tests", "TDD", AgentRole.QA);
+        verify(agentOrchestrator).submit("Write tests", "TDD", AgentRole.QA, null);
     }
 
     @Test
@@ -132,7 +132,7 @@ class TaskControllerTest {
 
     private TaskModel taskModel(UUID id) {
         return new TaskModel(
-            id, null, "title", "description",
+            id, null, null, "title", "description",
             AgentRole.BACKEND_DEV, TaskStatus.PENDING, null,
             Instant.now(), Instant.now()
         );

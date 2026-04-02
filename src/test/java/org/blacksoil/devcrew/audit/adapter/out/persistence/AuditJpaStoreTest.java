@@ -66,6 +66,7 @@ class AuditJpaStoreTest {
     private AuditEventModel auditEvent(Instant timestamp, UUID entityId) {
         return new AuditEventModel(
             UUID.randomUUID(),
+            null,
             "system",
             "TASK_COMPLETED",
             entityId,

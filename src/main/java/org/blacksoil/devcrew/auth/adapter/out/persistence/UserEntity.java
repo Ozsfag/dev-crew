@@ -21,6 +21,9 @@ public class UserEntity {
     @Id
     private UUID id;
 
+    @Column(name = "org_id")
+    private UUID orgId;
+
     @Column(nullable = false, unique = true)
     private String email;
 

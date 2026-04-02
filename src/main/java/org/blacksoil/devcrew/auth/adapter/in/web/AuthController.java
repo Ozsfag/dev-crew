@@ -18,7 +18,7 @@ public class AuthController {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public LoginResponse register(@Valid @RequestBody RegisterRequest request) {
-        return mapper.toResponse(authService.register(request.email(), request.password()));
+        return mapper.toResponse(authService.register(request.email(), request.password(), request.orgName()));
     }
 
     @PostMapping("/login")

@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -43,7 +44,7 @@ class AuthControllerTest {
 
     @Test
     void POST_register_returns_201_with_tokens() throws Exception {
-        when(authService.register(anyString(), anyString()))
+        when(authService.register(anyString(), anyString(), any()))
             .thenReturn(new LoginResult("access-token", "refresh-token", 3600L));
 
         mockMvc.perform(post("/api/auth/register")
@@ -59,7 +60,7 @@ class AuthControllerTest {
 
     @Test
     void POST_register_returns_409_when_email_taken() throws Exception {
-        when(authService.register(anyString(), anyString()))
+        when(authService.register(anyString(), anyString(), any()))
             .thenThrow(new ConflictException("Email занят"));
 
         mockMvc.perform(post("/api/auth/register")

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/audit")
@@ -19,8 +20,12 @@ public class AuditController {
     @GetMapping
     public List<AuditEventModel> getAuditEvents(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
+        @RequestParam(required = false) UUID projectId
     ) {
+        if (projectId != null) {
+            return auditQueryService.findByProjectId(projectId, from, to);
+        }
         return auditQueryService.findByTimestampBetween(from, to);
     }
 }

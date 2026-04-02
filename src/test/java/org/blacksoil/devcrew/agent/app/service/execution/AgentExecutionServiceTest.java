@@ -164,7 +164,7 @@ class AgentExecutionServiceTest {
 
     private TaskModel taskModel(UUID id, TaskStatus status) {
         return new TaskModel(
-            id, null, "title", "description",
+            id, null, null, "title", "description",
             AgentRole.BACKEND_DEV, status, null,
             Instant.now(), Instant.now()
         );

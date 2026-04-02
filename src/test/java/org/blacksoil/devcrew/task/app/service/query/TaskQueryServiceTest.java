@@ -76,7 +76,7 @@ class TaskQueryServiceTest {
 
     private TaskModel taskModel(UUID id, UUID parentId, TaskStatus status) {
         return new TaskModel(
-            id, parentId, "title", "description",
+            id, null, parentId, "title", "description",
             AgentRole.BACKEND_DEV, status, null,
             Instant.now(), Instant.now()
         );

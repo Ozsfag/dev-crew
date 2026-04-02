@@ -3,6 +3,7 @@ package org.blacksoil.devcrew.auth.app.service;
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.auth.domain.*;
 import org.blacksoil.devcrew.common.exception.ConflictException;
+import org.blacksoil.devcrew.organization.app.service.OrganizationCommandService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,18 +19,26 @@ public class AuthService {
     private final RefreshTokenStore refreshTokenStore;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final OrganizationCommandService organizationCommandService;
 
     @Transactional
-    public LoginResult register(String email, String password) {
+    public LoginResult register(String email, String password, String orgName) {
         if (userStore.findByEmail(email).isPresent()) {
             throw new ConflictException("Пользователь с email '%s' уже существует".formatted(email));
         }
-        var role = userStore.existsAny() ? UserRole.VIEWER : UserRole.ARCHITECT;
+        // Каждый новый пользователь создаёт свою организацию и становится ARCHITECT
+        var name = (orgName != null && !orgName.isBlank()) ? orgName : defaultOrgName(email);
+        var org = organizationCommandService.createOrganization(name);
         var now = Instant.now();
         var user = userStore.save(new UserModel(
-            UUID.randomUUID(), email, passwordEncoder.encode(password), role, now, now
+            UUID.randomUUID(), org.id(), email, passwordEncoder.encode(password), UserRole.ARCHITECT, now, now
         ));
         return issueTokens(user);
+    }
+
+    private static String defaultOrgName(String email) {
+        var prefix = email.contains("@") ? email.substring(0, email.indexOf('@')) : email;
+        return prefix + "'s Organization";
     }
 
     @Transactional
@@ -55,7 +64,7 @@ public class AuthService {
         }
         var user = userStore.findById(token.userId())
             .orElseThrow(() -> new AuthException("Пользователь не найден"));
-        var accessToken = jwtService.generateAccessToken(user.id(), user.email(), user.role());
+        var accessToken = jwtService.generateAccessToken(user.id(), user.orgId(), user.email(), user.role());
         return new RefreshResult(accessToken, jwtService.getAccessTokenTtlSeconds());
     }
 
@@ -66,7 +75,7 @@ public class AuthService {
         refreshTokenStore.save(new RefreshTokenModel(
             UUID.randomUUID(), user.id(), tokenHash, expiresAt, false, Instant.now()
         ));
-        var accessToken = jwtService.generateAccessToken(user.id(), user.email(), user.role());
+        var accessToken = jwtService.generateAccessToken(user.id(), user.orgId(), user.email(), user.role());
         return new LoginResult(accessToken, rawRefresh, jwtService.getAccessTokenTtlSeconds());
     }
 

@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.auth.app.service.JwtService;
-import org.blacksoil.devcrew.auth.domain.UserRole;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,7 +24,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                    @NotNull FilterChain filterChain) throws ServletException, IOException {
         var authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
@@ -35,9 +35,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             jwtService.validateAccessToken(token);
             var userId = jwtService.extractUserId(token);
-            var role = jwtService.extractRole(token);
+            var orgId  = jwtService.extractOrgId(token);
+            var role   = jwtService.extractRole(token);
+            var principal  = new AuthenticatedUser(userId, orgId, role);
             var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
-            var authentication = new UsernamePasswordAuthenticationToken(userId, null, authorities);
+            var authentication = new UsernamePasswordAuthenticationToken(principal, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (Exception ignored) {
             // невалидный токен — SecurityContext остаётся пустым, 401 вернёт EntryPoint

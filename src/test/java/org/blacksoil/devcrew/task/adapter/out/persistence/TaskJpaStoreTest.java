@@ -66,7 +66,7 @@ class TaskJpaStoreTest {
     void save_updates_existing_task() {
         var saved = taskJpaStore.save(taskModel(null, AgentRole.BACKEND_DEV, TaskStatus.PENDING));
         var updated = new TaskModel(
-            saved.id(), saved.parentTaskId(), saved.title(), saved.description(),
+            saved.id(), saved.projectId(), saved.parentTaskId(), saved.title(), saved.description(),
             saved.assignedTo(), TaskStatus.COMPLETED, "result text",
             saved.createdAt(), Instant.now()
         );
@@ -79,7 +79,7 @@ class TaskJpaStoreTest {
 
     private TaskModel taskModel(UUID parentId, AgentRole role, TaskStatus status) {
         return new TaskModel(
-            UUID.randomUUID(), parentId,
+            UUID.randomUUID(), null, parentId,
             "Task for " + role, "Description",
             role, status, null,
             Instant.now(), Instant.now()

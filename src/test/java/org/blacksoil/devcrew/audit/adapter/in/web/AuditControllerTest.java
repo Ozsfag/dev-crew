@@ -42,7 +42,7 @@ class AuditControllerTest {
     @Test
     void GET_audit_returns_200_with_events() throws Exception {
         var event = new AuditEventModel(
-            UUID.randomUUID(), "system", "TASK_COMPLETED",
+            UUID.randomUUID(), null, "system", "TASK_COMPLETED",
             UUID.randomUUID(), "details", Instant.now()
         );
         when(auditQueryService.findByTimestampBetween(any(), any())).thenReturn(List.of(event));

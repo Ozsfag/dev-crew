@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -27,6 +28,16 @@ public class AuditJpaStore implements AuditStore {
     public List<AuditEventModel> findByTimestampBetween(Instant from, Instant to) {
         return auditEventRepository
             .findByTimestampBetweenOrderByTimestampAsc(from, to)
+            .stream()
+            .map(mapper::toModel)
+            .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AuditEventModel> findByProjectIdAndTimestampBetween(UUID projectId, Instant from, Instant to) {
+        return auditEventRepository
+            .findByProjectIdAndTimestampBetweenOrderByTimestampAsc(projectId, from, to)
             .stream()
             .map(mapper::toModel)
             .toList();

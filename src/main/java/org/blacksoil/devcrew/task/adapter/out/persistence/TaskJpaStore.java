@@ -45,4 +45,12 @@ public class TaskJpaStore implements TaskStore {
             .map(mapper::toModel)
             .toList();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TaskModel> findByProjectId(UUID projectId) {
+        return taskRepository.findByProjectId(projectId).stream()
+            .map(mapper::toModel)
+            .toList();
+    }
 }

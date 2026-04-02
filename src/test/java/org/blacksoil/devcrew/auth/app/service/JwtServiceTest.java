@@ -28,7 +28,7 @@ class JwtServiceTest {
     @Test
     void generateAccessToken_returns_non_blank_token() {
         var userId = UUID.randomUUID();
-        var token = jwtService.generateAccessToken(userId, "user@test.com", UserRole.ARCHITECT);
+        var token = jwtService.generateAccessToken(userId, null, "user@test.com", UserRole.ARCHITECT);
         assertThat(token).isNotBlank();
     }
 
@@ -41,7 +41,7 @@ class JwtServiceTest {
     @Test
     void validateAccessToken_does_not_throw_for_valid_token() {
         var userId = UUID.randomUUID();
-        var token = jwtService.generateAccessToken(userId, "user@test.com", UserRole.VIEWER);
+        var token = jwtService.generateAccessToken(userId, null, "user@test.com", UserRole.VIEWER);
         assertThatNoException().isThrownBy(() -> jwtService.validateAccessToken(token));
     }
 
@@ -54,13 +54,13 @@ class JwtServiceTest {
     @Test
     void extractUserId_returns_correct_id() {
         var userId = UUID.randomUUID();
-        var token = jwtService.generateAccessToken(userId, "user@test.com", UserRole.ARCHITECT);
+        var token = jwtService.generateAccessToken(userId, null, "user@test.com", UserRole.ARCHITECT);
         assertThat(jwtService.extractUserId(token)).isEqualTo(userId);
     }
 
     @Test
     void extractRole_returns_correct_role() {
-        var token = jwtService.generateAccessToken(UUID.randomUUID(), "user@test.com", UserRole.VIEWER);
+        var token = jwtService.generateAccessToken(UUID.randomUUID(), null, "user@test.com", UserRole.VIEWER);
         assertThat(jwtService.extractRole(token)).isEqualTo(UserRole.VIEWER);
     }
 
