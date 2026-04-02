@@ -218,13 +218,8 @@ LangChain4j TokenUsage → UsageRecordCommandService → monthly summary
 ✅ П3.2  QaAgent
 ✅ П3.3  CodeReviewAgent
 ✅ П3.4  DevOpsAgent
-П4    Мультитенантность                ← СЕЙЧАС
-П3.1  GitTools
-П3.2  QaAgent
-П3.3  CodeReviewAgent
-П3.4  DevOpsAgent
-П4    Мультитенантность
-П5    Observability (Prometheus + Grafana)
+✅ П4    Мультитенантность
+П5    Observability (Prometheus + Grafana)    ← СЕЙЧАС
 П6    Монетизация (Stripe)
 ```
 
