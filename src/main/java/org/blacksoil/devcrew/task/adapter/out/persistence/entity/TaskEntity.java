@@ -48,4 +48,7 @@ public class TaskEntity {
 
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
+
+  @Column(name = "retry_at")
+  private Instant retryAt;
 }

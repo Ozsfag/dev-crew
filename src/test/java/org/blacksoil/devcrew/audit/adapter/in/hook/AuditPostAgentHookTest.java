@@ -93,6 +93,7 @@ class AuditPostAgentHookTest {
         TaskStatus.COMPLETED,
         null,
         Instant.now(),
-        Instant.now());
+        Instant.now(),
+        null);
   }
 }

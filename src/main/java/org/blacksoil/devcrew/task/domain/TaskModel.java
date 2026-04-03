@@ -15,4 +15,6 @@ public record TaskModel(
     TaskStatus status,
     String result,
     Instant createdAt,
-    Instant updatedAt) {}
+    Instant updatedAt,
+    /** Момент, после которого задачу можно повторить. Заполняется при статусе RATE_LIMITED. */
+    Instant retryAt) {}

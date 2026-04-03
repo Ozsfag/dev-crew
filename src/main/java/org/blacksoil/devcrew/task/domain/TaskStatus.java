@@ -8,5 +8,7 @@ public enum TaskStatus {
   APPROVED,
   REJECTED,
   COMPLETED,
-  FAILED
+  FAILED,
+  /** LLM вернул ошибку rate-limit; задача будет повторена автоматически после retryAt. */
+  RATE_LIMITED
 }

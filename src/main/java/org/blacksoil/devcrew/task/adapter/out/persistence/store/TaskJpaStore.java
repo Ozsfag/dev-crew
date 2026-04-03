@@ -1,5 +1,6 @@
 package org.blacksoil.devcrew.task.adapter.out.persistence.store;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,5 +48,13 @@ public class TaskJpaStore implements TaskStore {
   @Transactional(readOnly = true)
   public List<TaskModel> findByProjectId(UUID projectId) {
     return taskRepository.findByProjectId(projectId).stream().map(mapper::toModel).toList();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<TaskModel> findRateLimitedReadyToRetry(Instant now) {
+    return taskRepository.findByStatusAndRetryAtBefore(TaskStatus.RATE_LIMITED, now).stream()
+        .map(mapper::toModel)
+        .toList();
   }
 }

@@ -6,7 +6,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableConfigurationProperties({AgentProperties.class, SandboxProperties.class})
+@EnableConfigurationProperties({
+  AgentProperties.class,
+  SandboxProperties.class,
+  RateLimitProperties.class
+})
 public class AgentConfig {
 
   @Bean

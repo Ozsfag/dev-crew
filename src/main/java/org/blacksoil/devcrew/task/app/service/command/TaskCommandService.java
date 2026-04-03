@@ -33,7 +33,8 @@ public class TaskCommandService {
             TaskStatus.PENDING,
             null,
             now,
-            now);
+            now,
+            null);
     return taskStore.save(task);
   }
 
@@ -50,7 +51,8 @@ public class TaskCommandService {
             newStatus,
             task.result(),
             task.createdAt(),
-            timeProvider.now());
+            timeProvider.now(),
+            task.retryAt());
     return taskStore.save(updated);
   }
 
@@ -67,7 +69,8 @@ public class TaskCommandService {
             TaskStatus.COMPLETED,
             result,
             task.createdAt(),
-            timeProvider.now());
+            timeProvider.now(),
+            null);
     return taskStore.save(completed);
   }
 
@@ -84,8 +87,27 @@ public class TaskCommandService {
             TaskStatus.FAILED,
             reason,
             task.createdAt(),
-            timeProvider.now());
+            timeProvider.now(),
+            null);
     return taskStore.save(failed);
+  }
+
+  public TaskModel rateLimited(UUID taskId, java.time.Instant retryAt) {
+    var task = findOrThrow(taskId);
+    var waiting =
+        new TaskModel(
+            task.id(),
+            task.projectId(),
+            task.parentTaskId(),
+            task.title(),
+            task.description(),
+            task.assignedTo(),
+            TaskStatus.RATE_LIMITED,
+            task.result(),
+            task.createdAt(),
+            timeProvider.now(),
+            retryAt);
+    return taskStore.save(waiting);
   }
 
   private TaskModel findOrThrow(UUID taskId) {

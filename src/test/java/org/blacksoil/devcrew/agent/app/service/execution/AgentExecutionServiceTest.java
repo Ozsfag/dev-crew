@@ -10,12 +10,15 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.blacksoil.devcrew.agent.app.config.RateLimitProperties;
+import org.blacksoil.devcrew.agent.app.policy.RateLimitPolicy;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.agent.domain.BackendDevAgent;
 import org.blacksoil.devcrew.agent.domain.CodeReviewAgent;
 import org.blacksoil.devcrew.agent.domain.DevOpsAgent;
 import org.blacksoil.devcrew.agent.domain.PostAgentHook;
 import org.blacksoil.devcrew.agent.domain.QaAgent;
+import org.blacksoil.devcrew.common.TimeProvider;
 import org.blacksoil.devcrew.task.app.service.command.TaskCommandService;
 import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
 import org.blacksoil.devcrew.task.domain.TaskModel;
@@ -44,12 +47,15 @@ class AgentExecutionServiceTest {
 
   @Mock private PostAgentHook postAgentHook;
 
+  @Mock private TimeProvider timeProvider;
+
   private AgentExecutionService agentExecutionService;
   private SimpleMeterRegistry meterRegistry;
 
   @BeforeEach
   void setUp() {
     meterRegistry = new SimpleMeterRegistry();
+    var rateLimitPolicy = new RateLimitPolicy(new RateLimitProperties());
     // List<PostAgentHook> нельзя инжектировать через @InjectMocks из одного мока
     agentExecutionService =
         new AgentExecutionService(
@@ -60,7 +66,9 @@ class AgentExecutionServiceTest {
             taskQueryService,
             taskCommandService,
             List.of(postAgentHook),
-            meterRegistry);
+            meterRegistry,
+            rateLimitPolicy,
+            timeProvider);
   }
 
   @Test
@@ -227,6 +235,62 @@ class AgentExecutionServiceTest {
     assertThat(timer.count()).isEqualTo(1);
   }
 
+  @Test
+  void execute_marks_task_rate_limited_when_llm_returns_429() {
+    var taskId = UUID.randomUUID();
+    var task = taskModel(taskId, TaskStatus.PENDING);
+    var now = Instant.parse("2026-01-01T10:00:00Z");
+    when(taskQueryService.getById(taskId)).thenReturn(task);
+    when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+    when(backendDevAgent.execute(any()))
+        .thenThrow(new RuntimeException("HTTP 429 Too Many Requests"));
+    when(timeProvider.now()).thenReturn(now);
+    when(taskCommandService.rateLimited(any(), any())).thenReturn(task);
+
+    agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "prompt");
+
+    var captor = ArgumentCaptor.<java.time.Instant>captor();
+    verify(taskCommandService).rateLimited(eq(taskId), captor.capture());
+    assertThat(captor.getValue()).isAfter(now);
+  }
+
+  @Test
+  void execute_does_not_call_fail_when_rate_limited() {
+    var taskId = UUID.randomUUID();
+    var task = taskModel(taskId, TaskStatus.PENDING);
+    when(taskQueryService.getById(taskId)).thenReturn(task);
+    when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+    when(backendDevAgent.execute(any())).thenThrow(new RuntimeException("rate limit exceeded"));
+    when(timeProvider.now()).thenReturn(Instant.now());
+    when(taskCommandService.rateLimited(any(), any())).thenReturn(task);
+
+    agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "prompt");
+
+    org.mockito.Mockito.verify(taskCommandService, org.mockito.Mockito.never()).fail(any(), any());
+  }
+
+  @Test
+  void execute_increments_RATE_LIMITED_counter_on_rate_limit_error() {
+    var taskId = UUID.randomUUID();
+    var task = taskModel(taskId, TaskStatus.PENDING);
+    when(taskQueryService.getById(taskId)).thenReturn(task);
+    when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+    when(backendDevAgent.execute(any())).thenThrow(new RuntimeException("HTTP 429"));
+    when(timeProvider.now()).thenReturn(Instant.now());
+    when(taskCommandService.rateLimited(any(), any())).thenReturn(task);
+
+    agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "prompt");
+
+    var counter =
+        meterRegistry
+            .find("devcrew.task.total")
+            .tag("status", "RATE_LIMITED")
+            .tag("role", AgentRole.BACKEND_DEV.name())
+            .counter();
+    assertThat(counter).isNotNull();
+    assertThat(counter.count()).isEqualTo(1.0);
+  }
+
   private TaskModel taskModel(UUID id, TaskStatus status) {
     return new TaskModel(
         id,
@@ -238,6 +302,7 @@ class AgentExecutionServiceTest {
         status,
         null,
         Instant.now(),
-        Instant.now());
+        Instant.now(),
+        null);
   }
 }

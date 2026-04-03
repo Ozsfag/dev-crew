@@ -11,11 +11,14 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.blacksoil.devcrew.agent.app.config.RateLimitProperties;
+import org.blacksoil.devcrew.agent.app.policy.RateLimitPolicy;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.agent.domain.BackendDevAgent;
 import org.blacksoil.devcrew.agent.domain.CodeReviewAgent;
 import org.blacksoil.devcrew.agent.domain.DevOpsAgent;
 import org.blacksoil.devcrew.agent.domain.QaAgent;
+import org.blacksoil.devcrew.common.TimeProvider;
 import org.blacksoil.devcrew.task.app.service.command.TaskCommandService;
 import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
 import org.blacksoil.devcrew.task.domain.TaskModel;
@@ -41,6 +44,8 @@ class AsyncAgentExecutionServiceTest {
 
   @Mock private TaskCommandService taskCommandService;
 
+  @Mock private TimeProvider timeProvider;
+
   private AgentExecutionService agentExecutionService;
 
   @BeforeEach
@@ -54,7 +59,9 @@ class AsyncAgentExecutionServiceTest {
             taskQueryService,
             taskCommandService,
             List.of(),
-            new SimpleMeterRegistry());
+            new SimpleMeterRegistry(),
+            new RateLimitPolicy(new RateLimitProperties()),
+            timeProvider);
   }
 
   @Test
@@ -118,6 +125,7 @@ class AsyncAgentExecutionServiceTest {
         TaskStatus.PENDING,
         null,
         Instant.now(),
-        Instant.now());
+        Instant.now(),
+        null);
   }
 }

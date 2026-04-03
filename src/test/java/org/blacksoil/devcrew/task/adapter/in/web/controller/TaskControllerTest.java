@@ -138,6 +138,7 @@ class TaskControllerTest {
         TaskStatus.PENDING,
         null,
         Instant.now(),
-        Instant.now());
+        Instant.now(),
+        null);
   }
 }

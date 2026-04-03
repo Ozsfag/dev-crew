@@ -1,5 +1,6 @@
 package org.blacksoil.devcrew.task.adapter.out.persistence.repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.blacksoil.devcrew.task.adapter.out.persistence.entity.TaskEntity;
@@ -13,4 +14,6 @@ public interface TaskRepository extends JpaRepository<TaskEntity, UUID> {
   List<TaskEntity> findByParentTaskId(UUID parentTaskId);
 
   List<TaskEntity> findByProjectId(UUID projectId);
+
+  List<TaskEntity> findByStatusAndRetryAtBefore(TaskStatus status, Instant retryAt);
 }

@@ -7,12 +7,14 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.blacksoil.devcrew.agent.app.policy.RateLimitPolicy;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.agent.domain.BackendDevAgent;
 import org.blacksoil.devcrew.agent.domain.CodeReviewAgent;
 import org.blacksoil.devcrew.agent.domain.DevOpsAgent;
 import org.blacksoil.devcrew.agent.domain.PostAgentHook;
 import org.blacksoil.devcrew.agent.domain.QaAgent;
+import org.blacksoil.devcrew.common.TimeProvider;
 import org.blacksoil.devcrew.task.app.service.command.TaskCommandService;
 import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
 import org.blacksoil.devcrew.task.domain.TaskStatus;
@@ -37,6 +39,8 @@ public class AgentExecutionService {
   private final TaskCommandService taskCommandService;
   private final List<PostAgentHook> postAgentHooks;
   private final MeterRegistry meterRegistry;
+  private final RateLimitPolicy rateLimitPolicy;
+  private final TimeProvider timeProvider;
 
   @Async("agentExecutor")
   public void execute(UUID taskId, AgentRole role, String prompt) {
@@ -48,9 +52,16 @@ public class AgentExecutionService {
     try {
       result = dispatchToAgent(role, prompt);
     } catch (Exception e) {
-      log.error("Агент {} упал при выполнении задачи {}", role, taskId, e);
-      taskCommandService.fail(taskId, e.getMessage());
-      recordTaskCounter(role, "FAILED");
+      if (rateLimitPolicy.isRateLimit(e)) {
+        var retryAt = rateLimitPolicy.retryAt(timeProvider.now());
+        log.warn("Rate limit от LLM для задачи {} (агент {}), повтор в {}", taskId, role, retryAt);
+        taskCommandService.rateLimited(taskId, retryAt);
+        recordTaskCounter(role, "RATE_LIMITED");
+      } else {
+        log.error("Агент {} упал при выполнении задачи {}", role, taskId, e);
+        taskCommandService.fail(taskId, e.getMessage());
+        recordTaskCounter(role, "FAILED");
+      }
       return;
     }
 

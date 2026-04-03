@@ -81,6 +81,7 @@ class TaskQueryServiceTest {
         status,
         null,
         Instant.now(),
-        Instant.now());
+        Instant.now(),
+        null);
   }
 }

@@ -1,5 +1,6 @@
 package org.blacksoil.devcrew.task.app.service.query;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -31,5 +32,10 @@ public class TaskQueryService {
 
   public List<TaskModel> getByProjectId(UUID projectId) {
     return taskStore.findByProjectId(projectId);
+  }
+
+  /** Возвращает задачи RATE_LIMITED, чей retryAt уже наступил. */
+  public List<TaskModel> getRateLimitedReadyToRetry(Instant now) {
+    return taskStore.findRateLimitedReadyToRetry(now);
   }
 }

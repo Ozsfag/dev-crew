@@ -107,6 +107,48 @@ class TaskCommandServiceTest {
     assertThat(captor.getValue().result()).isEqualTo("Build error");
   }
 
+  @Test
+  void rateLimited_sets_rate_limited_status_and_retryAt() {
+    var retryAt = Instant.parse("2026-01-01T10:01:00Z");
+    var task = existingTask(TaskStatus.IN_PROGRESS);
+    when(taskStore.findById(task.id())).thenReturn(Optional.of(task));
+    when(timeProvider.now()).thenReturn(Instant.now());
+    when(taskStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+    taskCommandService.rateLimited(task.id(), retryAt);
+
+    var captor = ArgumentCaptor.<TaskModel>captor();
+    verify(taskStore).save(captor.capture());
+    assertThat(captor.getValue().status()).isEqualTo(TaskStatus.RATE_LIMITED);
+    assertThat(captor.getValue().retryAt()).isEqualTo(retryAt);
+  }
+
+  @Test
+  void rateLimited_preserves_existing_result() {
+    var task =
+        new TaskModel(
+            UUID.randomUUID(),
+            null,
+            null,
+            "title",
+            "desc",
+            AgentRole.BACKEND_DEV,
+            TaskStatus.IN_PROGRESS,
+            "partial result",
+            Instant.now(),
+            Instant.now(),
+            null);
+    when(taskStore.findById(task.id())).thenReturn(Optional.of(task));
+    when(timeProvider.now()).thenReturn(Instant.now());
+    when(taskStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+    taskCommandService.rateLimited(task.id(), Instant.now().plusSeconds(60));
+
+    var captor = ArgumentCaptor.<TaskModel>captor();
+    verify(taskStore).save(captor.capture());
+    assertThat(captor.getValue().result()).isEqualTo("partial result");
+  }
+
   private TaskModel existingTask(TaskStatus status) {
     return new TaskModel(
         UUID.randomUUID(),
@@ -118,6 +160,7 @@ class TaskCommandServiceTest {
         status,
         null,
         Instant.now(),
-        Instant.now());
+        Instant.now(),
+        null);
   }
 }
