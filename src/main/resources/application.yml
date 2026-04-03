@@ -54,6 +54,14 @@ devcrew:
     model: claude-sonnet-4-6
     max-tokens: 8096
     max-iterations: 20
+    rate-limit:
+      retry-delay: 60s
+      retry-check-delay: 30000
+  billing:
+    cost-per-input-token: 0.000003
+    cost-per-output-token: 0.000015
+    chars-per-token: 4
+    free-plan-task-limit: 50
   notification:
     telegram:
       enabled: ${DEVCREW_NOTIFICATION_TELEGRAM_ENABLED:false}

@@ -1,10 +1,12 @@
 package org.blacksoil.devcrew.agent.app;
 
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.agent.app.service.execution.AgentExecutionService;
 import org.blacksoil.devcrew.agent.domain.AgentOrchestrator;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
+import org.blacksoil.devcrew.agent.domain.PreRunCheck;
 import org.blacksoil.devcrew.task.app.service.command.TaskCommandService;
 import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
 import org.springframework.lang.Nullable;
@@ -18,6 +20,7 @@ public class AgentOrchestratorImpl implements AgentOrchestrator {
   private final TaskCommandService taskCommandService;
   private final TaskQueryService taskQueryService;
   private final AgentExecutionService agentExecutionService;
+  private final List<PreRunCheck> preRunChecks;
 
   @Override
   public UUID submit(String title, String description, AgentRole role, @Nullable UUID projectId) {
@@ -28,6 +31,7 @@ public class AgentOrchestratorImpl implements AgentOrchestrator {
   @Override
   public void run(UUID taskId, AgentRole role) {
     var task = taskQueryService.getById(taskId);
+    preRunChecks.forEach(check -> check.check(task.projectId()));
     agentExecutionService.execute(taskId, role, task.description());
   }
 }

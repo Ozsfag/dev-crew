@@ -1,7 +1,9 @@
 package org.blacksoil.devcrew.common.web;
 
+import java.time.format.DateTimeParseException;
 import org.blacksoil.devcrew.auth.domain.AuthException;
 import org.blacksoil.devcrew.common.exception.ConflictException;
+import org.blacksoil.devcrew.common.exception.DomainException;
 import org.blacksoil.devcrew.common.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -39,6 +41,19 @@ public class GlobalExceptionHandler {
             .findFirst()
             .orElse("Ошибка валидации");
     return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), message);
+  }
+
+  @ExceptionHandler(DomainException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorResponse handleDomain(DomainException ex) {
+    return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+  }
+
+  @ExceptionHandler(DateTimeParseException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorResponse handleDateTimeParse(DateTimeParseException ex) {
+    return new ErrorResponse(
+        HttpStatus.BAD_REQUEST.value(), "Неверный формат даты: " + ex.getParsedString());
   }
 
   @ExceptionHandler(UnsupportedOperationException.class)
