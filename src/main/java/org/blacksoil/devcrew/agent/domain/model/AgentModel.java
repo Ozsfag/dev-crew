@@ -1,7 +1,9 @@
-package org.blacksoil.devcrew.agent.domain;
+package org.blacksoil.devcrew.agent.domain.model;
 
 import java.time.Instant;
 import java.util.UUID;
+import org.blacksoil.devcrew.agent.domain.AgentRole;
+import org.blacksoil.devcrew.agent.domain.AgentStatus;
 
 /** Доменная модель агента. Immutable record — без Spring/JPA зависимостей. */
 public record AgentModel(

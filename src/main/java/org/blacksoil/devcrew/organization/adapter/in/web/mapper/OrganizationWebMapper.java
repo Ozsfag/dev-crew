@@ -2,8 +2,8 @@ package org.blacksoil.devcrew.organization.adapter.in.web.mapper;
 
 import org.blacksoil.devcrew.organization.adapter.in.web.dto.OrganizationResponse;
 import org.blacksoil.devcrew.organization.adapter.in.web.dto.ProjectResponse;
-import org.blacksoil.devcrew.organization.domain.OrganizationModel;
-import org.blacksoil.devcrew.organization.domain.ProjectModel;
+import org.blacksoil.devcrew.organization.domain.model.OrganizationModel;
+import org.blacksoil.devcrew.organization.domain.model.ProjectModel;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

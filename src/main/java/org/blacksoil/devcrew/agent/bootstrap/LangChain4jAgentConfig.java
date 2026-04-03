@@ -7,10 +7,10 @@ import org.blacksoil.devcrew.agent.adapter.out.llm.tools.FileTools;
 import org.blacksoil.devcrew.agent.adapter.out.llm.tools.GitTools;
 import org.blacksoil.devcrew.agent.adapter.out.llm.tools.GradleTools;
 import org.blacksoil.devcrew.agent.app.config.AgentProperties;
-import org.blacksoil.devcrew.agent.domain.BackendDevAgent;
-import org.blacksoil.devcrew.agent.domain.CodeReviewAgent;
-import org.blacksoil.devcrew.agent.domain.DevOpsAgent;
-import org.blacksoil.devcrew.agent.domain.QaAgent;
+import org.blacksoil.devcrew.agent.domain.agent.BackendDevAgent;
+import org.blacksoil.devcrew.agent.domain.agent.CodeReviewAgent;
+import org.blacksoil.devcrew.agent.domain.agent.DevOpsAgent;
+import org.blacksoil.devcrew.agent.domain.agent.QaAgent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

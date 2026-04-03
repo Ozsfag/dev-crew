@@ -14,7 +14,7 @@ import org.blacksoil.devcrew.billing.domain.UsageRecordModel;
 import org.blacksoil.devcrew.billing.domain.UsageRecordStore;
 import org.blacksoil.devcrew.organization.app.service.query.OrganizationQueryService;
 import org.blacksoil.devcrew.organization.domain.OrgPlan;
-import org.blacksoil.devcrew.organization.domain.OrganizationModel;
+import org.blacksoil.devcrew.organization.domain.model.OrganizationModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -5,8 +5,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.organization.adapter.out.persistence.mapper.OrganizationPersistenceMapper;
 import org.blacksoil.devcrew.organization.adapter.out.persistence.repository.OrganizationRepository;
-import org.blacksoil.devcrew.organization.domain.OrganizationModel;
-import org.blacksoil.devcrew.organization.domain.OrganizationStore;
+import org.blacksoil.devcrew.organization.domain.model.OrganizationModel;
+import org.blacksoil.devcrew.organization.domain.store.OrganizationStore;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 

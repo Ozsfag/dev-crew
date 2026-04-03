@@ -5,8 +5,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.auth.adapter.out.persistence.mapper.RefreshTokenPersistenceMapper;
 import org.blacksoil.devcrew.auth.adapter.out.persistence.repository.RefreshTokenRepository;
-import org.blacksoil.devcrew.auth.domain.RefreshTokenModel;
-import org.blacksoil.devcrew.auth.domain.RefreshTokenStore;
+import org.blacksoil.devcrew.auth.domain.model.RefreshTokenModel;
+import org.blacksoil.devcrew.auth.domain.store.RefreshTokenStore;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 

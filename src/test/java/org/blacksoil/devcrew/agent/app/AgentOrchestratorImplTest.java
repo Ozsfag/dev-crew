@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 import org.blacksoil.devcrew.agent.app.service.execution.AgentExecutionService;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
-import org.blacksoil.devcrew.agent.domain.PreRunCheck;
+import org.blacksoil.devcrew.agent.domain.check.PreRunCheck;
 import org.blacksoil.devcrew.common.exception.DomainException;
 import org.blacksoil.devcrew.task.app.service.command.TaskCommandService;
 import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;

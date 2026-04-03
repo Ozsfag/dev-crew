@@ -4,10 +4,10 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.common.exception.DomainException;
-import org.blacksoil.devcrew.organization.domain.OrganizationModel;
-import org.blacksoil.devcrew.organization.domain.OrganizationStore;
-import org.blacksoil.devcrew.organization.domain.ProjectModel;
-import org.blacksoil.devcrew.organization.domain.ProjectStore;
+import org.blacksoil.devcrew.organization.domain.model.OrganizationModel;
+import org.blacksoil.devcrew.organization.domain.model.ProjectModel;
+import org.blacksoil.devcrew.organization.domain.store.OrganizationStore;
+import org.blacksoil.devcrew.organization.domain.store.ProjectStore;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

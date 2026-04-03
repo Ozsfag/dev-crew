@@ -3,12 +3,12 @@ FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /app
 
 # Копируем только файлы для загрузки зависимостей — слой кешируется пока не изменится build.gradle
-COPY gradlew settings.gradle build.gradle ./
-COPY gradle ./gradle
+COPY ../gradlew settings.gradle build.gradle ./
+COPY ../gradle ./gradle
 RUN chmod +x gradlew && ./gradlew dependencies --no-daemon --quiet
 
 # Копируем исходники и собираем jar
-COPY src ./src
+COPY ../src ./src
 RUN ./gradlew bootJar --no-daemon -x test --quiet
 
 # ─── Stage 2: Runtime ─────────────────────────────────────────────────────────

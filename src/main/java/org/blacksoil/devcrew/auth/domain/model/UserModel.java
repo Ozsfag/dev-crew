@@ -1,7 +1,8 @@
-package org.blacksoil.devcrew.auth.domain;
+package org.blacksoil.devcrew.auth.domain.model;
 
 import java.time.Instant;
 import java.util.UUID;
+import org.blacksoil.devcrew.auth.domain.UserRole;
 
 public record UserModel(
     UUID id,

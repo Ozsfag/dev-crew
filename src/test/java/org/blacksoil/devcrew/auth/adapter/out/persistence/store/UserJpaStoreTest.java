@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
 import java.util.UUID;
-import org.blacksoil.devcrew.auth.domain.UserModel;
 import org.blacksoil.devcrew.auth.domain.UserRole;
+import org.blacksoil.devcrew.auth.domain.model.UserModel;
 import org.blacksoil.devcrew.common.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

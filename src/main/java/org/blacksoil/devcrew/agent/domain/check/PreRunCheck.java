@@ -1,4 +1,4 @@
-package org.blacksoil.devcrew.agent.domain;
+package org.blacksoil.devcrew.agent.domain.check;
 
 import java.util.UUID;
 

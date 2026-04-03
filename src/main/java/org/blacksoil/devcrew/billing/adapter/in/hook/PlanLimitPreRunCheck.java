@@ -4,7 +4,7 @@ import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.blacksoil.devcrew.agent.domain.PreRunCheck;
+import org.blacksoil.devcrew.agent.domain.check.PreRunCheck;
 import org.blacksoil.devcrew.billing.app.config.BillingProperties;
 import org.blacksoil.devcrew.billing.app.service.query.UsageQueryService;
 import org.blacksoil.devcrew.common.TimeProvider;

@@ -6,9 +6,9 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.agent.adapter.out.persistence.mapper.AgentPersistenceMapper;
 import org.blacksoil.devcrew.agent.adapter.out.persistence.repository.AgentRepository;
-import org.blacksoil.devcrew.agent.domain.AgentModel;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
-import org.blacksoil.devcrew.agent.domain.AgentStore;
+import org.blacksoil.devcrew.agent.domain.model.AgentModel;
+import org.blacksoil.devcrew.agent.domain.store.AgentStore;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 

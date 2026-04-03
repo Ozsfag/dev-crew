@@ -5,8 +5,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.auth.adapter.out.persistence.mapper.UserPersistenceMapper;
 import org.blacksoil.devcrew.auth.adapter.out.persistence.repository.UserRepository;
-import org.blacksoil.devcrew.auth.domain.UserModel;
-import org.blacksoil.devcrew.auth.domain.UserStore;
+import org.blacksoil.devcrew.auth.domain.model.UserModel;
+import org.blacksoil.devcrew.auth.domain.store.UserStore;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 

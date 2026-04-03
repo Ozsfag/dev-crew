@@ -4,7 +4,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
-import org.blacksoil.devcrew.agent.domain.PostAgentHook;
+import org.blacksoil.devcrew.agent.domain.hook.PostAgentHook;
 import org.blacksoil.devcrew.notification.app.config.TelegramProperties;
 import org.blacksoil.devcrew.notification.domain.NotificationPort;
 import org.springframework.stereotype.Component;

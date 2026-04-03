@@ -3,7 +3,7 @@ package org.blacksoil.devcrew.audit.adapter.in.hook;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
-import org.blacksoil.devcrew.agent.domain.PostAgentHook;
+import org.blacksoil.devcrew.agent.domain.hook.PostAgentHook;
 import org.blacksoil.devcrew.audit.app.service.command.AuditCommandService;
 import org.blacksoil.devcrew.audit.domain.AuditEventModel;
 import org.blacksoil.devcrew.common.TimeProvider;

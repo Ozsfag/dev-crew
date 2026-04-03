@@ -1,7 +1,7 @@
 package org.blacksoil.devcrew.organization.adapter.out.persistence.mapper;
 
 import org.blacksoil.devcrew.organization.adapter.out.persistence.entity.OrganizationEntity;
-import org.blacksoil.devcrew.organization.domain.OrganizationModel;
+import org.blacksoil.devcrew.organization.domain.model.OrganizationModel;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")

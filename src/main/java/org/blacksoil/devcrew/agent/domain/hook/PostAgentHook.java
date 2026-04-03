@@ -1,6 +1,7 @@
-package org.blacksoil.devcrew.agent.domain;
+package org.blacksoil.devcrew.agent.domain.hook;
 
 import java.util.UUID;
+import org.blacksoil.devcrew.agent.domain.AgentRole;
 
 /**
  * Extension point: вызывается после завершения агента. Реализуется другими bounded contexts

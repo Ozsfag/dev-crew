@@ -4,7 +4,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
-import org.blacksoil.devcrew.agent.domain.PostAgentHook;
+import org.blacksoil.devcrew.agent.domain.hook.PostAgentHook;
 import org.blacksoil.devcrew.billing.app.service.command.UsageRecordCommandService;
 import org.blacksoil.devcrew.organization.app.service.query.OrganizationQueryService;
 import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
