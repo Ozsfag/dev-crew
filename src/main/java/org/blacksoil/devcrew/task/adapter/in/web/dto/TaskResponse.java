@@ -1,10 +1,9 @@
 package org.blacksoil.devcrew.task.adapter.in.web.dto;
 
-import org.blacksoil.devcrew.agent.domain.AgentRole;
-import org.blacksoil.devcrew.task.domain.TaskStatus;
-
 import java.time.Instant;
 import java.util.UUID;
+import org.blacksoil.devcrew.agent.domain.AgentRole;
+import org.blacksoil.devcrew.task.domain.TaskStatus;
 
 public record TaskResponse(
     UUID id,
@@ -15,6 +14,4 @@ public record TaskResponse(
     TaskStatus status,
     String result,
     Instant createdAt,
-    Instant updatedAt
-) {
-}
+    Instant updatedAt) {}

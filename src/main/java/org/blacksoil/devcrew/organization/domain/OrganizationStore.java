@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface OrganizationStore {
-    OrganizationModel save(OrganizationModel organization);
-    Optional<OrganizationModel> findById(UUID id);
+  OrganizationModel save(OrganizationModel organization);
+
+  Optional<OrganizationModel> findById(UUID id);
 }

@@ -1,0 +1,16 @@
+package org.blacksoil.devcrew.task.adapter.out.persistence.repository;
+
+import java.util.List;
+import java.util.UUID;
+import org.blacksoil.devcrew.task.adapter.out.persistence.entity.TaskEntity;
+import org.blacksoil.devcrew.task.domain.TaskStatus;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface TaskRepository extends JpaRepository<TaskEntity, UUID> {
+
+  List<TaskEntity> findByStatus(TaskStatus status);
+
+  List<TaskEntity> findByParentTaskId(UUID parentTaskId);
+
+  List<TaskEntity> findByProjectId(UUID projectId);
+}

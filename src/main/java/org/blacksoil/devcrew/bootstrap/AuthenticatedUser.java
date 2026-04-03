@@ -1,15 +1,10 @@
 package org.blacksoil.devcrew.bootstrap;
 
+import java.util.UUID;
 import org.blacksoil.devcrew.auth.domain.UserRole;
 
-import java.util.UUID;
-
 /**
- * Кастомный principal — хранит userId, orgId и роль пользователя.
- * Кладётся в SecurityContext фильтром JwtAuthFilter.
+ * Кастомный principal — хранит userId, orgId и роль пользователя. Кладётся в SecurityContext
+ * фильтром JwtAuthFilter.
  */
-public record AuthenticatedUser(
-        UUID userId,
-        UUID orgId,
-        UserRole role
-) {}
+public record AuthenticatedUser(UUID userId, UUID orgId, UserRole role) {}

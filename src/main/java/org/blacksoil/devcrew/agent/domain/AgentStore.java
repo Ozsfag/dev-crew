@@ -4,16 +4,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Port-интерфейс хранилища агентов. Реализуется в adapter/out.
- */
+/** Port-интерфейс хранилища агентов. Реализуется в adapter/out. */
 public interface AgentStore {
 
-    AgentModel save(AgentModel agent);
+  AgentModel save(AgentModel agent);
 
-    Optional<AgentModel> findById(UUID id);
+  Optional<AgentModel> findById(UUID id);
 
-    Optional<AgentModel> findByRole(AgentRole role);
+  Optional<AgentModel> findByRole(AgentRole role);
 
-    List<AgentModel> findAll();
+  List<AgentModel> findAll();
 }

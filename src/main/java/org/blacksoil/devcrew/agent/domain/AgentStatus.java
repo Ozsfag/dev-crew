@@ -1,12 +1,10 @@
 package org.blacksoil.devcrew.agent.domain;
 
-/**
- * Текущий статус агента.
- */
+/** Текущий статус агента. */
 public enum AgentStatus {
-    IDLE,
-    RUNNING,
-    WAITING_FOR_APPROVAL,
-    COMPLETED,
-    FAILED
+  IDLE,
+  RUNNING,
+  WAITING_FOR_APPROVAL,
+  COMPLETED,
+  FAILED
 }

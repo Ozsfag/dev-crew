@@ -10,5 +10,4 @@ public record UserModel(
     String passwordHash,
     UserRole role,
     Instant createdAt,
-    Instant updatedAt
-) {}
+    Instant updatedAt) {}

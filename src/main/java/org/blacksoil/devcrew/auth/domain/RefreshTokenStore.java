@@ -5,9 +5,9 @@ import java.util.UUID;
 
 public interface RefreshTokenStore {
 
-    RefreshTokenModel save(RefreshTokenModel token);
+  RefreshTokenModel save(RefreshTokenModel token);
 
-    Optional<RefreshTokenModel> findByTokenHash(String tokenHash);
+  Optional<RefreshTokenModel> findByTokenHash(String tokenHash);
 
-    void revokeByUserId(UUID userId);
+  void revokeByUserId(UUID userId);
 }

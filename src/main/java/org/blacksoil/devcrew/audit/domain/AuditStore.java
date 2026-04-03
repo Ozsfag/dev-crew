@@ -6,9 +6,10 @@ import java.util.UUID;
 
 public interface AuditStore {
 
-    AuditEventModel save(AuditEventModel event);
+  AuditEventModel save(AuditEventModel event);
 
-    List<AuditEventModel> findByTimestampBetween(Instant from, Instant to);
+  List<AuditEventModel> findByTimestampBetween(Instant from, Instant to);
 
-    List<AuditEventModel> findByProjectIdAndTimestampBetween(UUID projectId, Instant from, Instant to);
+  List<AuditEventModel> findByProjectIdAndTimestampBetween(
+      UUID projectId, Instant from, Instant to);
 }

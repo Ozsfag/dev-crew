@@ -29,4 +29,4 @@ services:
     volumes:
       # Данные БД вне именованных volumes — удобно для бэкапов
       - /opt/dev-crew/pgdata:/var/lib/postgresql/data
-    ports: !reset []  # не пробрасываем postgres на сервере
+    ports: !reset [ ]  # не пробрасываем postgres на сервере

@@ -9,9 +9,8 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties({AgentProperties.class, SandboxProperties.class})
 public class AgentConfig {
 
-    @Bean
-    public SandboxPolicy sandboxPolicy(SandboxProperties properties) {
-        return new SandboxPolicy(properties.getRoot());
-    }
+  @Bean
+  public SandboxPolicy sandboxPolicy(SandboxProperties properties) {
+    return new SandboxPolicy(properties.getRoot());
+  }
 }
-

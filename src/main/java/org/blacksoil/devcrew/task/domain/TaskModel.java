@@ -1,13 +1,10 @@
 package org.blacksoil.devcrew.task.domain;
 
-import org.blacksoil.devcrew.agent.domain.AgentRole;
-
 import java.time.Instant;
 import java.util.UUID;
+import org.blacksoil.devcrew.agent.domain.AgentRole;
 
-/**
- * Доменная модель задачи. Immutable record.
- */
+/** Доменная модель задачи. Immutable record. */
 public record TaskModel(
     UUID id,
     UUID projectId,
@@ -18,6 +15,4 @@ public record TaskModel(
     TaskStatus status,
     String result,
     Instant createdAt,
-    Instant updatedAt
-) {
-}
+    Instant updatedAt) {}

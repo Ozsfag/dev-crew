@@ -5,7 +5,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ProjectStore {
-    ProjectModel save(ProjectModel project);
-    Optional<ProjectModel> findById(UUID id);
-    List<ProjectModel> findByOrgId(UUID orgId);
+  ProjectModel save(ProjectModel project);
+
+  Optional<ProjectModel> findById(UUID id);
+
+  List<ProjectModel> findByOrgId(UUID orgId);
 }

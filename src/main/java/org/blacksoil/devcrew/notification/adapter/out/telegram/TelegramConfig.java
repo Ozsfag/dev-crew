@@ -9,8 +9,8 @@ import org.springframework.web.client.RestClient;
 @EnableConfigurationProperties(TelegramProperties.class)
 public class TelegramConfig {
 
-    @Bean
-    public TelegramApiClient telegramApiClient(TelegramProperties properties) {
-        return new TelegramApiClientImpl(RestClient.create(), properties.getBotToken());
-    }
+  @Bean
+  public TelegramApiClient telegramApiClient(TelegramProperties properties) {
+    return new TelegramApiClientImpl(RestClient.create(), properties.getBotToken());
+  }
 }

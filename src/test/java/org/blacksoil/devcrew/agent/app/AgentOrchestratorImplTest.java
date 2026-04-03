@@ -1,5 +1,13 @@
 package org.blacksoil.devcrew.agent.app;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.util.UUID;
 import org.blacksoil.devcrew.agent.app.service.execution.AgentExecutionService;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.task.app.service.command.TaskCommandService;
@@ -12,71 +20,64 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Instant;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class AgentOrchestratorImplTest {
 
-    @Mock
-    private TaskCommandService taskCommandService;
+  @Mock private TaskCommandService taskCommandService;
 
-    @Mock
-    private AgentExecutionService agentExecutionService;
+  @Mock private AgentExecutionService agentExecutionService;
 
-    @Mock
-    private org.blacksoil.devcrew.task.app.service.query.TaskQueryService taskQueryService;
+  @Mock private org.blacksoil.devcrew.task.app.service.query.TaskQueryService taskQueryService;
 
-    @InjectMocks
-    private AgentOrchestratorImpl orchestrator;
+  @InjectMocks private AgentOrchestratorImpl orchestrator;
 
-    @Test
-    void submit_creates_task_and_returns_its_id() {
-        var expected = taskModel(UUID.randomUUID());
-        when(taskCommandService.create(any(), any(), any(), any(), any())).thenReturn(expected);
+  @Test
+  void submit_creates_task_and_returns_its_id() {
+    var expected = taskModel(UUID.randomUUID());
+    when(taskCommandService.create(any(), any(), any(), any(), any())).thenReturn(expected);
 
-        var taskId = orchestrator.submit("Write tests", "TDD for UserService", AgentRole.BACKEND_DEV, null);
+    var taskId =
+        orchestrator.submit("Write tests", "TDD for UserService", AgentRole.BACKEND_DEV, null);
 
-        assertThat(taskId).isEqualTo(expected.id());
-    }
+    assertThat(taskId).isEqualTo(expected.id());
+  }
 
-    @Test
-    void submit_creates_task_with_correct_role_and_no_parent() {
-        var expected = taskModel(UUID.randomUUID());
-        when(taskCommandService.create(any(), any(), any(), any(), any())).thenReturn(expected);
+  @Test
+  void submit_creates_task_with_correct_role_and_no_parent() {
+    var expected = taskModel(UUID.randomUUID());
+    when(taskCommandService.create(any(), any(), any(), any(), any())).thenReturn(expected);
 
-        orchestrator.submit("Write tests", "TDD for UserService", AgentRole.QA, null);
+    orchestrator.submit("Write tests", "TDD for UserService", AgentRole.QA, null);
 
-        var roleCaptor = ArgumentCaptor.<AgentRole>captor();
-        verify(taskCommandService).create(
-            eq("Write tests"), eq("TDD for UserService"),
-            roleCaptor.capture(), eq(null), eq(null)
-        );
-        assertThat(roleCaptor.getValue()).isEqualTo(AgentRole.QA);
-    }
+    var roleCaptor = ArgumentCaptor.<AgentRole>captor();
+    verify(taskCommandService)
+        .create(
+            eq("Write tests"), eq("TDD for UserService"), roleCaptor.capture(), eq(null), eq(null));
+    assertThat(roleCaptor.getValue()).isEqualTo(AgentRole.QA);
+  }
 
-    @Test
-    void run_fetches_task_description_and_delegates_to_execution_service() {
-        var taskId = UUID.randomUUID();
-        var task = taskModel(taskId);
-        when(taskQueryService.getById(taskId)).thenReturn(task);
+  @Test
+  void run_fetches_task_description_and_delegates_to_execution_service() {
+    var taskId = UUID.randomUUID();
+    var task = taskModel(taskId);
+    when(taskQueryService.getById(taskId)).thenReturn(task);
 
-        orchestrator.run(taskId, AgentRole.BACKEND_DEV);
+    orchestrator.run(taskId, AgentRole.BACKEND_DEV);
 
-        verify(agentExecutionService).execute(taskId, AgentRole.BACKEND_DEV, task.description());
-    }
+    verify(agentExecutionService).execute(taskId, AgentRole.BACKEND_DEV, task.description());
+  }
 
-    private TaskModel taskModel(UUID id) {
-        return new TaskModel(
-            id, null, null, "title", "description",
-            AgentRole.BACKEND_DEV, TaskStatus.PENDING, null,
-            Instant.now(), Instant.now()
-        );
-    }
+  private TaskModel taskModel(UUID id) {
+    return new TaskModel(
+        id,
+        null,
+        null,
+        "title",
+        "description",
+        AgentRole.BACKEND_DEV,
+        TaskStatus.PENDING,
+        null,
+        Instant.now(),
+        Instant.now());
+  }
 }

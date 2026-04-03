@@ -1,7 +1,7 @@
 package org.blacksoil.devcrew.organization.domain;
 
 public enum OrgPlan {
-    FREE,
-    PRO,
-    ENTERPRISE
+  FREE,
+  PRO,
+  ENTERPRISE
 }

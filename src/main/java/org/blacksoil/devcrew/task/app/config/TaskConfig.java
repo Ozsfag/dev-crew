@@ -5,5 +5,4 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableConfigurationProperties(TaskProperties.class)
-public class TaskConfig {
-}
+public class TaskConfig {}

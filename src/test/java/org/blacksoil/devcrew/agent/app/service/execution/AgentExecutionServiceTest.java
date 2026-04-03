@@ -1,6 +1,15 @@
 package org.blacksoil.devcrew.agent.app.service.execution;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.agent.domain.BackendDevAgent;
 import org.blacksoil.devcrew.agent.domain.CodeReviewAgent;
@@ -18,218 +27,217 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-
-
 @ExtendWith(MockitoExtension.class)
 class AgentExecutionServiceTest {
 
-    @Mock
-    private BackendDevAgent backendDevAgent;
+  @Mock private BackendDevAgent backendDevAgent;
 
-    @Mock
-    private QaAgent qaAgent;
+  @Mock private QaAgent qaAgent;
 
-    @Mock
-    private CodeReviewAgent codeReviewAgent;
+  @Mock private CodeReviewAgent codeReviewAgent;
 
-    @Mock
-    private DevOpsAgent devOpsAgent;
+  @Mock private DevOpsAgent devOpsAgent;
 
-    @Mock
-    private TaskQueryService taskQueryService;
+  @Mock private TaskQueryService taskQueryService;
 
-    @Mock
-    private TaskCommandService taskCommandService;
+  @Mock private TaskCommandService taskCommandService;
 
-    @Mock
-    private PostAgentHook postAgentHook;
+  @Mock private PostAgentHook postAgentHook;
 
-    private AgentExecutionService agentExecutionService;
-    private SimpleMeterRegistry meterRegistry;
+  private AgentExecutionService agentExecutionService;
+  private SimpleMeterRegistry meterRegistry;
 
-    @BeforeEach
-    void setUp() {
-        meterRegistry = new SimpleMeterRegistry();
-        // List<PostAgentHook> нельзя инжектировать через @InjectMocks из одного мока
-        agentExecutionService = new AgentExecutionService(
-            backendDevAgent, qaAgent, codeReviewAgent, devOpsAgent,
-            taskQueryService, taskCommandService, List.of(postAgentHook),
-            meterRegistry
-        );
-    }
+  @BeforeEach
+  void setUp() {
+    meterRegistry = new SimpleMeterRegistry();
+    // List<PostAgentHook> нельзя инжектировать через @InjectMocks из одного мока
+    agentExecutionService =
+        new AgentExecutionService(
+            backendDevAgent,
+            qaAgent,
+            codeReviewAgent,
+            devOpsAgent,
+            taskQueryService,
+            taskCommandService,
+            List.of(postAgentHook),
+            meterRegistry);
+  }
 
-    @Test
-    void execute_sets_task_in_progress_then_delegates_to_agent() {
-        var taskId = UUID.randomUUID();
-        var task = taskModel(taskId, TaskStatus.PENDING);
-        when(taskQueryService.getById(taskId)).thenReturn(task);
-        when(backendDevAgent.execute(any())).thenReturn("tests written");
-        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
-        when(taskCommandService.complete(any(), any())).thenReturn(task);
+  @Test
+  void execute_sets_task_in_progress_then_delegates_to_agent() {
+    var taskId = UUID.randomUUID();
+    var task = taskModel(taskId, TaskStatus.PENDING);
+    when(taskQueryService.getById(taskId)).thenReturn(task);
+    when(backendDevAgent.execute(any())).thenReturn("tests written");
+    when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+    when(taskCommandService.complete(any(), any())).thenReturn(task);
 
-        agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "write unit tests");
+    agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "write unit tests");
 
-        verify(taskCommandService).updateStatus(taskId, TaskStatus.IN_PROGRESS);
-        verify(backendDevAgent).execute("write unit tests");
-    }
+    verify(taskCommandService).updateStatus(taskId, TaskStatus.IN_PROGRESS);
+    verify(backendDevAgent).execute("write unit tests");
+  }
 
-    @Test
-    void execute_completes_task_with_agent_result() {
-        var taskId = UUID.randomUUID();
-        var task = taskModel(taskId, TaskStatus.IN_PROGRESS);
-        when(taskQueryService.getById(taskId)).thenReturn(task);
-        when(backendDevAgent.execute(any())).thenReturn("done: created FooTest.java");
-        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
-        when(taskCommandService.complete(any(), any())).thenReturn(task);
+  @Test
+  void execute_completes_task_with_agent_result() {
+    var taskId = UUID.randomUUID();
+    var task = taskModel(taskId, TaskStatus.IN_PROGRESS);
+    when(taskQueryService.getById(taskId)).thenReturn(task);
+    when(backendDevAgent.execute(any())).thenReturn("done: created FooTest.java");
+    when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+    when(taskCommandService.complete(any(), any())).thenReturn(task);
 
-        agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "write unit tests");
+    agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "write unit tests");
 
-        verify(taskCommandService).complete(taskId, "done: created FooTest.java");
-    }
+    verify(taskCommandService).complete(taskId, "done: created FooTest.java");
+  }
 
-    @Test
-    void execute_fails_task_when_agent_throws() {
-        var taskId = UUID.randomUUID();
-        var task = taskModel(taskId, TaskStatus.IN_PROGRESS);
-        when(taskQueryService.getById(taskId)).thenReturn(task);
-        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
-        when(backendDevAgent.execute(any())).thenThrow(new RuntimeException("LLM error"));
-        when(taskCommandService.fail(any(), any())).thenReturn(task);
+  @Test
+  void execute_fails_task_when_agent_throws() {
+    var taskId = UUID.randomUUID();
+    var task = taskModel(taskId, TaskStatus.IN_PROGRESS);
+    when(taskQueryService.getById(taskId)).thenReturn(task);
+    when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+    when(backendDevAgent.execute(any())).thenThrow(new RuntimeException("LLM error"));
+    when(taskCommandService.fail(any(), any())).thenReturn(task);
 
-        agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "write unit tests");
+    agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "write unit tests");
 
-        verify(taskCommandService).fail(eq(taskId), any());
-    }
+    verify(taskCommandService).fail(eq(taskId), any());
+  }
 
-    @Test
-    void execute_calls_post_hooks_after_completion() {
-        var taskId = UUID.randomUUID();
-        var task = taskModel(taskId, TaskStatus.PENDING);
-        when(taskQueryService.getById(taskId)).thenReturn(task);
-        when(backendDevAgent.execute(any())).thenReturn("result");
-        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
-        when(taskCommandService.complete(any(), any())).thenReturn(task);
+  @Test
+  void execute_calls_post_hooks_after_completion() {
+    var taskId = UUID.randomUUID();
+    var task = taskModel(taskId, TaskStatus.PENDING);
+    when(taskQueryService.getById(taskId)).thenReturn(task);
+    when(backendDevAgent.execute(any())).thenReturn("result");
+    when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+    when(taskCommandService.complete(any(), any())).thenReturn(task);
 
-        agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "task prompt");
+    agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "task prompt");
 
-        var hookCaptor = ArgumentCaptor.<String>captor();
-        verify(postAgentHook).onAgentCompleted(eq(taskId), eq(AgentRole.BACKEND_DEV), hookCaptor.capture());
-        assertThat(hookCaptor.getValue()).isEqualTo("result");
-    }
+    var hookCaptor = ArgumentCaptor.<String>captor();
+    verify(postAgentHook)
+        .onAgentCompleted(eq(taskId), eq(AgentRole.BACKEND_DEV), hookCaptor.capture());
+    assertThat(hookCaptor.getValue()).isEqualTo("result");
+  }
 
-    @Test
-    void execute_dispatches_DEVOPS_role_to_devOpsAgent() {
-        var taskId = UUID.randomUUID();
-        var task = taskModel(taskId, TaskStatus.PENDING);
-        when(taskQueryService.getById(taskId)).thenReturn(task);
-        when(devOpsAgent.execute(any())).thenReturn("OK: image built and pushed");
-        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
-        when(taskCommandService.complete(any(), any())).thenReturn(task);
+  @Test
+  void execute_dispatches_DEVOPS_role_to_devOpsAgent() {
+    var taskId = UUID.randomUUID();
+    var task = taskModel(taskId, TaskStatus.PENDING);
+    when(taskQueryService.getById(taskId)).thenReturn(task);
+    when(devOpsAgent.execute(any())).thenReturn("OK: image built and pushed");
+    when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+    when(taskCommandService.complete(any(), any())).thenReturn(task);
 
-        agentExecutionService.execute(taskId, AgentRole.DEVOPS, "build and push myapp:1.0");
+    agentExecutionService.execute(taskId, AgentRole.DEVOPS, "build and push myapp:1.0");
 
-        verify(devOpsAgent).execute("build and push myapp:1.0");
-    }
+    verify(devOpsAgent).execute("build and push myapp:1.0");
+  }
 
-    @Test
-    void execute_dispatches_CODE_REVIEWER_role_to_codeReviewAgent() {
-        var taskId = UUID.randomUUID();
-        var task = taskModel(taskId, TaskStatus.PENDING);
-        when(taskQueryService.getById(taskId)).thenReturn(task);
-        when(codeReviewAgent.execute(any())).thenReturn("## Review\n✅ APPROVE");
-        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
-        when(taskCommandService.complete(any(), any())).thenReturn(task);
+  @Test
+  void execute_dispatches_CODE_REVIEWER_role_to_codeReviewAgent() {
+    var taskId = UUID.randomUUID();
+    var task = taskModel(taskId, TaskStatus.PENDING);
+    when(taskQueryService.getById(taskId)).thenReturn(task);
+    when(codeReviewAgent.execute(any())).thenReturn("## Review\n✅ APPROVE");
+    when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+    when(taskCommandService.complete(any(), any())).thenReturn(task);
 
-        agentExecutionService.execute(taskId, AgentRole.CODE_REVIEWER, "review PR #42");
+    agentExecutionService.execute(taskId, AgentRole.CODE_REVIEWER, "review PR #42");
 
-        verify(codeReviewAgent).execute("review PR #42");
-    }
+    verify(codeReviewAgent).execute("review PR #42");
+  }
 
-    @Test
-    void execute_dispatches_QA_role_to_qaAgent() {
-        var taskId = UUID.randomUUID();
-        var task = taskModel(taskId, TaskStatus.PENDING);
-        when(taskQueryService.getById(taskId)).thenReturn(task);
-        when(qaAgent.execute(any())).thenReturn("tests written: 15 passing");
-        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
-        when(taskCommandService.complete(any(), any())).thenReturn(task);
+  @Test
+  void execute_dispatches_QA_role_to_qaAgent() {
+    var taskId = UUID.randomUUID();
+    var task = taskModel(taskId, TaskStatus.PENDING);
+    when(taskQueryService.getById(taskId)).thenReturn(task);
+    when(qaAgent.execute(any())).thenReturn("tests written: 15 passing");
+    when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+    when(taskCommandService.complete(any(), any())).thenReturn(task);
 
-        agentExecutionService.execute(taskId, AgentRole.QA, "write tests for UserService");
+    agentExecutionService.execute(taskId, AgentRole.QA, "write tests for UserService");
 
-        verify(qaAgent).execute("write tests for UserService");
-    }
+    verify(qaAgent).execute("write tests for UserService");
+  }
 
-    @Test
-    void execute_increments_COMPLETED_counter_on_success() {
-        var taskId = UUID.randomUUID();
-        var task = taskModel(taskId, TaskStatus.PENDING);
-        when(taskQueryService.getById(taskId)).thenReturn(task);
-        when(backendDevAgent.execute(any())).thenReturn("done");
-        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
-        when(taskCommandService.complete(any(), any())).thenReturn(task);
+  @Test
+  void execute_increments_COMPLETED_counter_on_success() {
+    var taskId = UUID.randomUUID();
+    var task = taskModel(taskId, TaskStatus.PENDING);
+    when(taskQueryService.getById(taskId)).thenReturn(task);
+    when(backendDevAgent.execute(any())).thenReturn("done");
+    when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+    when(taskCommandService.complete(any(), any())).thenReturn(task);
 
-        agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "prompt");
+    agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "prompt");
 
-        var counter = meterRegistry.find("devcrew.task.total")
+    var counter =
+        meterRegistry
+            .find("devcrew.task.total")
             .tag("status", "COMPLETED")
             .tag("role", AgentRole.BACKEND_DEV.name())
             .counter();
-        assertThat(counter).isNotNull();
-        assertThat(counter.count()).isEqualTo(1.0);
-    }
+    assertThat(counter).isNotNull();
+    assertThat(counter.count()).isEqualTo(1.0);
+  }
 
-    @Test
-    void execute_increments_FAILED_counter_on_exception() {
-        var taskId = UUID.randomUUID();
-        var task = taskModel(taskId, TaskStatus.PENDING);
-        when(taskQueryService.getById(taskId)).thenReturn(task);
-        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
-        when(backendDevAgent.execute(any())).thenThrow(new RuntimeException("LLM error"));
-        when(taskCommandService.fail(any(), any())).thenReturn(task);
+  @Test
+  void execute_increments_FAILED_counter_on_exception() {
+    var taskId = UUID.randomUUID();
+    var task = taskModel(taskId, TaskStatus.PENDING);
+    when(taskQueryService.getById(taskId)).thenReturn(task);
+    when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+    when(backendDevAgent.execute(any())).thenThrow(new RuntimeException("LLM error"));
+    when(taskCommandService.fail(any(), any())).thenReturn(task);
 
-        agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "prompt");
+    agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "prompt");
 
-        var counter = meterRegistry.find("devcrew.task.total")
+    var counter =
+        meterRegistry
+            .find("devcrew.task.total")
             .tag("status", "FAILED")
             .tag("role", AgentRole.BACKEND_DEV.name())
             .counter();
-        assertThat(counter).isNotNull();
-        assertThat(counter.count()).isEqualTo(1.0);
-    }
+    assertThat(counter).isNotNull();
+    assertThat(counter.count()).isEqualTo(1.0);
+  }
 
-    @Test
-    void execute_records_agent_duration_timer_on_success() {
-        var taskId = UUID.randomUUID();
-        var task = taskModel(taskId, TaskStatus.PENDING);
-        when(taskQueryService.getById(taskId)).thenReturn(task);
-        when(backendDevAgent.execute(any())).thenReturn("done");
-        when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
-        when(taskCommandService.complete(any(), any())).thenReturn(task);
+  @Test
+  void execute_records_agent_duration_timer_on_success() {
+    var taskId = UUID.randomUUID();
+    var task = taskModel(taskId, TaskStatus.PENDING);
+    when(taskQueryService.getById(taskId)).thenReturn(task);
+    when(backendDevAgent.execute(any())).thenReturn("done");
+    when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+    when(taskCommandService.complete(any(), any())).thenReturn(task);
 
-        agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "prompt");
+    agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "prompt");
 
-        var timer = meterRegistry.find("devcrew.agent.duration")
+    var timer =
+        meterRegistry
+            .find("devcrew.agent.duration")
             .tag("role", AgentRole.BACKEND_DEV.name())
             .timer();
-        assertThat(timer).isNotNull();
-        assertThat(timer.count()).isEqualTo(1);
-    }
+    assertThat(timer).isNotNull();
+    assertThat(timer.count()).isEqualTo(1);
+  }
 
-    private TaskModel taskModel(UUID id, TaskStatus status) {
-        return new TaskModel(
-            id, null, null, "title", "description",
-            AgentRole.BACKEND_DEV, status, null,
-            Instant.now(), Instant.now()
-        );
-    }
+  private TaskModel taskModel(UUID id, TaskStatus status) {
+    return new TaskModel(
+        id,
+        null,
+        null,
+        "title",
+        "description",
+        AgentRole.BACKEND_DEV,
+        status,
+        null,
+        Instant.now(),
+        Instant.now());
+  }
 }

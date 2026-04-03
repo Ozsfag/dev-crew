@@ -5,11 +5,11 @@ import java.util.UUID;
 
 public interface UserStore {
 
-    UserModel save(UserModel user);
+  UserModel save(UserModel user);
 
-    Optional<UserModel> findByEmail(String email);
+  Optional<UserModel> findByEmail(String email);
 
-    Optional<UserModel> findById(UUID id);
+  Optional<UserModel> findById(UUID id);
 
-    boolean existsAny();
+  boolean existsAny();
 }

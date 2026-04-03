@@ -9,5 +9,4 @@ public record RefreshTokenModel(
     String tokenHash,
     Instant expiresAt,
     boolean revoked,
-    Instant createdAt
-) {}
+    Instant createdAt) {}

@@ -10,10 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuditCommandService {
 
-    private final AuditStore auditStore;
+  private final AuditStore auditStore;
 
-    @Transactional
-    public void record(AuditEventModel event) {
-        auditStore.save(event);
-    }
+  @Transactional
+  public void record(AuditEventModel event) {
+    auditStore.save(event);
+  }
 }

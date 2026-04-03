@@ -4,9 +4,4 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record ProjectResponse(
-        UUID id,
-        UUID orgId,
-        String name,
-        String repoPath,
-        Instant createdAt
-) {}
+    UUID id, UUID orgId, String name, String repoPath, Instant createdAt) {}

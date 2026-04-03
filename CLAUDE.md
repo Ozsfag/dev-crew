@@ -79,19 +79,24 @@ organization/
 └── domain/               ← OrganizationModel.java, OrganizationStore.java (port-интерфейс)
 ```
 
-| Тип | Подпакет |
-|-----|---------|
-| `@RestController` | `adapter/in/web/controller/` |
-| `*WebMapper` (MapStruct) | `adapter/in/web/mapper/` |
-| `*Request` / `*Response` | `adapter/in/web/dto/` |
-| `@Entity` | `adapter/out/persistence/entity/` |
-| `*PersistenceMapper` | `adapter/out/persistence/mapper/` |
-| `*Repository` (Spring Data) | `adapter/out/persistence/repository/` |
-| `*JpaStore` (реализация порта) | `adapter/out/persistence/store/` |
-| `*Store` (port-интерфейс) | `domain/` |
-| `*Model` (domain record) | `domain/` |
+| Тип                                        | Подпакет                              |
+|--------------------------------------------|---------------------------------------|
+| `@RestController`                          | `adapter/in/web/controller/`          |
+| `@Mapper / *WebMapper` (MapStruct)         | `adapter/in/web/mapper/`              |
+| `*Request` / `*Response`                   | `adapter/in/web/dto/`                 |
+| `@Entity`                                  | `adapter/out/persistence/entity/`     |
+| `@Mapper / *PersistenceMapper` (MapStruct) | `adapter/out/persistence/mapper/`     |
+| `@Repositoty / *Repository` (Spring Data)  | `adapter/out/persistence/repository/` |
+| `*JpaStore` (реализация порта)             | `adapter/out/persistence/store/`      |
+| `*Store` (port-интерфейс)                  | `domain/store/`                       |
+| `*Model` (domain record)                   | `domain/model/`                       |
+| `*Orchestrator` (port-интерфейс)           | `domain/orchestrator/`                |
+| `*Agent` (domain port)                     | `domain/agent/`                       |
+| `*Hook`  (domain)                          | `domain/hook/`                        |
+| `*Exception` (domain)                      | `domain/exception`                    |
 
-**Запрещено**: класть в одну папку разнородные типы (например, `Entity` + `Repository` + `JpaStore` в одном плоском `persistence/`).
+**Запрещено**: класть в одну папку разнородные типы (например, `Entity` + `Repository` + `JpaStore` в одном плоском
+`persistence/`).
 
 ---
 
@@ -105,7 +110,7 @@ organization/
 | `*Request` / `*Response` | DTO в web-слое                                      |
 | `*Store`                 | Port-интерфейс (domain)                             |
 | `*JpaStore`              | Реализация Store (adapter/out)                      |
-| `*Repository`            | Spring Data interface                               |
+| `*Repository`            | Spring Data JPA interface                           |
 | `*Orchestrator`          | Координирует несколько сервисов                     |
 | `*Mapper`                | MapStruct-интерфейс (componentModel = "spring")     |
 | `*Factory`               | Конструирует domain-объекты                         |
@@ -132,10 +137,12 @@ public class AgentProperties {
 // app/config/AgentConfig.java
 @Configuration
 @EnableConfigurationProperties(AgentProperties.class)
-public class AgentConfig {}
+public class AgentConfig {
+}
 ```
 
 **application.yml** — все свойства объявлены явно, даже если равны дефолту:
+
 ```yaml
 devcrew:
   agent:
@@ -156,6 +163,7 @@ devcrew:
 ## LangChain4j паттерны
 
 ### AiService — декларативный агент
+
 ```java
 // domain-порт агента
 public interface BackendDevAgent {
@@ -166,25 +174,27 @@ public interface BackendDevAgent {
 @Bean
 public BackendDevAgent backendDevAgent(ChatLanguageModel model) {
     return AiServices.builder(BackendDevAgent.class)
-        .chatLanguageModel(model)
-        .tools(fileTools, gradleTools, gitTools)
-        .build();
+            .chatLanguageModel(model)
+            .tools(fileTools, gradleTools, gitTools)
+            .build();
 }
 ```
 
 ### Tools — инструменты агента
+
 ```java
 // adapter/out/tool/
 public class GradleTools {
     @Tool("Run Gradle tests and return output")
-    public String runTests(String projectPath) { ... }
+    public String runTests(String projectPath) { ...}
 
     @Tool("Build the Gradle project")
-    public String buildProject(String projectPath) { ... }
+    public String buildProject(String projectPath) { ...}
 }
 ```
 
 ### PostAgentHook — расширение без модификации
+
 ```java
 // Agent-модуль объявляет интерфейс:
 public interface PostAgentHook {
@@ -198,6 +208,7 @@ public interface PostAgentHook {
 ## Ключевые паттерны
 
 ### Маппинг в три слоя
+
 ```
 domain Model ←→ PersistenceMapper ←→ Entity
 domain Model ←→ AppMapper         ←→ AppDto
@@ -205,11 +216,13 @@ AppDto       ←→ WebMapper         ←→ Request/Response
 ```
 
 ### Транзакции
+
 - `@Transactional` — только на `app/service/**` и `adapter/out/.../store/**`
 - `@Transactional(readOnly = true)` — на query-сервисах
 - В контроллерах — **никогда**
 
 ### Тестируемость времени
+
 Используй `TimeProvider` вместо `Instant.now()` / `LocalDate.now()` напрямую.
 
 ---
@@ -220,19 +233,21 @@ AppDto       ←→ WebMapper         ←→ Request/Response
 
 ### Уровень 1: Классы
 
-| Принцип | Правило | Пример в проекте |
-|---------|---------|-----------------|
-| **SRP** | Один мотив для изменения | `AgentExecutionService` выполняет задачи; `AgentQueryService` читает статус — разные классы |
-| **OCP** | Открыт для расширения, закрыт для модификации | `PostAgentHook` — новые реакции на завершение агента без правки ядра |
-| **LSP** | Подтип подставляем везде, где ожидается тип | `AgentJpaStore` реализует `AgentStore` — любой сервис, зависящий от `AgentStore`, работает с любой реализацией |
-| **ISP** | Узкие интерфейсы вместо «God-интерфейса» | Отдельные `*Store`, `*QueryPort` с минимальным контрактом; никакой лишней зависимости |
-| **DIP** | Зависимость от абстракций, не конкреций | Сервисы получают `AgentStore`, а не `AgentJpaStore`; LangChain4j-агенты инжектируются как domain-интерфейс (`BackendDevAgent`), не как `AiService` |
+| Принцип | Правило                                       | Пример в проекте                                                                                                                                   |
+|---------|-----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| **SRP** | Один мотив для изменения                      | `AgentExecutionService` выполняет задачи; `AgentQueryService` читает статус — разные классы                                                        |
+| **OCP** | Открыт для расширения, закрыт для модификации | `PostAgentHook` — новые реакции на завершение агента без правки ядра                                                                               |
+| **LSP** | Подтип подставляем везде, где ожидается тип   | `AgentJpaStore` реализует `AgentStore` — любой сервис, зависящий от `AgentStore`, работает с любой реализацией                                     |
+| **ISP** | Узкие интерфейсы вместо «God-интерфейса»      | Отдельные `*Store`, `*QueryPort` с минимальным контрактом; никакой лишней зависимости                                                              |
+| **DIP** | Зависимость от абстракций, не конкреций       | Сервисы получают `AgentStore`, а не `AgentJpaStore`; LangChain4j-агенты инжектируются как domain-интерфейс (`BackendDevAgent`), не как `AiService` |
 
 ### Уровень 2: Компоненты (bounded contexts)
 
-- **SRP**: каждый context (`agent`, `task`, `auth`, `audit`, `notification`) отвечает за одну область. Изменение в `audit` не затрагивает `agent`.
+- **SRP**: каждый context (`agent`, `task`, `auth`, `audit`, `notification`) отвечает за одну область. Изменение в
+  `audit` не затрагивает `agent`.
 - **OCP**: новые поведения добавляются через порты (`PostAgentHook`), а не через изменение существующих сервисов.
-- **Stable Abstractions**: `domain/` — только интерфейсы и records (стабильные, почти не меняются). `adapter/out/` — конкретные реализации (нестабильные, меняются чаще).
+- **Stable Abstractions**: `domain/` — только интерфейсы и records (стабильные, почти не меняются). `adapter/out/` —
+  конкретные реализации (нестабильные, меняются чаще).
 
 ### Уровень 3: Зависимости между компонентами
 
@@ -242,15 +257,20 @@ audit        → agent → domain
           (стрелка = "зависит от")
 ```
 
-- **Acyclic Dependencies Principle (ADP)**: нет циклов между контекстами. `notification` знает об `agent` через `PostAgentHook`; `agent` не знает о `notification`. Циклы = запрещены.
-- **Stable Dependencies Principle (SDP)**: нестабильные модули (adapters, конкретные context-ы) зависят от стабильных (domain-интерфейсы). Нарушение фиксирует ArchUnit — красный тест.
-- **Stable Abstractions Principle (SAP)**: самые стабильные пакеты — самые абстрактные. `domain/` никогда не зависит от Spring или JPA. `adapter/out/` зависит от всего, но от него не зависит никто внутри проекта.
+- **Acyclic Dependencies Principle (ADP)**: нет циклов между контекстами. `notification` знает об `agent` через
+  `PostAgentHook`; `agent` не знает о `notification`. Циклы = запрещены.
+- **Stable Dependencies Principle (SDP)**: нестабильные модули (adapters, конкретные context-ы) зависят от стабильных (
+  domain-интерфейсы). Нарушение фиксирует ArchUnit — красный тест.
+- **Stable Abstractions Principle (SAP)**: самые стабильные пакеты — самые абстрактные. `domain/` никогда не зависит от
+  Spring или JPA. `adapter/out/` зависит от всего, но от него не зависит никто внутри проекта.
 
 **Запрещено**:
+
 - **НЕ** создавать циклические зависимости между bounded contexts
 - **НЕ** делать один класс/сервис ответственным за несколько несвязанных областей
 - **НЕ** объявлять «God-интерфейс» со всеми возможными методами — дробить на узкие порты
-- **НЕ** зависеть от конкретных реализаций (`*JpaStore`, `*AiService`) — только от абстракций (`*Store`, domain-интерфейсов)
+- **НЕ** зависеть от конкретных реализаций (`*JpaStore`, `*AiService`) — только от абстракций (`*Store`,
+  domain-интерфейсов)
 
 ---
 
@@ -275,8 +295,10 @@ audit        → agent → domain
 - Не проектировать под гипотетические сценарии, которых нет в требованиях
 
 **Запрещено**:
+
 - **НЕ** добавлять `enabled: boolean` / `version: int` без явной необходимости (YAGNI)
-- **НЕ** создавать интерфейс, если есть только одна реализация и вторая не планируется — кроме port-интерфейсов в `domain/` (YAGNI + KISS)
+- **НЕ** создавать интерфейс, если есть только одна реализация и вторая не планируется — кроме port-интерфейсов в
+  `domain/` (YAGNI + KISS)
 - **НЕ** копировать блок кода в третий раз без выноса в метод (DRY)
 - **НЕ** писать «универсальный» обработчик, когда нужен конкретный (KISS)
 
@@ -291,16 +313,19 @@ audit        → agent → domain
 | Integration             | `@SpringBootTest` + Testcontainers (профиль `tc`)                      |
 
 **Правила тестов**:
+
 - Тест живёт в том же подпакете, что и тестируемый класс
 - `ArgumentCaptor` в Mockito 5: использовать `ArgumentCaptor.captor()`, не `ArgumentCaptor.forClass()`
 - Для unit-тестов `@ConfigurationProperties`-классов: создавать через `new FooProperties()`
 
 **TDD workflow**:
+
 1. Тест → красный
 2. Минимальная реализация → зелёный
 3. Рефакторинг → зелёный
 
 **Запуск**:
+
 ```bash
 ./gradlew test                              # unit-тесты (без БД)
 ./gradlew test -Dspring.profiles.active=tc  # интеграционные с Testcontainers
@@ -317,10 +342,11 @@ audit        → agent → domain
 ---
 
 ## Стиль кода
-
+- используй Google java format style для форматирования
 - Отступы: 4 пробела (Java), 2 пробела (YAML / Gradle)
 - Строки: LF, UTF-8, финальный newline
-- Lombok: `@RequiredArgsConstructor` для DI, `@Builder` там где нужен builder, `@Data` для `*Properties`, для утилитных классов `@UtilityClass`. Используй Lombok на полную.
+- Lombok: `@RequiredArgsConstructor` для DI, `@Builder` там где нужен builder, `@Data` для `*Properties`, для утилитных
+  классов `@UtilityClass`. Используй Lombok на полную.
 - MapStruct: для маппинга между слоями, `componentModel = "spring"`
 - Комментарии в коде — **на русском**
 - Без `I`-префикса у интерфейсов
@@ -341,17 +367,20 @@ audit        → agent → domain
 ## Чего НЕ делать
 
 ### Архитектура
+
 - **НЕ** добавлять JPA/Spring-аннотации в `domain/`
 - **НЕ** вызывать `*Store` / `*Repository` напрямую из контроллеров
 - **НЕ** нарушать направление зависимостей: `adapter → app → domain`
 - **НЕ** хардкодить ключи API, токены, модели — только через `*Properties` + env vars
 
 ### Код
+
 - **НЕ** хардкодить числа, строки-шаблоны, флаги
 - **НЕ** использовать `Instant.now()` / `LocalDate.now()` напрямую — только `TimeProvider`
 - **НЕ** добавлять `@Transactional` в контроллеры
 
 ### Тесты
+
 - **НЕ** писать реализацию до теста (TDD)
 - **НЕ** класть тест в другой подпакет, чем тестируемый класс
 - **НЕ** использовать `ArgumentCaptor.forClass()` — только `ArgumentCaptor.captor()`

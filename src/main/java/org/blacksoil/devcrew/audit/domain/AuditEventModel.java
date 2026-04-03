@@ -10,5 +10,4 @@ public record AuditEventModel(
     String action,
     UUID entityId,
     String details,
-    Instant timestamp
-) {}
+    Instant timestamp) {}
