@@ -19,6 +19,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+  private static final String BEARER_PREFIX = "Bearer ";
+
   private final JwtService jwtService;
 
   @Override
@@ -26,12 +28,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, @NotNull FilterChain filterChain)
       throws ServletException, IOException {
     var authHeader = request.getHeader("Authorization");
-    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+    if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
       filterChain.doFilter(request, response);
       return;
     }
 
-    var token = authHeader.substring(7);
+    var token = authHeader.substring(BEARER_PREFIX.length());
     try {
       jwtService.validateAccessToken(token);
       var userId = jwtService.extractUserId(token);

@@ -13,10 +13,6 @@ import java.util.UUID;
 import org.blacksoil.devcrew.agent.app.config.RateLimitProperties;
 import org.blacksoil.devcrew.agent.app.policy.RateLimitPolicy;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
-import org.blacksoil.devcrew.agent.domain.agent.BackendDevAgent;
-import org.blacksoil.devcrew.agent.domain.agent.CodeReviewAgent;
-import org.blacksoil.devcrew.agent.domain.agent.DevOpsAgent;
-import org.blacksoil.devcrew.agent.domain.agent.QaAgent;
 import org.blacksoil.devcrew.agent.domain.hook.PostAgentHook;
 import org.blacksoil.devcrew.common.TimeProvider;
 import org.blacksoil.devcrew.task.app.service.command.TaskCommandService;
@@ -33,13 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AgentExecutionServiceTest {
 
-  @Mock private BackendDevAgent backendDevAgent;
-
-  @Mock private QaAgent qaAgent;
-
-  @Mock private CodeReviewAgent codeReviewAgent;
-
-  @Mock private DevOpsAgent devOpsAgent;
+  @Mock private AgentDispatcher agentDispatcher;
 
   @Mock private TaskQueryService taskQueryService;
 
@@ -56,13 +46,9 @@ class AgentExecutionServiceTest {
   void setUp() {
     meterRegistry = new SimpleMeterRegistry();
     var rateLimitPolicy = new RateLimitPolicy(new RateLimitProperties());
-    // List<PostAgentHook> нельзя инжектировать через @InjectMocks из одного мока
     agentExecutionService =
         new AgentExecutionService(
-            backendDevAgent,
-            qaAgent,
-            codeReviewAgent,
-            devOpsAgent,
+            agentDispatcher,
             taskQueryService,
             taskCommandService,
             List.of(postAgentHook),
@@ -72,26 +58,26 @@ class AgentExecutionServiceTest {
   }
 
   @Test
-  void execute_sets_task_in_progress_then_delegates_to_agent() {
+  void execute_sets_task_in_progress_then_delegates_to_dispatcher() {
     var taskId = UUID.randomUUID();
     var task = taskModel(taskId, TaskStatus.PENDING);
     when(taskQueryService.getById(taskId)).thenReturn(task);
-    when(backendDevAgent.execute(any())).thenReturn("tests written");
+    when(agentDispatcher.dispatch(any(), any())).thenReturn("tests written");
     when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
     when(taskCommandService.complete(any(), any())).thenReturn(task);
 
     agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "write unit tests");
 
     verify(taskCommandService).updateStatus(taskId, TaskStatus.IN_PROGRESS);
-    verify(backendDevAgent).execute("write unit tests");
+    verify(agentDispatcher).dispatch(AgentRole.BACKEND_DEV, "write unit tests");
   }
 
   @Test
-  void execute_completes_task_with_agent_result() {
+  void execute_completes_task_with_dispatcher_result() {
     var taskId = UUID.randomUUID();
     var task = taskModel(taskId, TaskStatus.IN_PROGRESS);
     when(taskQueryService.getById(taskId)).thenReturn(task);
-    when(backendDevAgent.execute(any())).thenReturn("done: created FooTest.java");
+    when(agentDispatcher.dispatch(any(), any())).thenReturn("done: created FooTest.java");
     when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
     when(taskCommandService.complete(any(), any())).thenReturn(task);
 
@@ -101,12 +87,12 @@ class AgentExecutionServiceTest {
   }
 
   @Test
-  void execute_fails_task_when_agent_throws() {
+  void execute_fails_task_when_dispatcher_throws() {
     var taskId = UUID.randomUUID();
     var task = taskModel(taskId, TaskStatus.IN_PROGRESS);
     when(taskQueryService.getById(taskId)).thenReturn(task);
     when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
-    when(backendDevAgent.execute(any())).thenThrow(new RuntimeException("LLM error"));
+    when(agentDispatcher.dispatch(any(), any())).thenThrow(new RuntimeException("LLM error"));
     when(taskCommandService.fail(any(), any())).thenReturn(task);
 
     agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "write unit tests");
@@ -119,7 +105,7 @@ class AgentExecutionServiceTest {
     var taskId = UUID.randomUUID();
     var task = taskModel(taskId, TaskStatus.PENDING);
     when(taskQueryService.getById(taskId)).thenReturn(task);
-    when(backendDevAgent.execute(any())).thenReturn("result");
+    when(agentDispatcher.dispatch(any(), any())).thenReturn("result");
     when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
     when(taskCommandService.complete(any(), any())).thenReturn(task);
 
@@ -132,45 +118,61 @@ class AgentExecutionServiceTest {
   }
 
   @Test
-  void execute_dispatches_DEVOPS_role_to_devOpsAgent() {
+  void execute_dispatches_DEVOPS_role_to_dispatcher() {
     var taskId = UUID.randomUUID();
     var task = taskModel(taskId, TaskStatus.PENDING);
     when(taskQueryService.getById(taskId)).thenReturn(task);
-    when(devOpsAgent.execute(any())).thenReturn("OK: image built and pushed");
+    when(agentDispatcher.dispatch(eq(AgentRole.DEVOPS), any())).thenReturn("OK: image built");
     when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
     when(taskCommandService.complete(any(), any())).thenReturn(task);
 
     agentExecutionService.execute(taskId, AgentRole.DEVOPS, "build and push myapp:1.0");
 
-    verify(devOpsAgent).execute("build and push myapp:1.0");
+    verify(agentDispatcher).dispatch(AgentRole.DEVOPS, "build and push myapp:1.0");
   }
 
   @Test
-  void execute_dispatches_CODE_REVIEWER_role_to_codeReviewAgent() {
+  void execute_dispatches_CODE_REVIEWER_role_to_dispatcher() {
     var taskId = UUID.randomUUID();
     var task = taskModel(taskId, TaskStatus.PENDING);
     when(taskQueryService.getById(taskId)).thenReturn(task);
-    when(codeReviewAgent.execute(any())).thenReturn("## Review\n✅ APPROVE");
+    when(agentDispatcher.dispatch(eq(AgentRole.CODE_REVIEWER), any()))
+        .thenReturn("## Review\n✅ APPROVE");
     when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
     when(taskCommandService.complete(any(), any())).thenReturn(task);
 
     agentExecutionService.execute(taskId, AgentRole.CODE_REVIEWER, "review PR #42");
 
-    verify(codeReviewAgent).execute("review PR #42");
+    verify(agentDispatcher).dispatch(AgentRole.CODE_REVIEWER, "review PR #42");
   }
 
   @Test
-  void execute_dispatches_QA_role_to_qaAgent() {
+  void execute_dispatches_QA_role_to_dispatcher() {
     var taskId = UUID.randomUUID();
     var task = taskModel(taskId, TaskStatus.PENDING);
     when(taskQueryService.getById(taskId)).thenReturn(task);
-    when(qaAgent.execute(any())).thenReturn("tests written: 15 passing");
+    when(agentDispatcher.dispatch(eq(AgentRole.QA), any())).thenReturn("tests written: 15 passing");
     when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
     when(taskCommandService.complete(any(), any())).thenReturn(task);
 
     agentExecutionService.execute(taskId, AgentRole.QA, "write tests for UserService");
 
-    verify(qaAgent).execute("write tests for UserService");
+    verify(agentDispatcher).dispatch(AgentRole.QA, "write tests for UserService");
+  }
+
+  @Test
+  void execute_dispatches_DOC_WRITER_role_to_dispatcher() {
+    var taskId = UUID.randomUUID();
+    var task = taskModel(taskId, TaskStatus.PENDING);
+    when(taskQueryService.getById(taskId)).thenReturn(task);
+    when(agentDispatcher.dispatch(eq(AgentRole.DOC_WRITER), any()))
+        .thenReturn("# API Documentation\n...");
+    when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+    when(taskCommandService.complete(any(), any())).thenReturn(task);
+
+    agentExecutionService.execute(taskId, AgentRole.DOC_WRITER, "document PaymentService");
+
+    verify(agentDispatcher).dispatch(AgentRole.DOC_WRITER, "document PaymentService");
   }
 
   @Test
@@ -178,7 +180,7 @@ class AgentExecutionServiceTest {
     var taskId = UUID.randomUUID();
     var task = taskModel(taskId, TaskStatus.PENDING);
     when(taskQueryService.getById(taskId)).thenReturn(task);
-    when(backendDevAgent.execute(any())).thenReturn("done");
+    when(agentDispatcher.dispatch(any(), any())).thenReturn("done");
     when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
     when(taskCommandService.complete(any(), any())).thenReturn(task);
 
@@ -200,7 +202,7 @@ class AgentExecutionServiceTest {
     var task = taskModel(taskId, TaskStatus.PENDING);
     when(taskQueryService.getById(taskId)).thenReturn(task);
     when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
-    when(backendDevAgent.execute(any())).thenThrow(new RuntimeException("LLM error"));
+    when(agentDispatcher.dispatch(any(), any())).thenThrow(new RuntimeException("LLM error"));
     when(taskCommandService.fail(any(), any())).thenReturn(task);
 
     agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "prompt");
@@ -220,7 +222,7 @@ class AgentExecutionServiceTest {
     var taskId = UUID.randomUUID();
     var task = taskModel(taskId, TaskStatus.PENDING);
     when(taskQueryService.getById(taskId)).thenReturn(task);
-    when(backendDevAgent.execute(any())).thenReturn("done");
+    when(agentDispatcher.dispatch(any(), any())).thenReturn("done");
     when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
     when(taskCommandService.complete(any(), any())).thenReturn(task);
 
@@ -242,7 +244,7 @@ class AgentExecutionServiceTest {
     var now = Instant.parse("2026-01-01T10:00:00Z");
     when(taskQueryService.getById(taskId)).thenReturn(task);
     when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
-    when(backendDevAgent.execute(any()))
+    when(agentDispatcher.dispatch(any(), any()))
         .thenThrow(new RuntimeException("HTTP 429 Too Many Requests"));
     when(timeProvider.now()).thenReturn(now);
     when(taskCommandService.rateLimited(any(), any())).thenReturn(task);
@@ -260,8 +262,9 @@ class AgentExecutionServiceTest {
     var task = taskModel(taskId, TaskStatus.PENDING);
     when(taskQueryService.getById(taskId)).thenReturn(task);
     when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
-    when(backendDevAgent.execute(any())).thenThrow(new RuntimeException("rate limit exceeded"));
-    when(timeProvider.now()).thenReturn(Instant.now());
+    when(agentDispatcher.dispatch(any(), any()))
+        .thenThrow(new RuntimeException("rate limit exceeded"));
+    when(timeProvider.now()).thenReturn(Instant.parse("2026-01-01T10:00:00Z"));
     when(taskCommandService.rateLimited(any(), any())).thenReturn(task);
 
     agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "prompt");
@@ -275,8 +278,8 @@ class AgentExecutionServiceTest {
     var task = taskModel(taskId, TaskStatus.PENDING);
     when(taskQueryService.getById(taskId)).thenReturn(task);
     when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
-    when(backendDevAgent.execute(any())).thenThrow(new RuntimeException("HTTP 429"));
-    when(timeProvider.now()).thenReturn(Instant.now());
+    when(agentDispatcher.dispatch(any(), any())).thenThrow(new RuntimeException("HTTP 429"));
+    when(timeProvider.now()).thenReturn(Instant.parse("2026-01-01T10:00:00Z"));
     when(taskCommandService.rateLimited(any(), any())).thenReturn(task);
 
     agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "prompt");
@@ -301,8 +304,8 @@ class AgentExecutionServiceTest {
         AgentRole.BACKEND_DEV,
         status,
         null,
-        Instant.now(),
-        Instant.now(),
+        Instant.parse("2026-01-01T10:00:00Z"),
+        Instant.parse("2026-01-01T10:00:00Z"),
         null);
   }
 }

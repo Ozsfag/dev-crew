@@ -10,6 +10,7 @@ import org.blacksoil.devcrew.agent.app.config.AgentProperties;
 import org.blacksoil.devcrew.agent.domain.agent.BackendDevAgent;
 import org.blacksoil.devcrew.agent.domain.agent.CodeReviewAgent;
 import org.blacksoil.devcrew.agent.domain.agent.DevOpsAgent;
+import org.blacksoil.devcrew.agent.domain.agent.DocWriterAgent;
 import org.blacksoil.devcrew.agent.domain.agent.QaAgent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -64,6 +65,15 @@ public class LangChain4jAgentConfig {
     return AiServices.builder(DevOpsAgent.class)
         .chatLanguageModel(chatLanguageModel)
         .tools(fileTools, gitTools, dockerTools)
+        .build();
+  }
+
+  @Bean
+  public DocWriterAgent docWriterAgent(
+      ChatLanguageModel chatLanguageModel, FileTools fileTools, GitTools gitTools) {
+    return AiServices.builder(DocWriterAgent.class)
+        .chatLanguageModel(chatLanguageModel)
+        .tools(fileTools, gitTools)
         .build();
   }
 }

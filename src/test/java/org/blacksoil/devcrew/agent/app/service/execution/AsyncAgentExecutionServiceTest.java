@@ -14,10 +14,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.blacksoil.devcrew.agent.app.config.RateLimitProperties;
 import org.blacksoil.devcrew.agent.app.policy.RateLimitPolicy;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
-import org.blacksoil.devcrew.agent.domain.agent.BackendDevAgent;
-import org.blacksoil.devcrew.agent.domain.agent.CodeReviewAgent;
-import org.blacksoil.devcrew.agent.domain.agent.DevOpsAgent;
-import org.blacksoil.devcrew.agent.domain.agent.QaAgent;
 import org.blacksoil.devcrew.common.TimeProvider;
 import org.blacksoil.devcrew.task.app.service.command.TaskCommandService;
 import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
@@ -32,13 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AsyncAgentExecutionServiceTest {
 
-  @Mock private BackendDevAgent backendDevAgent;
-
-  @Mock private QaAgent qaAgent;
-
-  @Mock private CodeReviewAgent codeReviewAgent;
-
-  @Mock private DevOpsAgent devOpsAgent;
+  @Mock private AgentDispatcher agentDispatcher;
 
   @Mock private TaskQueryService taskQueryService;
 
@@ -52,10 +42,7 @@ class AsyncAgentExecutionServiceTest {
   void setUp() {
     agentExecutionService =
         new AgentExecutionService(
-            backendDevAgent,
-            qaAgent,
-            codeReviewAgent,
-            devOpsAgent,
+            agentDispatcher,
             taskQueryService,
             taskCommandService,
             List.of(),
@@ -73,7 +60,7 @@ class AsyncAgentExecutionServiceTest {
     when(taskQueryService.getById(taskId)).thenReturn(taskModel(taskId));
     when(taskCommandService.updateStatus(any(), any())).thenReturn(taskModel(taskId));
     when(taskCommandService.complete(any(), any())).thenReturn(taskModel(taskId));
-    when(backendDevAgent.execute(any()))
+    when(agentDispatcher.dispatch(any(), any()))
         .thenAnswer(
             inv -> {
               agentStarted.set(true);
@@ -124,8 +111,8 @@ class AsyncAgentExecutionServiceTest {
         AgentRole.BACKEND_DEV,
         TaskStatus.PENDING,
         null,
-        Instant.now(),
-        Instant.now(),
+        Instant.parse("2026-01-01T10:00:00Z"),
+        Instant.parse("2026-01-01T10:00:00Z"),
         null);
   }
 }

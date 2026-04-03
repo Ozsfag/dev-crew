@@ -9,10 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.blacksoil.devcrew.agent.app.policy.RateLimitPolicy;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
-import org.blacksoil.devcrew.agent.domain.agent.BackendDevAgent;
-import org.blacksoil.devcrew.agent.domain.agent.CodeReviewAgent;
-import org.blacksoil.devcrew.agent.domain.agent.DevOpsAgent;
-import org.blacksoil.devcrew.agent.domain.agent.QaAgent;
 import org.blacksoil.devcrew.agent.domain.hook.PostAgentHook;
 import org.blacksoil.devcrew.common.TimeProvider;
 import org.blacksoil.devcrew.task.app.service.command.TaskCommandService;
@@ -31,10 +27,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AgentExecutionService {
 
-  private final BackendDevAgent backendDevAgent;
-  private final QaAgent qaAgent;
-  private final CodeReviewAgent codeReviewAgent;
-  private final DevOpsAgent devOpsAgent;
+  private final AgentDispatcher agentDispatcher;
   private final TaskQueryService taskQueryService;
   private final TaskCommandService taskCommandService;
   private final List<PostAgentHook> postAgentHooks;
@@ -50,7 +43,7 @@ public class AgentExecutionService {
     var sample = Timer.start(meterRegistry);
     String result;
     try {
-      result = dispatchToAgent(role, prompt);
+      result = agentDispatcher.dispatch(role, prompt);
     } catch (Exception e) {
       if (rateLimitPolicy.isRateLimit(e)) {
         var retryAt = rateLimitPolicy.retryAt(timeProvider.now());
@@ -82,16 +75,6 @@ public class AgentExecutionService {
         .tag("status", status)
         .register(meterRegistry)
         .increment();
-  }
-
-  private String dispatchToAgent(AgentRole role, String prompt) {
-    return switch (role) {
-      case BACKEND_DEV -> backendDevAgent.execute(prompt);
-      case QA -> qaAgent.execute(prompt);
-      case CODE_REVIEWER -> codeReviewAgent.execute(prompt);
-      case DEVOPS -> devOpsAgent.execute(prompt);
-      default -> throw new UnsupportedOperationException("Агент " + role + " ещё не реализован");
-    };
   }
 
   private void notifyHooks(UUID taskId, AgentRole role, String result) {

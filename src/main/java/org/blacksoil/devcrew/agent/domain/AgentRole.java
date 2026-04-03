@@ -8,5 +8,6 @@ public enum AgentRole {
   DEVOPS,
   PM,
   ANALYST,
-  CODE_REVIEWER
+  CODE_REVIEWER,
+  DOC_WRITER
 }
