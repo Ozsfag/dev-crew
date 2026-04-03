@@ -48,7 +48,7 @@ public class AgentExecutionService {
     try {
       result = dispatchToAgent(role, prompt);
     } catch (Exception e) {
-      log.error("Агент {} упал при выполнении задачи {}: {}", role, taskId, e.getMessage());
+      log.error("Агент {} упал при выполнении задачи {}", role, taskId, e);
       taskCommandService.fail(taskId, e.getMessage());
       recordTaskCounter(role, "FAILED");
       return;

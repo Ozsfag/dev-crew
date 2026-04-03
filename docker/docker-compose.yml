@@ -1,7 +1,9 @@
 services:
 
   app:
-    build: .
+    build:
+      context: ..
+      dockerfile: Dockerfile
     image: dev-crew:latest
     container_name: dev-crew-app
     ports:

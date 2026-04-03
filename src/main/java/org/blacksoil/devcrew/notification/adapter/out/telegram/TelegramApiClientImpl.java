@@ -27,7 +27,7 @@ public class TelegramApiClientImpl implements TelegramApiClient {
           .retrieve()
           .toBodilessEntity();
     } catch (Exception e) {
-      log.error("Не удалось отправить Telegram-сообщение: {}", e.getMessage());
+      log.error("Не удалось отправить Telegram-сообщение", e);
     }
   }
 }

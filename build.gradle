@@ -70,6 +70,15 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
+sourceSets {
+  main {
+    resources {
+      // Промпты агентов хранятся в ai/prompts/ и доступны по classpath как "prompts/*.txt"
+      srcDirs = ['src/main/resources', 'ai']
+    }
+  }
+}
+
 spotless {
     java {
         googleJavaFormat('1.25.2')

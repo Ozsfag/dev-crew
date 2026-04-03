@@ -1,5 +1,5 @@
 # Переопределения для удалённого сервера.
-# Запуск: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Запуск: docker compose -f docker/docker-compose.yml -f docker/docker-compose.prod.yml up -d
 #
 # Отличия от локального:
 #   - volumes: папка с репозиториями на сервере вместо ~/IdeaProjects
