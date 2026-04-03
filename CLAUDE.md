@@ -419,15 +419,67 @@ Counter.builder("devcrew.task.total")
 ---
 
 ## Стиль кода
-- используй Google java format style для форматирования
-- Отступы: 4 пробела (Java), 2 пробела (YAML / Gradle)
+
+### Форматирование
+
+Форматтер: **Spotless + Google Java Format** (настроен в `build.gradle`).
+
+```bash
+./gradlew spotlessApply   # применить форматирование
+./gradlew spotlessCheck   # проверить без изменений (запускается в CI)
+```
+
+- Отступы Java: **2 пробела** (Google Java Format)
+- Отступы YAML / Gradle: 2 пробела
+- Длина строки: **100 символов**
 - Строки: LF, UTF-8, финальный newline
-- Lombok: `@RequiredArgsConstructor` для DI, `@Builder` там где нужен builder, `@Data` для `*Properties`, для утилитных
-  классов `@UtilityClass`. Используй Lombok на полную.
-- MapStruct: для маппинга между слоями, `componentModel = "spring"`
+- Неиспользуемые импорты удаляются автоматически (`removeUnusedImports`)
+
+### var
+
+Используй `var` везде, где тип очевиден из правой части выражения:
+
+```java
+var task = taskStore.findById(id);           // ✅ очевидно
+var result = mapper.toModel(entity);         // ✅ очевидно
+Map<UUID, List<TaskModel>> index = new ...   // ✅ сложный generic — тип явно
+```
+
+### Lombok
+
+| Аннотация              | Когда использовать                                      |
+|------------------------|---------------------------------------------------------|
+| `@RequiredArgsConstructor` | DI через конструктор — всегда                       |
+| `@Data`                | Только на `*Properties`-классах                         |
+| `@Builder`             | Там где нужен builder (Entity, фабричные методы)        |
+| `@UtilityClass`        | Утилитные классы без состояния                          |
+| `@Slf4j`               | Логирование                                             |
+| `@SneakyThrows`        | **Запрещено** — скрывает checked exceptions             |
+
+Domain-модели — **record**, не Lombok-классы.
+
+### MapStruct
+
+Маппинг между слоями — только через MapStruct, `componentModel = "spring"`.
+Ручная конвертация в сервисах — **запрещена**.
+
+### Логирование
+
+```java
+log.debug("Запуск агента: taskId={}, role={}", taskId, role);  // детали выполнения
+log.info("Агент завершил задачу: taskId={}", taskId);          // бизнес-события
+log.warn("Повторная попытка: attempt={}", attempt);            // нештатные ситуации
+log.error("Ошибка выполнения задачи: taskId={}", taskId, e);  // исключения с трейсом
+```
+
+- `log.debug` — детали внутри методов, входные параметры
+- `log.info` — завершение значимых операций (агент выполнен, задача создана)
+- `log.error` — всегда с объектом исключения вторым аргументом
+
+### Прочее
+
 - Комментарии в коде — **на русском**
-- Без `I`-префикса у интерфейсов
-- Domain-модели — **record**
+- Без `I`-префикса у интерфейсов (`AgentStore`, не `IAgentStore`)
 
 ---
 
