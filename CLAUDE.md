@@ -27,8 +27,9 @@ ai/
 ├── prompts/
 │   ├── backend-dev.md    ← системный промпт BackendDevAgent
 │   ├── qa.md             ← системный промпт QaAgent
-│   ├── devops.md
-│   └── ...
+│   ├── code-review.md    ← системный промпт CodeReviewAgent
+│   ├── devops.md         ← системный промпт DevOpsAgent
+│   └── doc-writer.md     ← системный промпт DocWriterAgent
 └── templates/            ← шаблоны задач, few-shot примеры
 ```
 
@@ -89,7 +90,7 @@ agent/
 │   │   ├── AgentConfig.java             ← @EnableConfigurationProperties
 │   │   └── AgentProperties.java         ← devcrew.agent.*
 │   └── service/
-│       ├── execution/   ← AgentExecutionService
+│       ├── execution/   ← AgentExecutionService, AgentDispatcher
 │       ├── query/       ← AgentQueryService
 │       └── AgentOrchestratorImpl.java   ← оркестратор на верхнем уровне
 ├── bootstrap/
@@ -99,7 +100,11 @@ agent/
     ├── model/
     │    └── AgentModel.java 
     ├── agent/
-    │    └── BackendDevAgent.java
+    │    ├── BackendDevAgent.java
+    │    ├── QaAgent.java
+    │    ├── CodeReviewAgent.java
+    │    ├── DevOpsAgent.java
+    │    └── DocWriterAgent.java
     ├── hook/
     │    └── PostAgentHook.java
     ...
@@ -426,14 +431,16 @@ billing      → organization     (получает OrgPlan для провер�
 **Правило полноты**: каждый новый `case` в `switch` — новый тест; каждый новый `catch`-блок — новый тест, который его провоцирует; новый статус в `enum` — новый тест для ветки, которая его обрабатывает.
 
 ```java
-// switch в AgentExecutionService — каждый case покрыт отдельно:
-void execute_dispatches_BACKEND_DEV_role_to_backendDevAgent()
-void execute_dispatches_QA_role_to_qaAgent()
-void execute_dispatches_CODE_REVIEWER_role_to_codeReviewAgent()
-void execute_dispatches_DEVOPS_role_to_devOpsAgent()
+// AgentDispatcherTest — каждый case покрыт отдельно:
+void dispatch_BACKEND_DEV_calls_backendDevAgent()
+void dispatch_QA_calls_qaAgent()
+void dispatch_CODE_REVIEWER_calls_codeReviewAgent()
+void dispatch_DEVOPS_calls_devOpsAgent()
+void dispatch_DOC_WRITER_calls_docWriterAgent()
+void dispatch_unsupported_role_throws_UnsupportedOperationException()
 
-// два catch-пути в execute():
-void execute_fails_task_when_agent_throws_generic_exception()
+// два catch-пути в AgentExecutionService.execute():
+void execute_fails_task_when_dispatcher_throws()
 void execute_marks_task_rate_limited_when_llm_returns_429()
 ```
 
@@ -495,7 +502,9 @@ class TaskCommandServiceTest {
 void setUp() {
   agentExecutionService =
       new AgentExecutionService(
-          backendDevAgent, qaAgent, ...,
+          agentDispatcher,              // ← маршрутизатор к агентам
+          taskQueryService,
+          taskCommandService,
           List.of(postAgentHook),       // ← List собираем вручную
           new SimpleMeterRegistry(),
           rateLimitPolicy,

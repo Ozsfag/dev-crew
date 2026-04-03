@@ -23,7 +23,7 @@ Spring Boot 3.5 / Java 21 приложение для оркестрации к�
 ### Bounded contexts
 
 - [x] `agent` — AgentModel, AgentStore, AgentQueryService, BackendDevAgent (LangChain4j), AgentExecutionService,
-  AgentOrchestratorImpl
+  AgentDispatcher, AgentOrchestratorImpl
 - [x] `task` — TaskModel, TaskStore, TaskQueryService, TaskCommandService
 - [x] `notification` — NotificationPort, TelegramNotificationAdapter (PostAgentHook)
 - [x] `common` — TimeProvider, DomainException, GlobalExceptionHandler
@@ -184,7 +184,7 @@ agent/adapter/out/llm/tools/
 
 #### ~~П3.2 — QaAgent~~ ✅ DONE
 
-System prompt: `prompts/qa.txt`
+System prompt: `prompts/qa.md`
 Tools: FileTools, GradleTools (runTests, checkCoverage)
 Задача: получает путь к модулю → пишет тесты → прогоняет → репортит покрытие.
 
@@ -192,7 +192,7 @@ Tools: FileTools, GradleTools (runTests, checkCoverage)
 
 #### ~~П3.3 — CodeReviewAgent~~ ✅ DONE
 
-System prompt: `prompts/code-review.txt`
+System prompt: `prompts/code-review.md`
 Tools: FileTools, GitTools (gitDiff)
 Задача: получает PR diff → проверяет по чеклисту (архитектура, безопасность, N+1) → возвращает review.
 
@@ -200,9 +200,18 @@ Tools: FileTools, GitTools (gitDiff)
 
 #### ~~П3.4 — DevOpsAgent~~ ✅ DONE
 
-System prompt: `prompts/devops.txt`
+System prompt: `prompts/devops.md`
 Tools: FileTools, CommandRunner (docker build/push), GitTools
 Задача: обновляет docker-compose, Dockerfile, CI/CD конфиги.
+
+---
+
+#### ~~П3.5 — DocWriterAgent~~ ✅ DONE
+
+System prompt: `prompts/doc-writer.md`
+Tools: FileTools, GitTools
+Задача: документирует код — Javadoc для публичных классов и методов, README-секции, OpenAPI-аннотации.
+Диспетчеризация: `AgentDispatcher` маршрутизирует `AgentRole.DOC_WRITER` → `DocWriterAgent`.
 
 ---
 
@@ -268,6 +277,7 @@ LangChain4j TokenUsage → UsageRecordCommandService → monthly summary
 ✅ П3.2  QaAgent
 ✅ П3.3  CodeReviewAgent
 ✅ П3.4  DevOpsAgent
+✅ П3.5  DocWriterAgent
 ✅ П4    Мультитенантность
 ✅ П5    Observability (Prometheus + Grafana)
 ✅ П6    Монетизация (Stripe)
