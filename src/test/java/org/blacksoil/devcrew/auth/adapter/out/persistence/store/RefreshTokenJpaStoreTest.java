@@ -7,18 +7,11 @@ import java.util.UUID;
 import org.blacksoil.devcrew.auth.domain.RefreshTokenModel;
 import org.blacksoil.devcrew.auth.domain.UserModel;
 import org.blacksoil.devcrew.auth.domain.UserRole;
-import org.junit.jupiter.api.Tag;
+import org.blacksoil.devcrew.common.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
-@Tag("integration")
-@SpringBootTest
-@ActiveProfiles("tc")
-@Transactional
-class RefreshTokenJpaStoreTest {
+class RefreshTokenJpaStoreTest extends IntegrationTestBase {
 
   @Autowired private UserJpaStore userJpaStore;
 

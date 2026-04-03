@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.util.UUID;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
+import org.blacksoil.devcrew.notification.app.config.TelegramProperties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

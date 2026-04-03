@@ -5,20 +5,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.Instant;
 import java.util.UUID;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
+import org.blacksoil.devcrew.common.IntegrationTestBase;
 import org.blacksoil.devcrew.task.domain.TaskModel;
 import org.blacksoil.devcrew.task.domain.TaskStatus;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
-@Tag("integration")
-@SpringBootTest
-@ActiveProfiles("tc")
-@Transactional
-class TaskJpaStoreTest {
+class TaskJpaStoreTest extends IntegrationTestBase {
 
   @Autowired private TaskJpaStore taskJpaStore;
 
@@ -74,7 +67,8 @@ class TaskJpaStoreTest {
             TaskStatus.COMPLETED,
             "result text",
             saved.createdAt(),
-            Instant.now());
+            Instant.now(),
+            null);
 
     var result = taskJpaStore.save(updated);
 
@@ -93,6 +87,7 @@ class TaskJpaStoreTest {
         status,
         null,
         Instant.now(),
-        Instant.now());
+        Instant.now(),
+        null);
   }
 }

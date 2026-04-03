@@ -1,4 +1,4 @@
-package org.blacksoil.devcrew.notification.adapter.out.telegram;
+package org.blacksoil.devcrew.notification.app.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
