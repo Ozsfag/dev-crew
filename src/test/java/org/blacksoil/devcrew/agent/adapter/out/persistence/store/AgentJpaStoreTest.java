@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 class AgentJpaStoreTest extends IntegrationTestBase {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   @Autowired private AgentJpaStore agentJpaStore;
 
   @Test
@@ -66,7 +68,7 @@ class AgentJpaStoreTest extends IntegrationTestBase {
             AgentStatus.RUNNING,
             saved.systemPrompt(),
             saved.createdAt(),
-            Instant.now());
+            NOW);
 
     var result = agentJpaStore.save(updated);
 
@@ -75,11 +77,6 @@ class AgentJpaStoreTest extends IntegrationTestBase {
 
   private AgentModel agentModel(AgentRole role) {
     return new AgentModel(
-        UUID.randomUUID(),
-        role,
-        AgentStatus.IDLE,
-        "system prompt for " + role,
-        Instant.now(),
-        Instant.now());
+        UUID.randomUUID(), role, AgentStatus.IDLE, "system prompt for " + role, NOW, NOW);
   }
 }

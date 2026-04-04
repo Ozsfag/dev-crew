@@ -24,6 +24,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class UsageQueryServiceTest {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   @Mock private UsageRecordStore usageRecordStore;
   @Mock private OrganizationQueryService organizationQueryService;
 
@@ -107,7 +109,7 @@ class UsageQueryServiceTest {
   }
 
   private OrganizationModel org(UUID id, OrgPlan plan) {
-    return new OrganizationModel(id, "Test Org", plan, Instant.now(), Instant.now());
+    return new OrganizationModel(id, "Test Org", plan, null, NOW, NOW);
   }
 
   private UsageRecordModel usageRecord(UUID orgId, int prompt, int completion, BigDecimal cost) {
@@ -120,6 +122,6 @@ class UsageQueryServiceTest {
         prompt,
         completion,
         cost,
-        Instant.now());
+        NOW);
   }
 }

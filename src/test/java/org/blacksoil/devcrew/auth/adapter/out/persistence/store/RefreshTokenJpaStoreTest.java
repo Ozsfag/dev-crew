@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 class RefreshTokenJpaStoreTest extends IntegrationTestBase {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   @Autowired private UserJpaStore userJpaStore;
 
   @Autowired private RefreshTokenJpaStore refreshTokenJpaStore;
@@ -63,12 +65,12 @@ class RefreshTokenJpaStoreTest extends IntegrationTestBase {
         UUID.randomUUID() + "@test.com",
         "hash",
         UserRole.VIEWER,
-        Instant.now(),
-        Instant.now());
+        NOW,
+        NOW);
   }
 
   private RefreshTokenModel refreshTokenModel(UUID userId, String hash, boolean revoked) {
     return new RefreshTokenModel(
-        UUID.randomUUID(), userId, hash, Instant.now().plusSeconds(3600), revoked, Instant.now());
+        UUID.randomUUID(), userId, hash, NOW.plusSeconds(3600), revoked, NOW);
   }
 }

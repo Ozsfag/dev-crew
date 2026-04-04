@@ -24,6 +24,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class PlanLimitPreRunCheckTest {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   @Mock private OrganizationQueryService organizationQueryService;
   @Mock private UsageQueryService usageQueryService;
   @Mock private TimeProvider timeProvider;
@@ -105,11 +107,10 @@ class PlanLimitPreRunCheckTest {
 
   private void setupProject(UUID projectId, UUID orgId) {
     when(organizationQueryService.getProjectById(projectId))
-        .thenReturn(
-            new ProjectModel(projectId, orgId, "project", "/repo", Instant.now(), Instant.now()));
+        .thenReturn(new ProjectModel(projectId, orgId, "project", "/repo", NOW, NOW));
   }
 
   private OrganizationModel org(UUID id, OrgPlan plan) {
-    return new OrganizationModel(id, "Org", plan, Instant.now(), Instant.now());
+    return new OrganizationModel(id, "Org", plan, null, NOW, NOW);
   }
 }

@@ -28,6 +28,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 @ExtendWith(MockitoExtension.class)
 class AgentControllerTest {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   private final ObjectMapper objectMapper = new ObjectMapper();
   @Mock private AgentQueryService agentQueryService;
   private MockMvc mockMvc;
@@ -83,6 +85,6 @@ class AgentControllerTest {
   }
 
   private AgentModel agentModel(UUID id, AgentRole role) {
-    return new AgentModel(id, role, AgentStatus.IDLE, "prompt", Instant.now(), Instant.now());
+    return new AgentModel(id, role, AgentStatus.IDLE, "prompt", NOW, NOW);
   }
 }

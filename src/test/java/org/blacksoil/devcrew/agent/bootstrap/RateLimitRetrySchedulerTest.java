@@ -22,6 +22,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class RateLimitRetrySchedulerTest {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   @Mock private TaskQueryService taskQueryService;
 
   @Mock private AgentOrchestrator agentOrchestrator;
@@ -65,9 +67,9 @@ class RateLimitRetrySchedulerTest {
         role,
         TaskStatus.RATE_LIMITED,
         null,
-        Instant.now(),
-        Instant.now(),
-        Instant.now().minusSeconds(1));
+        NOW,
+        NOW,
+        NOW.minusSeconds(1));
   }
 
   private static <T> T any() {

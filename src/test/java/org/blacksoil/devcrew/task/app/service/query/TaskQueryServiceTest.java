@@ -22,6 +22,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class TaskQueryServiceTest {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   @Mock private TaskStore taskStore;
 
   @InjectMocks private TaskQueryService taskQueryService;
@@ -80,8 +82,8 @@ class TaskQueryServiceTest {
         AgentRole.BACKEND_DEV,
         status,
         null,
-        Instant.now(),
-        Instant.now(),
+        NOW,
+        NOW,
         null);
   }
 }

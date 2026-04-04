@@ -8,4 +8,6 @@ public interface OrganizationStore {
   OrganizationModel save(OrganizationModel organization);
 
   Optional<OrganizationModel> findById(UUID id);
+
+  Optional<OrganizationModel> findByStripeCustomerId(String stripeCustomerId);
 }

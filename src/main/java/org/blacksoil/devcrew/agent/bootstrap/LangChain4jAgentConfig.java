@@ -12,6 +12,7 @@ import org.blacksoil.devcrew.agent.domain.agent.CodeReviewAgent;
 import org.blacksoil.devcrew.agent.domain.agent.DevOpsAgent;
 import org.blacksoil.devcrew.agent.domain.agent.DocWriterAgent;
 import org.blacksoil.devcrew.agent.domain.agent.QaAgent;
+import org.blacksoil.devcrew.agent.domain.agent.TaskParserAgent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -75,5 +76,10 @@ public class LangChain4jAgentConfig {
         .chatLanguageModel(chatLanguageModel)
         .tools(fileTools, gitTools)
         .build();
+  }
+
+  @Bean
+  public TaskParserAgent taskParserAgent(ChatLanguageModel chatLanguageModel) {
+    return AiServices.builder(TaskParserAgent.class).chatLanguageModel(chatLanguageModel).build();
   }
 }

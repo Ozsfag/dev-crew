@@ -5,4 +5,9 @@ import java.util.UUID;
 import org.blacksoil.devcrew.organization.domain.OrgPlan;
 
 public record OrganizationModel(
-    UUID id, String name, OrgPlan plan, Instant createdAt, Instant updatedAt) {}
+    UUID id,
+    String name,
+    OrgPlan plan,
+    String stripeCustomerId,
+    Instant createdAt,
+    Instant updatedAt) {}

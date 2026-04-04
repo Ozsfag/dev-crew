@@ -1,6 +1,9 @@
 package org.blacksoil.devcrew.audit.adapter.in.web;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -26,6 +29,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 @ExtendWith(MockitoExtension.class)
 class AuditControllerTest {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   @Mock private AuditQueryService auditQueryService;
 
   private MockMvc mockMvc;
@@ -44,13 +49,7 @@ class AuditControllerTest {
   void GET_audit_returns_200_with_events() throws Exception {
     var event =
         new AuditEventModel(
-            UUID.randomUUID(),
-            null,
-            "system",
-            "TASK_COMPLETED",
-            UUID.randomUUID(),
-            "details",
-            Instant.now());
+            UUID.randomUUID(), null, "system", "TASK_COMPLETED", UUID.randomUUID(), "details", NOW);
     when(auditQueryService.findByTimestampBetween(any(), any())).thenReturn(List.of(event));
 
     mockMvc
@@ -77,6 +76,34 @@ class AuditControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(0));
+  }
+
+  @Test
+  void GET_audit_with_projectId_calls_findByProjectId() throws Exception {
+    var projectId = UUID.randomUUID();
+    var event =
+        new AuditEventModel(
+            UUID.randomUUID(),
+            projectId,
+            "system",
+            "TASK_COMPLETED",
+            UUID.randomUUID(),
+            "details",
+            Instant.parse("2026-01-01T10:00:00Z"));
+    when(auditQueryService.findByProjectId(eq(projectId), any(), any())).thenReturn(List.of(event));
+
+    mockMvc
+        .perform(
+            get("/api/audit")
+                .param("from", "2024-01-01T00:00:00Z")
+                .param("to", "2024-12-31T23:59:59Z")
+                .param("projectId", projectId.toString())
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1));
+
+    verify(auditQueryService).findByProjectId(eq(projectId), any(), any());
+    verify(auditQueryService, never()).findByTimestampBetween(any(), any());
   }
 
   @Test

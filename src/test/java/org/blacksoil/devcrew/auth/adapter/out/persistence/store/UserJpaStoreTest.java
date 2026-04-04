@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 class UserJpaStoreTest extends IntegrationTestBase {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   @Autowired private UserJpaStore userJpaStore;
 
   @Test
@@ -54,7 +56,6 @@ class UserJpaStoreTest extends IntegrationTestBase {
   }
 
   private UserModel userModel(String email, UserRole role) {
-    return new UserModel(
-        UUID.randomUUID(), null, email, "hash", role, Instant.now(), Instant.now());
+    return new UserModel(UUID.randomUUID(), null, email, "hash", role, NOW, NOW);
   }
 }

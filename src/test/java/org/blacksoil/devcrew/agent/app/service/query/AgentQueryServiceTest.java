@@ -22,6 +22,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AgentQueryServiceTest {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   @Mock private AgentStore agentStore;
 
   @InjectMocks private AgentQueryService agentQueryService;
@@ -69,7 +71,6 @@ class AgentQueryServiceTest {
   }
 
   private AgentModel agentModel(UUID id, AgentRole role) {
-    return new AgentModel(
-        id, role, AgentStatus.IDLE, "system prompt", Instant.now(), Instant.now());
+    return new AgentModel(id, role, AgentStatus.IDLE, "system prompt", NOW, NOW);
   }
 }

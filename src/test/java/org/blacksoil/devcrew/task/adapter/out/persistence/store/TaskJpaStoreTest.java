@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 class TaskJpaStoreTest extends IntegrationTestBase {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   @Autowired private TaskJpaStore taskJpaStore;
 
   @Test
@@ -67,7 +69,7 @@ class TaskJpaStoreTest extends IntegrationTestBase {
             TaskStatus.COMPLETED,
             "result text",
             saved.createdAt(),
-            Instant.now(),
+            NOW,
             null);
 
     var result = taskJpaStore.save(updated);
@@ -86,8 +88,8 @@ class TaskJpaStoreTest extends IntegrationTestBase {
         role,
         status,
         null,
-        Instant.now(),
-        Instant.now(),
+        NOW,
+        NOW,
         null);
   }
 }

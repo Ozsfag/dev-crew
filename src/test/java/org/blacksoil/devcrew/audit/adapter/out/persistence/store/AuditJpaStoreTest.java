@@ -11,11 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 class AuditJpaStoreTest extends IntegrationTestBase {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   @Autowired private AuditJpaStore auditJpaStore;
 
   @Test
   void save_and_findByTimestampBetween_returns_event() {
-    var now = Instant.now();
+    var now = NOW;
     auditJpaStore.save(auditEvent(now, UUID.randomUUID()));
 
     var result = auditJpaStore.findByTimestampBetween(now.minusSeconds(1), now.plusSeconds(1));
@@ -26,11 +28,10 @@ class AuditJpaStoreTest extends IntegrationTestBase {
 
   @Test
   void findByTimestampBetween_excludes_events_outside_range() {
-    var past = Instant.now().minusSeconds(100);
+    var past = NOW.minusSeconds(100);
     auditJpaStore.save(auditEvent(past, UUID.randomUUID()));
 
-    var result =
-        auditJpaStore.findByTimestampBetween(Instant.now().minusSeconds(10), Instant.now());
+    var result = auditJpaStore.findByTimestampBetween(NOW.minusSeconds(10), NOW);
 
     assertThat(result).isEmpty();
   }
@@ -38,12 +39,12 @@ class AuditJpaStoreTest extends IntegrationTestBase {
   @Test
   void findByTimestampBetween_returns_multiple_events_ordered_by_timestamp() {
     var entityId = UUID.randomUUID();
-    var t1 = Instant.now().minusSeconds(5);
-    var t2 = Instant.now().minusSeconds(2);
+    var t1 = NOW.minusSeconds(5);
+    var t2 = NOW.minusSeconds(2);
     auditJpaStore.save(auditEvent(t2, entityId));
     auditJpaStore.save(auditEvent(t1, entityId));
 
-    var result = auditJpaStore.findByTimestampBetween(t1.minusSeconds(1), Instant.now());
+    var result = auditJpaStore.findByTimestampBetween(t1.minusSeconds(1), NOW);
 
     assertThat(result).hasSize(2);
     assertThat(result.get(0).timestamp()).isBeforeOrEqualTo(result.get(1).timestamp());

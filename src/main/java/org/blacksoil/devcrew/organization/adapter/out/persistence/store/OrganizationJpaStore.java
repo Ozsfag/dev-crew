@@ -28,4 +28,10 @@ public class OrganizationJpaStore implements OrganizationStore {
   public Optional<OrganizationModel> findById(UUID id) {
     return repository.findById(id).map(mapper::toModel);
   }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Optional<OrganizationModel> findByStripeCustomerId(String stripeCustomerId) {
+    return repository.findByStripeCustomerId(stripeCustomerId).map(mapper::toModel);
+  }
 }

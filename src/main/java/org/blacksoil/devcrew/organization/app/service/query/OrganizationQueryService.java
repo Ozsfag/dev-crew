@@ -3,7 +3,7 @@ package org.blacksoil.devcrew.organization.app.service.query;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.blacksoil.devcrew.common.exception.DomainException;
+import org.blacksoil.devcrew.common.exception.NotFoundException;
 import org.blacksoil.devcrew.organization.domain.model.OrganizationModel;
 import org.blacksoil.devcrew.organization.domain.model.ProjectModel;
 import org.blacksoil.devcrew.organization.domain.store.OrganizationStore;
@@ -22,7 +22,7 @@ public class OrganizationQueryService {
   public OrganizationModel getById(UUID id) {
     return organizationStore
         .findById(id)
-        .orElseThrow(() -> new DomainException("Organization not found: " + id));
+        .orElseThrow(() -> new NotFoundException("Organization", id));
   }
 
   @Transactional(readOnly = true)
@@ -34,6 +34,6 @@ public class OrganizationQueryService {
   public ProjectModel getProjectById(UUID projectId) {
     return projectStore
         .findById(projectId)
-        .orElseThrow(() -> new DomainException("Project not found: " + projectId));
+        .orElseThrow(() -> new NotFoundException("Project", projectId));
   }
 }

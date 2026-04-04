@@ -23,6 +23,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class UsageRecordCommandServiceTest {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   @Mock private UsageRecordStore usageRecordStore;
   @Mock private TimeProvider timeProvider;
 
@@ -60,7 +62,7 @@ class UsageRecordCommandServiceTest {
 
   @Test
   void record_calculates_cost_based_on_tokens() {
-    when(timeProvider.now()).thenReturn(Instant.now());
+    when(timeProvider.now()).thenReturn(NOW);
     when(usageRecordStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
     service.record(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), AgentRole.QA, "", "");
@@ -73,7 +75,7 @@ class UsageRecordCommandServiceTest {
 
   @Test
   void record_generates_unique_id() {
-    when(timeProvider.now()).thenReturn(Instant.now());
+    when(timeProvider.now()).thenReturn(NOW);
     when(usageRecordStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
     service.record(

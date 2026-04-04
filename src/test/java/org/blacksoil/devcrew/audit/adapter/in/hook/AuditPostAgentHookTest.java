@@ -23,6 +23,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AuditPostAgentHookTest {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   @Mock private AuditCommandService auditCommandService;
 
   @Mock private TaskQueryService taskQueryService;
@@ -92,8 +94,8 @@ class AuditPostAgentHookTest {
         AgentRole.BACKEND_DEV,
         TaskStatus.COMPLETED,
         null,
-        Instant.now(),
-        Instant.now(),
+        NOW,
+        NOW,
         null);
   }
 }

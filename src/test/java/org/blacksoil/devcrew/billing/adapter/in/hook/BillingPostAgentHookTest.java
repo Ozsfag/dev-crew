@@ -26,6 +26,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class BillingPostAgentHookTest {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   @Mock private TaskQueryService taskQueryService;
   @Mock private OrganizationQueryService organizationQueryService;
   @Mock private UsageRecordCommandService usageRecordCommandService;
@@ -75,17 +77,16 @@ class BillingPostAgentHookTest {
         AgentRole.BACKEND_DEV,
         TaskStatus.COMPLETED,
         null,
-        Instant.now(),
-        Instant.now(),
+        NOW,
+        NOW,
         null);
   }
 
   private ProjectModel project(UUID id, UUID orgId) {
-    return new ProjectModel(
-        id, orgId, "my-project", "/projects/repo", Instant.now(), Instant.now());
+    return new ProjectModel(id, orgId, "my-project", "/projects/repo", NOW, NOW);
   }
 
   private OrganizationModel org(UUID id) {
-    return new OrganizationModel(id, "Org", OrgPlan.FREE, Instant.now(), Instant.now());
+    return new OrganizationModel(id, "Org", OrgPlan.FREE, null, NOW, NOW);
   }
 }

@@ -32,6 +32,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 @ExtendWith(MockitoExtension.class)
 class TaskControllerTest {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   private final ObjectMapper objectMapper = new ObjectMapper();
   @Mock private TaskQueryService taskQueryService;
   @Mock private AgentOrchestrator agentOrchestrator;
@@ -137,8 +139,8 @@ class TaskControllerTest {
         AgentRole.BACKEND_DEV,
         TaskStatus.PENDING,
         null,
-        Instant.now(),
-        Instant.now(),
+        NOW,
+        NOW,
         null);
   }
 }

@@ -68,3 +68,6 @@ devcrew:
       bot-token: ${DEVCREW_NOTIFICATION_TELEGRAM_BOT_TOKEN:${TELEGRAM_BOT_TOKEN:}}
       chat-id: ${DEVCREW_NOTIFICATION_TELEGRAM_CHAT_ID:${TELEGRAM_CHAT_ID:}}
       max-message-length: 4096
+      bot-enabled: ${DEVCREW_NOTIFICATION_TELEGRAM_BOT_ENABLED:false}
+      allowed-chat-id: ${DEVCREW_NOTIFICATION_TELEGRAM_ALLOWED_CHAT_ID:0}
+      poll-delay-ms: 1000

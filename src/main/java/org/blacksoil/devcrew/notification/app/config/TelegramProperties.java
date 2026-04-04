@@ -19,4 +19,13 @@ public class TelegramProperties {
 
   /** Максимальная длина сообщения Telegram API. */
   private int maxMessageLength = 4096;
+
+  /** Включить приём входящих сообщений через long-polling. Отдельно от enabled (отправка). */
+  private boolean botEnabled = false;
+
+  /** Whitelist: только этот chatId может отправлять задачи. 0 = без ограничений. */
+  private long allowedChatId = 0L;
+
+  /** Интервал опроса Telegram getUpdates в миллисекундах. */
+  private long pollDelayMs = 1000L;
 }

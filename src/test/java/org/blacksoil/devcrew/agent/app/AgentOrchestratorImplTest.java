@@ -29,6 +29,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AgentOrchestratorImplTest {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   @Mock private TaskCommandService taskCommandService;
   @Mock private AgentExecutionService agentExecutionService;
   @Mock private TaskQueryService taskQueryService;
@@ -113,8 +115,8 @@ class AgentOrchestratorImplTest {
         AgentRole.BACKEND_DEV,
         TaskStatus.PENDING,
         null,
-        Instant.now(),
-        Instant.now(),
+        NOW,
+        NOW,
         null);
   }
 }

@@ -31,6 +31,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   @Mock private UserStore userStore;
 
   @Mock private RefreshTokenStore refreshTokenStore;
@@ -58,9 +60,7 @@ class AuthServiceTest {
   @Test
   void register_creates_organization_and_assigns_ARCHITECT_role() {
     var orgId = UUID.randomUUID();
-    var org =
-        new OrganizationModel(
-            orgId, "admin's Organization", OrgPlan.FREE, Instant.now(), Instant.now());
+    var org = new OrganizationModel(orgId, "admin's Organization", OrgPlan.FREE, null, NOW, NOW);
     when(organizationCommandService.createOrganization(anyString())).thenReturn(org);
     when(userStore.findByEmail(anyString())).thenReturn(Optional.empty());
     when(userStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -81,9 +81,7 @@ class AuthServiceTest {
 
   @Test
   void register_uses_provided_org_name() {
-    var org =
-        new OrganizationModel(
-            UUID.randomUUID(), "Acme Corp", OrgPlan.FREE, Instant.now(), Instant.now());
+    var org = new OrganizationModel(UUID.randomUUID(), "Acme Corp", OrgPlan.FREE, null, NOW, NOW);
     when(organizationCommandService.createOrganization("Acme Corp")).thenReturn(org);
     when(userStore.findByEmail(anyString())).thenReturn(Optional.empty());
     when(userStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -110,8 +108,7 @@ class AuthServiceTest {
 
   @Test
   void register_returns_login_result_with_tokens() {
-    var org =
-        new OrganizationModel(UUID.randomUUID(), "org", OrgPlan.FREE, Instant.now(), Instant.now());
+    var org = new OrganizationModel(UUID.randomUUID(), "org", OrgPlan.FREE, null, NOW, NOW);
     when(organizationCommandService.createOrganization(anyString())).thenReturn(org);
     when(userStore.findByEmail(anyString())).thenReturn(Optional.empty());
     when(userStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -178,9 +175,9 @@ class AuthServiceTest {
             UUID.randomUUID(),
             userId,
             "hash",
-            Instant.now().plusSeconds(3600),
+            Instant.parse("2099-01-01T00:00:00Z"), // гарантированно в будущем
             false,
-            Instant.now());
+            NOW);
 
     when(jwtService.hashToken("raw")).thenReturn("hash");
     when(refreshTokenStore.findByTokenHash("hash")).thenReturn(Optional.of(tokenModel));
@@ -198,12 +195,7 @@ class AuthServiceTest {
   void refresh_expired_token_throws_AuthException() {
     var tokenModel =
         new RefreshTokenModel(
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            "hash",
-            Instant.now().minusSeconds(1),
-            false,
-            Instant.now());
+            UUID.randomUUID(), UUID.randomUUID(), "hash", NOW.minusSeconds(1), false, NOW);
 
     when(jwtService.hashToken("raw")).thenReturn("hash");
     when(refreshTokenStore.findByTokenHash("hash")).thenReturn(Optional.of(tokenModel));
@@ -215,12 +207,7 @@ class AuthServiceTest {
   void refresh_revoked_token_throws_AuthException() {
     var tokenModel =
         new RefreshTokenModel(
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            "hash",
-            Instant.now().plusSeconds(3600),
-            true,
-            Instant.now());
+            UUID.randomUUID(), UUID.randomUUID(), "hash", NOW.plusSeconds(3600), true, NOW);
 
     when(jwtService.hashToken("raw")).thenReturn("hash");
     when(refreshTokenStore.findByTokenHash("hash")).thenReturn(Optional.of(tokenModel));
@@ -237,18 +224,11 @@ class AuthServiceTest {
   }
 
   private UserModel userModel(String email, UserRole role) {
-    return new UserModel(
-        UUID.randomUUID(), UUID.randomUUID(), email, "hash", role, Instant.now(), Instant.now());
+    return new UserModel(UUID.randomUUID(), UUID.randomUUID(), email, "hash", role, NOW, NOW);
   }
 
   private UserModel userModelWithPassword(String email, String encodedPassword, UserRole role) {
     return new UserModel(
-        UUID.randomUUID(),
-        UUID.randomUUID(),
-        email,
-        encodedPassword,
-        role,
-        Instant.now(),
-        Instant.now());
+        UUID.randomUUID(), UUID.randomUUID(), email, encodedPassword, role, NOW, NOW);
   }
 }

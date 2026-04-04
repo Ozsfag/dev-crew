@@ -23,6 +23,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class TaskCommandServiceTest {
 
+  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+
   @Mock private TaskStore taskStore;
 
   @Mock private TimeProvider timeProvider;
@@ -51,7 +53,7 @@ class TaskCommandServiceTest {
   @Test
   void create_with_parent_id_links_subtask() {
     var parentId = UUID.randomUUID();
-    when(timeProvider.now()).thenReturn(Instant.now());
+    when(timeProvider.now()).thenReturn(NOW);
     when(taskStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
     taskCommandService.create("Subtask", "desc", AgentRole.BACKEND_DEV, null, parentId);
@@ -81,7 +83,7 @@ class TaskCommandServiceTest {
   void complete_sets_completed_status_and_result() {
     var task = existingTask(TaskStatus.IN_PROGRESS);
     when(taskStore.findById(task.id())).thenReturn(Optional.of(task));
-    when(timeProvider.now()).thenReturn(Instant.now());
+    when(timeProvider.now()).thenReturn(NOW);
     when(taskStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
     taskCommandService.complete(task.id(), "Done successfully");
@@ -96,7 +98,7 @@ class TaskCommandServiceTest {
   void fail_sets_failed_status_and_reason_as_result() {
     var task = existingTask(TaskStatus.IN_PROGRESS);
     when(taskStore.findById(task.id())).thenReturn(Optional.of(task));
-    when(timeProvider.now()).thenReturn(Instant.now());
+    when(timeProvider.now()).thenReturn(NOW);
     when(taskStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
     taskCommandService.fail(task.id(), "Build error");
@@ -112,7 +114,7 @@ class TaskCommandServiceTest {
     var retryAt = Instant.parse("2026-01-01T10:01:00Z");
     var task = existingTask(TaskStatus.IN_PROGRESS);
     when(taskStore.findById(task.id())).thenReturn(Optional.of(task));
-    when(timeProvider.now()).thenReturn(Instant.now());
+    when(timeProvider.now()).thenReturn(NOW);
     when(taskStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
     taskCommandService.rateLimited(task.id(), retryAt);
@@ -135,14 +137,14 @@ class TaskCommandServiceTest {
             AgentRole.BACKEND_DEV,
             TaskStatus.IN_PROGRESS,
             "partial result",
-            Instant.now(),
-            Instant.now(),
+            NOW,
+            NOW,
             null);
     when(taskStore.findById(task.id())).thenReturn(Optional.of(task));
-    when(timeProvider.now()).thenReturn(Instant.now());
+    when(timeProvider.now()).thenReturn(NOW);
     when(taskStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-    taskCommandService.rateLimited(task.id(), Instant.now().plusSeconds(60));
+    taskCommandService.rateLimited(task.id(), NOW.plusSeconds(60));
 
     var captor = ArgumentCaptor.<TaskModel>captor();
     verify(taskStore).save(captor.capture());
@@ -159,8 +161,8 @@ class TaskCommandServiceTest {
         AgentRole.BACKEND_DEV,
         status,
         null,
-        Instant.now(),
-        Instant.now(),
+        NOW,
+        NOW,
         null);
   }
 }

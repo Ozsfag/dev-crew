@@ -19,4 +19,7 @@ public class BillingProperties {
 
   /** Лимит задач в месяц для плана FREE. */
   private int freePlanTaskLimit = 50;
+
+  /** Секрет для проверки подписи Stripe webhook (whsec_...). */
+  private String stripeWebhookSecret = "";
 }

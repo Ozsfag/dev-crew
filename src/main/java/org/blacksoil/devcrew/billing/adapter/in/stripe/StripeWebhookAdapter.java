@@ -1,6 +1,13 @@
 package org.blacksoil.devcrew.billing.adapter.in.stripe;
 
+import com.stripe.exception.SignatureVerificationException;
+import com.stripe.model.Event;
+import com.stripe.model.Subscription;
+import com.stripe.net.Webhook;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.blacksoil.devcrew.billing.app.config.BillingProperties;
+import org.blacksoil.devcrew.billing.domain.StripeWebhookPort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -8,27 +15,47 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Stub-адаптер для приёма webhook-событий от Stripe. Принимает и логирует события; в production
- * необходимо: 1) проверять подпись через Stripe SDK, 2) обновлять план организации при
- * customer.subscription.* событиях.
- */
 @Slf4j
 @RestController
 @RequestMapping("/api/stripe")
+@RequiredArgsConstructor
 public class StripeWebhookAdapter {
+
+  private final StripeWebhookPort stripeWebhookPort;
+  private final BillingProperties billingProperties;
 
   @PostMapping("/webhook")
   public ResponseEntity<Void> handleWebhook(
       @RequestBody String payload,
       @RequestHeader(value = "Stripe-Signature", required = false) String signature) {
-    log.info(
-        "Получено событие Stripe: payload_length={}, signature={}",
-        payload.length(),
-        signature != null ? "присутствует" : "отсутствует");
-    // TODO: Stripe SDK — Webhook.constructEvent(payload, signature, webhookSecret)
-    // TODO: customer.subscription.created → апгрейд плана до PRO
-    // TODO: customer.subscription.deleted → даунгрейд до FREE
+    if (signature == null) {
+      log.warn("Отсутствует заголовок Stripe-Signature");
+      return ResponseEntity.badRequest().build();
+    }
+    Event event;
+    try {
+      event =
+          Webhook.constructEvent(payload, signature, billingProperties.getStripeWebhookSecret());
+    } catch (SignatureVerificationException e) {
+      log.warn("Невалидная подпись Stripe webhook");
+      return ResponseEntity.badRequest().build();
+    }
+
+    switch (event.getType()) {
+      case "customer.subscription.created" -> {
+        var subscription =
+            (Subscription) event.getDataObjectDeserializer().getObject().orElseThrow();
+        log.info("Stripe subscription.created: customer={}", subscription.getCustomer());
+        stripeWebhookPort.handleSubscriptionCreated(subscription.getCustomer());
+      }
+      case "customer.subscription.deleted" -> {
+        var subscription =
+            (Subscription) event.getDataObjectDeserializer().getObject().orElseThrow();
+        log.info("Stripe subscription.deleted: customer={}", subscription.getCustomer());
+        stripeWebhookPort.handleSubscriptionDeleted(subscription.getCustomer());
+      }
+      default -> log.debug("Игнорируем событие Stripe: type={}", event.getType());
+    }
     return ResponseEntity.ok().build();
   }
 }

@@ -25,6 +25,8 @@ public class OrganizationEntity {
   @Enumerated(EnumType.STRING)
   private org.blacksoil.devcrew.organization.domain.OrgPlan plan;
 
+  @Column private String stripeCustomerId;
+
   @Column(nullable = false)
   private Instant createdAt;
 
