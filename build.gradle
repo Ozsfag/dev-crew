@@ -73,8 +73,7 @@ dependencies {
 sourceSets {
   main {
     resources {
-      // Промпты агентов хранятся в ai/prompts/ и доступны по classpath как "prompts/*.txt"
-      srcDirs = ['src/main/resources', 'ai']
+      srcDirs = ['src/main/resources']
     }
   }
 }

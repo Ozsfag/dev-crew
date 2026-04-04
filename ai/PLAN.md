@@ -265,6 +265,74 @@ LangChain4j TokenUsage → UsageRecordCommandService → monthly summary
 
 ---
 
+### Фаза 7 — Устранение пробелов (по результатам код-ревью)
+
+Ревью проведено 2026-04-04. Архитектура, стиль и основные паттерны соответствуют CLAUDE.md.
+Найденные пробелы зафиксированы ниже.
+
+#### П7.1 — Тесты для `organization/` контекста
+
+**Проблема**: контекст `organization/` не имеет ни одного unit-теста — ~12 публичных методов без
+покрытия при требовании 100% (CLAUDE.md).
+
+```
+Создать:
+organization/app/service/command/OrganizationCommandServiceTest.java  ← unit, Mockito
+organization/app/service/query/OrganizationQueryServiceTest.java      ← unit, Mockito
+organization/adapter/in/web/controller/OrganizationControllerTest.java ← standalone MockMvc
+```
+
+Именование: `method_scenario_expectedBehavior` (create_saves_org_with_free_plan и т.п.)
+
+---
+
+#### П7.2 — Тесты для `audit/` service-слоя
+
+**Проблема**: `AuditPostAgentHook` протестирован, но `AuditCommandService` и `AuditQueryService`
+покрытия не имеют.
+
+```
+Создать:
+audit/app/service/command/AuditCommandServiceTest.java  ← unit, Mockito
+audit/app/service/query/AuditQueryServiceTest.java      ← unit, Mockito
+```
+
+---
+
+#### П7.3 — Stripe: реализация вместо stub
+
+**Проблема**: `StripeWebhookAdapter` содержит два TODO и фактически игнорирует все входящие
+вебхуки без верификации подписи.
+
+```
+Реализовать:
+  1. Верификацию Stripe-Signature header (HMAC-SHA256)
+  2. Обработку customer.subscription.updated / deleted → OrganizationCommandService.updatePlan()
+  3. StripeWebhookAdapterTest — unit-тест с mock-событиями
+
+Новые свойства:
+  billing/app/config/StripeProperties.java ← devcrew.billing.stripe.webhook-secret
+```
+
+---
+
+#### П7.4 — Фиксация `Instant.now()` в тест-хелперах
+
+**Проблема**: ~50 мест в интеграционных тестах используют `Instant.now()` для создания тестовых
+данных вместо фиксированной константы — тесты зависят от системного времени.
+
+```
+Исправить в:
+  audit/adapter/out/persistence/store/AuditJpaStoreTest.java
+  billing/adapter/out/persistence/store/UsageRecordJpaStoreTest.java
+  (и других интеграционных тестах по результатам grep)
+
+Правило: Instant.parse("2026-01-01T10:00:00Z") — фиксированная константа в хелпере,
+не Instant.now() и не Instant.now().minusSeconds(N).
+```
+
+---
+
 ## Текущий приоритет выполнения
 
 ```
@@ -281,6 +349,10 @@ LangChain4j TokenUsage → UsageRecordCommandService → monthly summary
 ✅ П4    Мультитенантность
 ✅ П5    Observability (Prometheus + Grafana)
 ✅ П6    Монетизация (Stripe)
+   П7.1  Тесты organization/ контекста
+   П7.2  Тесты audit/ service-слоя
+   П7.3  Stripe: верификация + обработка webhook
+   П7.4  Фиксация Instant.now() в тест-хелперах
 ```
 
 ---
