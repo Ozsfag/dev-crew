@@ -1,42 +1,45 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
 # deploy/update.sh
-# Обновление приложения на сервере: pull → build → restart.
+# Обновление приложения на сервере: pull образа → restart.
 # Запуск на сервере из /opt/dev-crew/:
-#   bash /path/to/deploy/update.sh [--skip-build]
+#   bash /path/to/deploy/update.sh [--tag <image-tag>]
+#
+# Образ собирается в GitHub Actions и пушится в ghcr.io.
+# На сервере только: docker pull + docker compose up.
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
 APP_DIR="/opt/dev-crew"
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"  # корень dev-crew репозитория
-SKIP_BUILD=false
+IMAGE_TAG="latest"
 
 for arg in "$@"; do
-  [[ "$arg" == "--skip-build" ]] && SKIP_BUILD=true
+  case "$arg" in
+    --tag) shift; IMAGE_TAG="$1" ;;
+  esac
 done
 
-echo "==> [1/4] Pull последних изменений..."
-cd "$REPO_DIR"
-git pull --ff-only
+echo "==> [1/3] Синхронизация compose-файлов в $APP_DIR..."
+cp "$REPO_DIR/docker/docker-compose.yml" \
+   "$REPO_DIR/docker/docker-compose.prod.yml" \
+   "$APP_DIR/"
 
-echo "==> [2/4] Синхронизация compose-файлов в $APP_DIR..."
-cp docker-compose.yml docker-compose.prod.yml "$APP_DIR/"
+echo "==> [2/3] Pull образа из ghcr.io (tag: $IMAGE_TAG)..."
+IMAGE_TAG="$IMAGE_TAG" docker compose \
+  -f "$APP_DIR/docker-compose.yml" \
+  -f "$APP_DIR/docker-compose.prod.yml" \
+  --env-file "$APP_DIR/.env" \
+  pull app
 
-if [[ "$SKIP_BUILD" == false ]]; then
-  echo "==> [3/4] Сборка Docker-образа..."
-  docker compose -f "$APP_DIR/docker-compose.yml" \
-                 -f "$APP_DIR/docker-compose.prod.yml" \
-                 --env-file "$APP_DIR/.env" \
-                 build --no-cache app
-else
-  echo "==> [3/4] Сборка пропущена (--skip-build)"
-fi
+echo "==> [3/3] Перезапуск контейнеров..."
+IMAGE_TAG="$IMAGE_TAG" docker compose \
+  -f "$APP_DIR/docker-compose.yml" \
+  -f "$APP_DIR/docker-compose.prod.yml" \
+  --env-file "$APP_DIR/.env" \
+  up -d --remove-orphans
 
-echo "==> [4/4] Перезапуск контейнеров..."
-docker compose -f "$APP_DIR/docker-compose.yml" \
-               -f "$APP_DIR/docker-compose.prod.yml" \
-               --env-file "$APP_DIR/.env" \
-               up -d --remove-orphans
+docker image prune -f
 
 echo ""
 echo "✅ Обновление завершено."

@@ -2,6 +2,7 @@
 # Запуск: docker compose -f docker/docker-compose.yml -f docker/docker-compose.prod.yml up -d
 #
 # Отличия от локального:
+#   - image: загружается из ghcr.io (CI собирает и пушит)
 #   - volumes: папка с репозиториями на сервере вместо ~/IdeaProjects
 #   - postgres: данные хранятся на хосте (не в именованном volume)
 #   - app: лимиты памяти, нет проброса порта postgres наружу
@@ -9,6 +10,8 @@
 services:
 
   app:
+    image: ${APP_IMAGE:-ghcr.io/ozsfag/dev-crew:latest}
+    build: !reset null  # не собираем на сервере — используем готовый образ из ghcr.io
     volumes:
       # Репозитории, с которыми работают агенты.
       # Заполняется через deploy/sync-repos.sh

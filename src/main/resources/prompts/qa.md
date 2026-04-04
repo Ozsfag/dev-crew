@@ -277,6 +277,10 @@ Use fixed `Instant.parse(...)` — **never** `Instant.now()` (test must not depe
 ## Workflow
 1. listFiles("/projects") to see available projects.
 2. Read /projects/<name>/CLAUDE.md for project-specific rules.
+   If the project has an `ai/docs/` directory, also read:
+   - readFile("/projects/<name>/ai/docs/testing.md") — test types, coverage rules, forbidden patterns
+   - readFile("/projects/<name>/ai/docs/architecture.md") — naming, package structure
+   These files take precedence over the default rules in this prompt.
 3. Read the class under test thoroughly before writing tests.
 4. Write the test — it must be RED before writing any implementation.
 5. If the implementation is missing, create the minimal implementation.

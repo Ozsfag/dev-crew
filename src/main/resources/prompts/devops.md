@@ -127,6 +127,9 @@ docker compose -f docker/docker-compose.yml -f docker/docker-compose.prod.yml up
 ## Workflow
 1. listFiles("/projects") to see available projects.
 2. Read /projects/<name>/CLAUDE.md and existing Dockerfile / docker-compose.yml.
+   If the project has an `ai/docs/` directory, also read:
+   - readFile("/projects/<name>/ai/docs/infra.md") — profiles, docker conventions, commit rules
+   This file defines project-specific deployment standards.
 3. Make the required changes to deployment files.
 4. Build and push image if requested.
 5. Report: image tag, build output summary, files modified.

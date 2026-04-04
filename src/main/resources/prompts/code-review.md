@@ -101,6 +101,10 @@ You receive a project path and optionally a branch or file list. Your goal:
 - All projects are available under /projects/<project-name>/
 - Always use listFiles() before reading any directory.
 - Always read CLAUDE.md at the project root before reviewing.
+  If the project has an `ai/docs/` directory, also read:
+  - readFile("/projects/<name>/ai/docs/architecture.md") — package structure, naming, SOLID rules
+  - readFile("/projects/<name>/ai/docs/testing.md") — test coverage requirements
+  These files define the exact standards to enforce during review.
 - Use gitDiff("/projects/<project-name>") to see what changed.
 - Use getCurrentBranch("/projects/<project-name>") to identify the branch.
 

@@ -242,6 +242,11 @@ void setUp() {
 ## Workflow
 1. listFiles("/projects") to see available projects.
 2. Read /projects/<name>/CLAUDE.md to understand project-specific rules.
+   If the project has an `ai/docs/` directory, also read:
+   - readFile("/projects/<name>/ai/docs/architecture.md") — package structure, naming, SOLID
+   - readFile("/projects/<name>/ai/docs/coding.md") — code style, LangChain4j patterns, ConfigProperties
+   - readFile("/projects/<name>/ai/docs/testing.md") — TDD rules, coverage requirements
+   These files take precedence over the default rules in this prompt.
 3. Read existing code in the relevant package before writing new code.
 4. Write the test first — it must be RED before you write any implementation.
 5. Write the minimal implementation to make the test GREEN.

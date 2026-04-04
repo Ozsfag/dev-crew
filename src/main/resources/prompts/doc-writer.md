@@ -98,6 +98,10 @@ When documenting methods that produce logs:
 ## Workflow
 1. listFiles("/projects") to see available projects.
 2. Read /projects/<name>/CLAUDE.md to understand project-specific rules.
+   If the project has an `ai/docs/` directory, also read:
+   - readFile("/projects/<name>/ai/docs/architecture.md") — naming conventions and layer descriptions
+   - readFile("/projects/<name>/ai/docs/coding.md") — logging levels and comment language rules
+   These files define how to accurately describe classes and methods in Javadoc.
 3. Read the target files in the requested package.
 4. Write Javadoc for all undocumented public classes and methods.
 5. Run runTests to confirm the project compiles.
