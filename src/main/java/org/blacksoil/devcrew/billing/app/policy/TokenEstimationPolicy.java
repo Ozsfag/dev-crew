@@ -17,7 +17,7 @@ public class TokenEstimationPolicy {
   private final BillingProperties properties;
 
   /** Оценивает количество токенов в тексте. Минимум 1 токен для непустого текста. */
-  public int estimateTokens(String text) {
+  public int estimateTokensApproximate(String text) {
     if (text == null || text.isEmpty()) {
       return 0;
     }

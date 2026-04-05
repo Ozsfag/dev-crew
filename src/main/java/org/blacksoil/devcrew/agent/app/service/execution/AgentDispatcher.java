@@ -30,7 +30,6 @@ public class AgentDispatcher {
       case CODE_REVIEWER -> codeReviewAgent.execute(prompt);
       case DEVOPS -> devOpsAgent.execute(prompt);
       case DOC_WRITER -> docWriterAgent.execute(prompt);
-      default -> throw new UnsupportedOperationException("Агент " + role + " ещё не реализован");
     };
   }
 }

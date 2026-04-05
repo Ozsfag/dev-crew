@@ -7,7 +7,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.Instant;
 import org.blacksoil.devcrew.agent.app.config.AgentProperties;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,8 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class CircularAgentPipelineTest {
-
-  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
 
   @Mock private AgentDispatcher agentDispatcher;
 

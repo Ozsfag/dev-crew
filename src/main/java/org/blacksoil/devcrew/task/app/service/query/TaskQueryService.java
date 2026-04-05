@@ -34,6 +34,10 @@ public class TaskQueryService {
     return taskStore.findByProjectId(projectId);
   }
 
+  public List<TaskModel> getByOrgId(UUID orgId) {
+    return taskStore.findByOrgId(orgId);
+  }
+
   /** Возвращает задачи RATE_LIMITED, чей retryAt уже наступил. */
   public List<TaskModel> getRateLimitedReadyToRetry(Instant now) {
     return taskStore.findRateLimitedReadyToRetry(now);

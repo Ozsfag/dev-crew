@@ -1,7 +1,6 @@
 package org.blacksoil.devcrew.agent.app.service.execution;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -82,12 +81,5 @@ class AgentDispatcherTest {
 
     verify(docWriterAgent).execute("task");
     assertThat(result).isEqualTo("# API Documentation\n...");
-  }
-
-  @Test
-  void dispatch_unsupported_role_throws_UnsupportedOperationException() {
-    assertThatThrownBy(() -> dispatcher.dispatch(AgentRole.ORCHESTRATOR, "task"))
-        .isInstanceOf(UnsupportedOperationException.class)
-        .hasMessageContaining("ORCHESTRATOR");
   }
 }

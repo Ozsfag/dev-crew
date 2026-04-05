@@ -7,7 +7,6 @@ import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.agent.domain.hook.PostAgentHook;
 import org.blacksoil.devcrew.billing.app.service.command.UsageRecordCommandService;
 import org.blacksoil.devcrew.organization.app.service.query.OrganizationQueryService;
-import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,20 +18,17 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class BillingPostAgentHook implements PostAgentHook {
 
-  private final TaskQueryService taskQueryService;
   private final OrganizationQueryService organizationQueryService;
   private final UsageRecordCommandService usageRecordCommandService;
 
   @Override
-  public void onAgentCompleted(UUID taskId, AgentRole role, String result) {
-    var task = taskQueryService.getById(taskId);
-    if (task.projectId() == null) {
+  public void onAgentCompleted(UUID taskId, UUID projectId, AgentRole role, String result) {
+    if (projectId == null) {
       log.debug("Задача {} без projectId — биллинг пропущен", taskId);
       return;
     }
-    var project = organizationQueryService.getProjectById(task.projectId());
-    usageRecordCommandService.record(
-        taskId, task.projectId(), project.orgId(), role, task.description(), result);
+    var project = organizationQueryService.getProjectById(projectId);
+    usageRecordCommandService.record(taskId, projectId, project.orgId(), role, "", result);
     log.debug("Записано использование для задачи {}: orgId={}", taskId, project.orgId());
   }
 }

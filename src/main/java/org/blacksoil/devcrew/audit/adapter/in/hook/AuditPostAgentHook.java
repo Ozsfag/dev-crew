@@ -7,7 +7,6 @@ import org.blacksoil.devcrew.agent.domain.hook.PostAgentHook;
 import org.blacksoil.devcrew.audit.app.service.command.AuditCommandService;
 import org.blacksoil.devcrew.audit.domain.AuditEventModel;
 import org.blacksoil.devcrew.common.TimeProvider;
-import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
 import org.springframework.stereotype.Component;
 
 /**
@@ -18,22 +17,30 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AuditPostAgentHook implements PostAgentHook {
 
+  private static final int MAX_RESULT_CHARS = 1000;
+
   private final AuditCommandService auditCommandService;
-  private final TaskQueryService taskQueryService;
   private final TimeProvider timeProvider;
 
   @Override
-  public void onAgentCompleted(UUID taskId, AgentRole role, String result) {
-    // Берём projectId из задачи для тенант-изоляции событий аудита
-    var task = taskQueryService.getById(taskId);
+  public void onAgentCompleted(UUID taskId, UUID projectId, AgentRole role, String result) {
     auditCommandService.record(
         new AuditEventModel(
             UUID.randomUUID(),
-            task.projectId(),
+            projectId,
             "system",
             "TASK_COMPLETED",
             taskId,
-            "role=%s result=%s".formatted(role.name(), result),
+            buildDetails(role, result),
             timeProvider.now()));
+  }
+
+  private String buildDetails(AgentRole role, String result) {
+    var truncated =
+        result != null && result.length() > MAX_RESULT_CHARS
+            ? result.substring(0, MAX_RESULT_CHARS) + "..."
+            : (result != null ? result : "");
+    return "{\"role\":\"%s\",\"result\":\"%s\"}"
+        .formatted(role.name(), truncated.replace("\"", "\\\""));
   }
 }

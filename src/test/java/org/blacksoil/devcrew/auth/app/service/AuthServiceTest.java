@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import org.blacksoil.devcrew.auth.domain.AuthException;
+import org.blacksoil.devcrew.auth.domain.OrganizationCreationPort;
 import org.blacksoil.devcrew.auth.domain.UserRole;
 import org.blacksoil.devcrew.auth.domain.model.RefreshTokenModel;
 import org.blacksoil.devcrew.auth.domain.model.UserModel;
@@ -17,9 +18,6 @@ import org.blacksoil.devcrew.auth.domain.store.RefreshTokenStore;
 import org.blacksoil.devcrew.auth.domain.store.UserStore;
 import org.blacksoil.devcrew.common.TimeProvider;
 import org.blacksoil.devcrew.common.exception.ConflictException;
-import org.blacksoil.devcrew.organization.app.service.command.OrganizationCommandService;
-import org.blacksoil.devcrew.organization.domain.OrgPlan;
-import org.blacksoil.devcrew.organization.domain.model.OrganizationModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +37,7 @@ class AuthServiceTest {
 
   @Mock private JwtService jwtService;
 
-  @Mock private OrganizationCommandService organizationCommandService;
+  @Mock private OrganizationCreationPort organizationCreationPort;
 
   private AuthService authService;
 
@@ -51,7 +49,7 @@ class AuthServiceTest {
             refreshTokenStore,
             jwtService,
             new BCryptPasswordEncoder(),
-            organizationCommandService,
+            organizationCreationPort,
             new TimeProvider());
   }
 
@@ -60,8 +58,7 @@ class AuthServiceTest {
   @Test
   void register_creates_organization_and_assigns_ARCHITECT_role() {
     var orgId = UUID.randomUUID();
-    var org = new OrganizationModel(orgId, "admin's Organization", OrgPlan.FREE, null, NOW, NOW);
-    when(organizationCommandService.createOrganization(anyString())).thenReturn(org);
+    when(organizationCreationPort.createForUser(anyString())).thenReturn(orgId);
     when(userStore.findByEmail(anyString())).thenReturn(Optional.empty());
     when(userStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
     when(refreshTokenStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -81,8 +78,7 @@ class AuthServiceTest {
 
   @Test
   void register_uses_provided_org_name() {
-    var org = new OrganizationModel(UUID.randomUUID(), "Acme Corp", OrgPlan.FREE, null, NOW, NOW);
-    when(organizationCommandService.createOrganization("Acme Corp")).thenReturn(org);
+    when(organizationCreationPort.createForUser("Acme Corp")).thenReturn(UUID.randomUUID());
     when(userStore.findByEmail(anyString())).thenReturn(Optional.empty());
     when(userStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
     when(refreshTokenStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -94,7 +90,7 @@ class AuthServiceTest {
 
     authService.register("admin@test.com", "password", "Acme Corp");
 
-    verify(organizationCommandService).createOrganization("Acme Corp");
+    verify(organizationCreationPort).createForUser("Acme Corp");
   }
 
   @Test
@@ -108,8 +104,7 @@ class AuthServiceTest {
 
   @Test
   void register_returns_login_result_with_tokens() {
-    var org = new OrganizationModel(UUID.randomUUID(), "org", OrgPlan.FREE, null, NOW, NOW);
-    when(organizationCommandService.createOrganization(anyString())).thenReturn(org);
+    when(organizationCreationPort.createForUser(anyString())).thenReturn(UUID.randomUUID());
     when(userStore.findByEmail(anyString())).thenReturn(Optional.empty());
     when(userStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
     when(refreshTokenStore.save(any())).thenAnswer(inv -> inv.getArgument(0));

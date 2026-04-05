@@ -67,6 +67,19 @@ class UsageRecordJpaStoreTest extends IntegrationTestBase {
     assertThat(found).isEmpty();
   }
 
+  @Test
+  void existsByTaskId_returns_true_when_record_exists() {
+    var taskId = UUID.randomUUID();
+    store.save(usageRecordWithTaskId(taskId));
+
+    assertThat(store.existsByTaskId(taskId)).isTrue();
+  }
+
+  @Test
+  void existsByTaskId_returns_false_when_record_not_found() {
+    assertThat(store.existsByTaskId(UUID.randomUUID())).isFalse();
+  }
+
   private UsageRecordModel usageRecord(UUID orgId, Instant recordedAt) {
     return new UsageRecordModel(
         UUID.randomUUID(),
@@ -78,5 +91,18 @@ class UsageRecordJpaStoreTest extends IntegrationTestBase {
         200,
         new BigDecimal("0.00000300"),
         recordedAt);
+  }
+
+  private UsageRecordModel usageRecordWithTaskId(UUID taskId) {
+    return new UsageRecordModel(
+        UUID.randomUUID(),
+        taskId,
+        null,
+        UUID.randomUUID(),
+        AgentRole.BACKEND_DEV,
+        100,
+        200,
+        new BigDecimal("0.00000300"),
+        Instant.parse("2026-01-15T10:00:00Z"));
   }
 }

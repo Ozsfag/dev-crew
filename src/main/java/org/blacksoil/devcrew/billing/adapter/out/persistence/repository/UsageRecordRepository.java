@@ -8,5 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UsageRecordRepository extends JpaRepository<UsageRecordEntity, UUID> {
 
+  boolean existsByTaskId(UUID taskId);
+
   List<UsageRecordEntity> findByOrgIdAndRecordedAtBetween(UUID orgId, Instant from, Instant to);
 }

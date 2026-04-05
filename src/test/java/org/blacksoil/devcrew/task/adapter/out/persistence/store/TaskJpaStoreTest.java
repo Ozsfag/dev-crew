@@ -34,7 +34,7 @@ class TaskJpaStoreTest extends IntegrationTestBase {
   void findByStatus_returns_matching_tasks() {
     taskJpaStore.save(taskModel(null, AgentRole.QA, TaskStatus.PENDING));
     taskJpaStore.save(taskModel(null, AgentRole.DEVOPS, TaskStatus.IN_PROGRESS));
-    taskJpaStore.save(taskModel(null, AgentRole.PM, TaskStatus.PENDING));
+    taskJpaStore.save(taskModel(null, AgentRole.CODE_REVIEWER, TaskStatus.PENDING));
 
     var pending = taskJpaStore.findByStatus(TaskStatus.PENDING);
 
@@ -44,7 +44,7 @@ class TaskJpaStoreTest extends IntegrationTestBase {
 
   @Test
   void findByParentTaskId_returns_subtasks() {
-    var parent = taskJpaStore.save(taskModel(null, AgentRole.ORCHESTRATOR, TaskStatus.IN_PROGRESS));
+    var parent = taskJpaStore.save(taskModel(null, AgentRole.DOC_WRITER, TaskStatus.IN_PROGRESS));
     taskJpaStore.save(taskModel(parent.id(), AgentRole.BACKEND_DEV, TaskStatus.PENDING));
     taskJpaStore.save(taskModel(parent.id(), AgentRole.QA, TaskStatus.PENDING));
     taskJpaStore.save(taskModel(null, AgentRole.DEVOPS, TaskStatus.PENDING));

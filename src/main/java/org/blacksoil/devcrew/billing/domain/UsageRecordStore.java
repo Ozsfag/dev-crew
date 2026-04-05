@@ -9,5 +9,7 @@ public interface UsageRecordStore {
 
   UsageRecordModel save(UsageRecordModel record);
 
+  boolean existsByTaskId(UUID taskId);
+
   List<UsageRecordModel> findByOrgIdAndMonth(UUID orgId, YearMonth month);
 }

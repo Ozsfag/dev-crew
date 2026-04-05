@@ -11,12 +11,7 @@ import java.util.UUID;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.billing.app.service.command.UsageRecordCommandService;
 import org.blacksoil.devcrew.organization.app.service.query.OrganizationQueryService;
-import org.blacksoil.devcrew.organization.domain.OrgPlan;
-import org.blacksoil.devcrew.organization.domain.model.OrganizationModel;
 import org.blacksoil.devcrew.organization.domain.model.ProjectModel;
-import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
-import org.blacksoil.devcrew.task.domain.TaskModel;
-import org.blacksoil.devcrew.task.domain.TaskStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,7 +23,6 @@ class BillingPostAgentHookTest {
 
   private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
 
-  @Mock private TaskQueryService taskQueryService;
   @Mock private OrganizationQueryService organizationQueryService;
   @Mock private UsageRecordCommandService usageRecordCommandService;
 
@@ -39,12 +33,10 @@ class BillingPostAgentHookTest {
     var taskId = UUID.randomUUID();
     var projectId = UUID.randomUUID();
     var orgId = UUID.randomUUID();
-    var task = taskModel(taskId, projectId);
     var project = project(projectId, orgId);
-    when(taskQueryService.getById(taskId)).thenReturn(task);
     when(organizationQueryService.getProjectById(projectId)).thenReturn(project);
 
-    hook.onAgentCompleted(taskId, AgentRole.BACKEND_DEV, "result text");
+    hook.onAgentCompleted(taskId, projectId, AgentRole.BACKEND_DEV, "result text");
 
     verify(usageRecordCommandService)
         .record(
@@ -52,41 +44,20 @@ class BillingPostAgentHookTest {
             eq(projectId),
             eq(orgId),
             eq(AgentRole.BACKEND_DEV),
-            eq(task.description()),
+            any(),
             eq("result text"));
   }
 
   @Test
   void onAgentCompleted_skips_billing_when_task_has_no_project() {
     var taskId = UUID.randomUUID();
-    var task = taskModel(taskId, null);
-    when(taskQueryService.getById(taskId)).thenReturn(task);
 
-    hook.onAgentCompleted(taskId, AgentRole.QA, "result");
+    hook.onAgentCompleted(taskId, null, AgentRole.QA, "result");
 
     verify(usageRecordCommandService, never()).record(any(), any(), any(), any(), any(), any());
   }
 
-  private TaskModel taskModel(UUID id, UUID projectId) {
-    return new TaskModel(
-        id,
-        projectId,
-        null,
-        "title",
-        "Write tests",
-        AgentRole.BACKEND_DEV,
-        TaskStatus.COMPLETED,
-        null,
-        NOW,
-        NOW,
-        null);
-  }
-
   private ProjectModel project(UUID id, UUID orgId) {
     return new ProjectModel(id, orgId, "my-project", "/projects/repo", NOW, NOW);
-  }
-
-  private OrganizationModel org(UUID id) {
-    return new OrganizationModel(id, "Org", OrgPlan.FREE, null, NOW, NOW);
   }
 }

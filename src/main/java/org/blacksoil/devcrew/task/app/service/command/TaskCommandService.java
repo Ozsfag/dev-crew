@@ -1,5 +1,6 @@
 package org.blacksoil.devcrew.task.app.service.command;
 
+import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
@@ -40,74 +41,33 @@ public class TaskCommandService {
 
   public TaskModel updateStatus(UUID taskId, TaskStatus newStatus) {
     var task = findOrThrow(taskId);
-    var updated =
-        new TaskModel(
-            task.id(),
-            task.projectId(),
-            task.parentTaskId(),
-            task.title(),
-            task.description(),
-            task.assignedTo(),
-            newStatus,
-            task.result(),
-            task.createdAt(),
-            timeProvider.now(),
-            task.retryAt());
-    return taskStore.save(updated);
+    return taskStore.save(task.withStatus(newStatus).withUpdatedAt(timeProvider.now()));
   }
 
   public TaskModel complete(UUID taskId, String result) {
     var task = findOrThrow(taskId);
-    var completed =
-        new TaskModel(
-            task.id(),
-            task.projectId(),
-            task.parentTaskId(),
-            task.title(),
-            task.description(),
-            task.assignedTo(),
-            TaskStatus.COMPLETED,
-            result,
-            task.createdAt(),
-            timeProvider.now(),
-            null);
-    return taskStore.save(completed);
+    return taskStore.save(
+        task.withStatus(TaskStatus.COMPLETED)
+            .withResult(result)
+            .withRetryAt(null)
+            .withUpdatedAt(timeProvider.now()));
   }
 
   public TaskModel fail(UUID taskId, String reason) {
     var task = findOrThrow(taskId);
-    var failed =
-        new TaskModel(
-            task.id(),
-            task.projectId(),
-            task.parentTaskId(),
-            task.title(),
-            task.description(),
-            task.assignedTo(),
-            TaskStatus.FAILED,
-            reason,
-            task.createdAt(),
-            timeProvider.now(),
-            null);
-    return taskStore.save(failed);
+    return taskStore.save(
+        task.withStatus(TaskStatus.FAILED)
+            .withResult(reason)
+            .withRetryAt(null)
+            .withUpdatedAt(timeProvider.now()));
   }
 
-  public TaskModel rateLimited(UUID taskId, java.time.Instant retryAt) {
+  public TaskModel rateLimited(UUID taskId, Instant retryAt) {
     var task = findOrThrow(taskId);
-    var waiting =
-        new TaskModel(
-            task.id(),
-            task.projectId(),
-            task.parentTaskId(),
-            task.title(),
-            task.description(),
-            task.assignedTo(),
-            TaskStatus.RATE_LIMITED,
-            task.result(),
-            task.createdAt(),
-            timeProvider.now(),
-            retryAt);
-    return taskStore.save(waiting);
+    return taskStore.save(
+        task.withStatus(TaskStatus.RATE_LIMITED)
+            .withRetryAt(retryAt)
+            .withUpdatedAt(timeProvider.now()));
   }
 
   private TaskModel findOrThrow(UUID taskId) {

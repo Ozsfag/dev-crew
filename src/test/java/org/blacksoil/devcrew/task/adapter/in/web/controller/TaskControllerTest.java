@@ -10,9 +10,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.blacksoil.devcrew.agent.domain.AgentOrchestrator;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
+import org.blacksoil.devcrew.auth.domain.UserRole;
+import org.blacksoil.devcrew.bootstrap.AuthenticatedUser;
 import org.blacksoil.devcrew.common.exception.NotFoundException;
 import org.blacksoil.devcrew.common.web.GlobalExceptionHandler;
 import org.blacksoil.devcrew.task.adapter.in.web.mapper.TaskWebMapper;
@@ -26,6 +29,9 @@ import org.mapstruct.factory.Mappers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -33,6 +39,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class TaskControllerTest {
 
   private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
+  private static final UUID ORG_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+  private static final UUID USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
 
   private final ObjectMapper objectMapper = new ObjectMapper();
   @Mock private TaskQueryService taskQueryService;
@@ -47,6 +55,7 @@ class TaskControllerTest {
     mockMvc =
         MockMvcBuilders.standaloneSetup(controller)
             .setControllerAdvice(new GlobalExceptionHandler())
+            .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
             .build();
   }
 
@@ -61,7 +70,11 @@ class TaskControllerTest {
             """;
 
     mockMvc
-        .perform(post("/api/tasks").contentType(MediaType.APPLICATION_JSON).content(body))
+        .perform(
+            post("/api/tasks")
+                .with(principalAuth())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.taskId").value(taskId.toString()));
   }
@@ -76,10 +89,25 @@ class TaskControllerTest {
             """;
 
     mockMvc
-        .perform(post("/api/tasks").contentType(MediaType.APPLICATION_JSON).content(body))
+        .perform(
+            post("/api/tasks")
+                .with(principalAuth())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
         .andExpect(status().isCreated());
 
     verify(agentOrchestrator).submit("Write tests", "TDD", AgentRole.QA, null);
+  }
+
+  @Test
+  void GET_tasks_returns_list_filtered_by_org() throws Exception {
+    var taskId = UUID.randomUUID();
+    when(taskQueryService.getByOrgId(ORG_ID)).thenReturn(List.of(taskModel(taskId)));
+
+    mockMvc
+        .perform(get("/api/tasks").with(principalAuth()).accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].id").value(taskId.toString()));
   }
 
   @Test
@@ -127,6 +155,17 @@ class TaskControllerTest {
     mockMvc
         .perform(post("/api/tasks").contentType(MediaType.APPLICATION_JSON).content(body))
         .andExpect(status().isBadRequest());
+  }
+
+  private static org.springframework.test.web.servlet.request.RequestPostProcessor principalAuth() {
+    return request -> {
+      var principal = new AuthenticatedUser(USER_ID, ORG_ID, UserRole.ARCHITECT);
+      var auth = new UsernamePasswordAuthenticationToken(principal, null, List.of());
+      var ctx = SecurityContextHolder.createEmptyContext();
+      ctx.setAuthentication(auth);
+      SecurityContextHolder.setContext(ctx);
+      return request;
+    };
   }
 
   private TaskModel taskModel(UUID id) {

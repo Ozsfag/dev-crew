@@ -3,6 +3,7 @@ package org.blacksoil.devcrew.auth.app.service;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.auth.domain.AuthException;
+import org.blacksoil.devcrew.auth.domain.OrganizationCreationPort;
 import org.blacksoil.devcrew.auth.domain.UserRole;
 import org.blacksoil.devcrew.auth.domain.model.RefreshTokenModel;
 import org.blacksoil.devcrew.auth.domain.model.UserModel;
@@ -10,7 +11,6 @@ import org.blacksoil.devcrew.auth.domain.store.RefreshTokenStore;
 import org.blacksoil.devcrew.auth.domain.store.UserStore;
 import org.blacksoil.devcrew.common.TimeProvider;
 import org.blacksoil.devcrew.common.exception.ConflictException;
-import org.blacksoil.devcrew.organization.app.service.command.OrganizationCommandService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +23,7 @@ public class AuthService {
   private final RefreshTokenStore refreshTokenStore;
   private final JwtService jwtService;
   private final PasswordEncoder passwordEncoder;
-  private final OrganizationCommandService organizationCommandService;
+  private final OrganizationCreationPort organizationCreationPort;
   private final TimeProvider timeProvider;
 
   private static String defaultOrgName(String email) {
@@ -38,13 +38,13 @@ public class AuthService {
     }
     // Каждый новый пользователь создаёт свою организацию и становится ARCHITECT
     var name = (orgName != null && !orgName.isBlank()) ? orgName : defaultOrgName(email);
-    var org = organizationCommandService.createOrganization(name);
+    var orgId = organizationCreationPort.createForUser(name);
     var now = timeProvider.now();
     var user =
         userStore.save(
             new UserModel(
                 UUID.randomUUID(),
-                org.id(),
+                orgId,
                 email,
                 passwordEncoder.encode(password),
                 UserRole.ARCHITECT,

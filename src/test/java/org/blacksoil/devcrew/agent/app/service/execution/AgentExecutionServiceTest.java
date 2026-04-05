@@ -113,7 +113,7 @@ class AgentExecutionServiceTest {
 
     var hookCaptor = ArgumentCaptor.<String>captor();
     verify(postAgentHook)
-        .onAgentCompleted(eq(taskId), eq(AgentRole.BACKEND_DEV), hookCaptor.capture());
+        .onAgentCompleted(eq(taskId), any(), eq(AgentRole.BACKEND_DEV), hookCaptor.capture());
     assertThat(hookCaptor.getValue()).isEqualTo("result");
   }
 

@@ -17,6 +17,8 @@ public interface TaskStore {
 
   List<TaskModel> findByProjectId(UUID projectId);
 
+  List<TaskModel> findByOrgId(UUID orgId);
+
   /** Возвращает задачи со статусом RATE_LIMITED, чей retryAt уже наступил. */
   List<TaskModel> findRateLimitedReadyToRetry(java.time.Instant now);
 }

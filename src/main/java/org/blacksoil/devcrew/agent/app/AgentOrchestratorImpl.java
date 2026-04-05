@@ -12,7 +12,15 @@ import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
-/** Оркестратор агентов: принимает задачу, создаёт её в хранилище, запускает исполнение. */
+/**
+ * Оркестратор агентов. Реализует двухфазную модель выполнения:
+ *
+ * <ol>
+ *   <li>{@code submit} — создаёт задачу в БД и возвращает id (синхронно, 201 Created).
+ *   <li>{@code run} — проверяет предусловия (PreRunCheck), запускает агента асинхронно (202
+ *       Accepted). Клиент поллит GET /api/tasks/{id} для получения результата.
+ * </ol>
+ */
 @Service
 @RequiredArgsConstructor
 public class AgentOrchestratorImpl implements AgentOrchestrator {
@@ -22,12 +30,17 @@ public class AgentOrchestratorImpl implements AgentOrchestrator {
   private final AgentExecutionService agentExecutionService;
   private final List<PreRunCheck> preRunChecks;
 
+  /** Создаёт задачу в статусе PENDING. Не запускает агента — только регистрирует задачу. */
   @Override
   public UUID submit(String title, String description, AgentRole role, @Nullable UUID projectId) {
     var task = taskCommandService.create(title, description, role, projectId, null);
     return task.id();
   }
 
+  /**
+   * Запускает ранее созданную задачу. Последовательно: проверяет план/лимиты (PreRunCheck),
+   * передаёт в AgentExecutionService для асинхронного выполнения.
+   */
   @Override
   public void run(UUID taskId, AgentRole role) {
     var task = taskQueryService.getById(taskId);

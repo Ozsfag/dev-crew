@@ -1,5 +1,6 @@
 package org.blacksoil.devcrew.notification.adapter.in.telegram;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,21 +27,30 @@ public class TelegramBotAdapter {
   private final TelegramInboundService inboundService;
 
   private final AtomicLong offset = new AtomicLong(0);
+  private final AtomicInteger consecutiveErrors = new AtomicInteger(0);
 
   @Scheduled(fixedDelayString = "${devcrew.notification.telegram.poll-delay-ms:1000}")
   public void pollUpdates() {
-    var updates = telegramApiClient.getUpdates(offset.get());
-    for (var update : updates) {
-      if (isAllowedChat(update)) {
-        processUpdate(update);
+    try {
+      var updates = telegramApiClient.getUpdates(offset.get());
+      consecutiveErrors.set(0);
+      for (var update : updates) {
+        if (isAllowedChat(update)) {
+          processUpdate(update);
+        }
+        offset.set(update.updateId() + 1);
       }
-      offset.set(update.updateId() + 1);
+    } catch (Exception e) {
+      int errors = consecutiveErrors.incrementAndGet();
+      if (errors == 1 || errors % 10 == 0) {
+        log.error("Ошибка Telegram polling ({}й раз подряд)", errors, e);
+      }
     }
   }
 
   private void processUpdate(TelegramUpdate update) {
     var message = update.message();
-    if (message == null) return;
+    if (message == null || message.chat() == null) return;
     if (message.text() != null && !message.text().isBlank()) {
       inboundService.handleText(message.chat().id(), message.text());
     } else if (message.voice() != null) {

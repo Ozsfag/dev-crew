@@ -1,10 +1,9 @@
-package org.blacksoil.devcrew.notification.app.service;
+package org.blacksoil.devcrew.agent.app.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Instant;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.agent.domain.agent.TaskParserAgent;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,8 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class TaskParserServiceTest {
-
-  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
 
   @Mock private TaskParserAgent taskParserAgent;
 

@@ -13,5 +13,6 @@ REST API, JWT-аутентификация, 5 агентов, мультитен
 | П7.2 | Тесты audit/ сервисов                 | ✅     | [plans/p7.2](plans/p7.2-audit-tests.md)            |
 | П7.3 | Stripe webhook реализация             | ✅     | [plans/p7.3](plans/p7.3-stripe-webhook.md)         |
 | П7.4 | Fix Instant.now() в тестах            | ✅     | [plans/p7.4](plans/p7.4-fix-instant-in-tests.md)   |
-| П8   | Telegram Bot входящие + голос + pipeline | 🔲  | [plans/p8](plans/p8-telegram-bot-input.md)         |
+| П8   | Telegram Bot входящие + голос + pipeline | ✅  | [plans/p8](plans/p8-telegram-bot-input.md)         |
 | П9   | IntelliJ IDEA Plugin                  | 🔲     | [plans/p9](plans/p9-intellij-plugin.md)            |
+| П10  | Рефакторинг всех модулей и компонентов | 🔲    | [plans/p10](plans/p10-refactoring.md)              |

@@ -17,25 +17,25 @@ class TokenEstimationPolicyTest {
   }
 
   @Test
-  void estimateTokens_returns_zero_for_null() {
-    assertThat(policy.estimateTokens(null)).isZero();
+  void estimateTokensApproximate_returns_zero_for_null() {
+    assertThat(policy.estimateTokensApproximate(null)).isZero();
   }
 
   @Test
-  void estimateTokens_returns_zero_for_empty_string() {
-    assertThat(policy.estimateTokens("")).isZero();
+  void estimateTokensApproximate_returns_zero_for_empty_string() {
+    assertThat(policy.estimateTokensApproximate("")).isZero();
   }
 
   @Test
-  void estimateTokens_returns_at_least_one_for_short_text() {
-    assertThat(policy.estimateTokens("Hi")).isEqualTo(1);
+  void estimateTokensApproximate_returns_at_least_one_for_short_text() {
+    assertThat(policy.estimateTokensApproximate("Hi")).isEqualTo(1);
   }
 
   @Test
-  void estimateTokens_divides_length_by_chars_per_token() {
+  void estimateTokensApproximate_divides_length_by_chars_per_token() {
     // default charsPerToken = 4, text of 40 chars → 10 tokens
     var text = "a".repeat(40);
-    assertThat(policy.estimateTokens(text)).isEqualTo(10);
+    assertThat(policy.estimateTokensApproximate(text)).isEqualTo(10);
   }
 
   @Test

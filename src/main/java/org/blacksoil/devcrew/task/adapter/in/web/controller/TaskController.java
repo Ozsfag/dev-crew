@@ -27,7 +27,9 @@ public class TaskController {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  public CreateTaskResponse create(@Valid @RequestBody CreateTaskRequest request) {
+  public CreateTaskResponse create(
+      @Valid @RequestBody CreateTaskRequest request,
+      @AuthenticationPrincipal AuthenticatedUser currentUser) {
     var taskId =
         agentOrchestrator.submit(
             request.title(), request.description(), request.role(), request.projectId());
@@ -35,9 +37,10 @@ public class TaskController {
   }
 
   @GetMapping
-  public List<TaskResponse> getByProject(
-      @RequestParam UUID projectId, @AuthenticationPrincipal AuthenticatedUser currentUser) {
-    return taskQueryService.getByProjectId(projectId).stream().map(mapper::toResponse).toList();
+  public List<TaskResponse> getByOrg(@AuthenticationPrincipal AuthenticatedUser currentUser) {
+    return taskQueryService.getByOrgId(currentUser.orgId()).stream()
+        .map(mapper::toResponse)
+        .toList();
   }
 
   @PostMapping("/{id}/run")

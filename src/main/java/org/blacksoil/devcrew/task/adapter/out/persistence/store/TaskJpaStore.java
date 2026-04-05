@@ -52,6 +52,12 @@ public class TaskJpaStore implements TaskStore {
 
   @Override
   @Transactional(readOnly = true)
+  public List<TaskModel> findByOrgId(UUID orgId) {
+    return taskRepository.findByOrgId(orgId).stream().map(mapper::toModel).toList();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
   public List<TaskModel> findRateLimitedReadyToRetry(Instant now) {
     return taskRepository.findByStatusAndRetryAtBefore(TaskStatus.RATE_LIMITED, now).stream()
         .map(mapper::toModel)

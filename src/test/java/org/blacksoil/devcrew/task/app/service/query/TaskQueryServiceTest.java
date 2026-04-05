@@ -61,6 +61,17 @@ class TaskQueryServiceTest {
   }
 
   @Test
+  void getByOrgId_returns_tasks_for_org() {
+    var orgId = UUID.randomUUID();
+    var tasks = List.of(taskModel(UUID.randomUUID(), null, TaskStatus.PENDING));
+    when(taskStore.findByOrgId(orgId)).thenReturn(tasks);
+
+    var result = taskQueryService.getByOrgId(orgId);
+
+    assertThat(result).hasSize(1);
+  }
+
+  @Test
   void getSubtasks_returns_children_of_parent() {
     var parentId = UUID.randomUUID();
     var subtasks = List.of(taskModel(UUID.randomUUID(), parentId, TaskStatus.PENDING));

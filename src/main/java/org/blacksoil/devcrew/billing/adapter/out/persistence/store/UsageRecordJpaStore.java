@@ -28,6 +28,12 @@ public class UsageRecordJpaStore implements UsageRecordStore {
 
   @Override
   @Transactional(readOnly = true)
+  public boolean existsByTaskId(UUID taskId) {
+    return repository.existsByTaskId(taskId);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
   public List<UsageRecordModel> findByOrgIdAndMonth(UUID orgId, YearMonth month) {
     var from = month.atDay(1).atStartOfDay().toInstant(ZoneOffset.UTC);
     var to = month.atEndOfMonth().atTime(LocalTime.MAX).toInstant(ZoneOffset.UTC);

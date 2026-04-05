@@ -3,6 +3,7 @@ package org.blacksoil.devcrew.notification.app.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.blacksoil.devcrew.agent.domain.AgentOrchestrator;
+import org.blacksoil.devcrew.agent.domain.TaskParsingPort;
 import org.blacksoil.devcrew.notification.domain.NotificationPort;
 import org.blacksoil.devcrew.notification.domain.VoiceTranscriptionPort;
 import org.springframework.stereotype.Service;
@@ -14,14 +15,14 @@ import org.springframework.stereotype.Service;
 public class TelegramInboundService {
 
   private final VoiceTranscriptionPort voiceTranscriptionPort;
-  private final TaskParserService taskParserService;
+  private final TaskParsingPort taskParsingPort;
   private final AgentOrchestrator agentOrchestrator;
   private final NotificationPort notificationPort;
 
   /** Обрабатывает текстовое сообщение: парсит в задачу и запускает агента. */
   public void handleText(long chatId, String text) {
     log.info("Telegram входящее сообщение: chatId={}", chatId);
-    var parsed = taskParserService.parse(text);
+    var parsed = taskParsingPort.parse(text);
     if (parsed.title().isBlank()) {
       notificationPort.send("Не удалось распознать задачу. Пожалуйста, опишите задачу подробнее.");
       return;

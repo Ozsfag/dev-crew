@@ -54,7 +54,7 @@ class TelegramNotificationAdapterTest {
     org.mockito.Mockito.when(telegramProperties.getChatId()).thenReturn("999");
     org.mockito.Mockito.when(telegramProperties.getMaxMessageLength()).thenReturn(4096);
 
-    adapter.onAgentCompleted(taskId, AgentRole.BACKEND_DEV, "Tests written: FooTest.java");
+    adapter.onAgentCompleted(taskId, null, AgentRole.BACKEND_DEV, "Tests written: FooTest.java");
 
     var captor = ArgumentCaptor.<String>captor();
     verify(telegramApiClient).sendMessage(org.mockito.ArgumentMatchers.eq("999"), captor.capture());
@@ -68,7 +68,7 @@ class TelegramNotificationAdapterTest {
   void onAgentCompleted_skips_when_disabled() {
     org.mockito.Mockito.when(telegramProperties.isEnabled()).thenReturn(false);
 
-    adapter.onAgentCompleted(UUID.randomUUID(), AgentRole.QA, "result");
+    adapter.onAgentCompleted(UUID.randomUUID(), null, AgentRole.QA, "result");
 
     verifyNoInteractions(telegramApiClient);
   }

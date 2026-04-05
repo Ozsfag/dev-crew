@@ -2,6 +2,7 @@ package org.blacksoil.devcrew.agent.app.policy;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.langchain4j.model.anthropic.internal.client.AnthropicHttpException;
 import java.time.Duration;
 import java.time.Instant;
 import org.blacksoil.devcrew.agent.app.config.RateLimitProperties;
@@ -54,6 +55,24 @@ class RateLimitPolicyTest {
     var cause = new RuntimeException("HTTP 429");
     var ex = new RuntimeException("LLM call failed", cause);
     assertThat(policy.isRateLimit(ex)).isTrue();
+  }
+
+  @Test
+  void isRateLimit_returns_true_for_AnthropicHttpException_429() {
+    var ex = new AnthropicHttpException(429, "rate_limit_error");
+    assertThat(policy.isRateLimit(ex)).isTrue();
+  }
+
+  @Test
+  void isRateLimit_returns_true_for_AnthropicHttpException_529() {
+    var ex = new AnthropicHttpException(529, "overloaded_error");
+    assertThat(policy.isRateLimit(ex)).isTrue();
+  }
+
+  @Test
+  void isRateLimit_returns_false_for_AnthropicHttpException_500() {
+    var ex = new AnthropicHttpException(500, "internal_server_error");
+    assertThat(policy.isRateLimit(ex)).isFalse();
   }
 
   @Test

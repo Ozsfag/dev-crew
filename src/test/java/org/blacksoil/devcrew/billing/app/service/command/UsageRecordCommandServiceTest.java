@@ -2,6 +2,7 @@ package org.blacksoil.devcrew.billing.app.service.command;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -43,6 +44,7 @@ class UsageRecordCommandServiceTest {
     var taskId = UUID.randomUUID();
     var projectId = UUID.randomUUID();
     var orgId = UUID.randomUUID();
+    when(usageRecordStore.existsByTaskId(taskId)).thenReturn(false);
     when(timeProvider.now()).thenReturn(now);
     when(usageRecordStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -62,6 +64,7 @@ class UsageRecordCommandServiceTest {
 
   @Test
   void record_calculates_cost_based_on_tokens() {
+    when(usageRecordStore.existsByTaskId(any())).thenReturn(false);
     when(timeProvider.now()).thenReturn(NOW);
     when(usageRecordStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -75,6 +78,7 @@ class UsageRecordCommandServiceTest {
 
   @Test
   void record_generates_unique_id() {
+    when(usageRecordStore.existsByTaskId(any())).thenReturn(false);
     when(timeProvider.now()).thenReturn(NOW);
     when(usageRecordStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -89,5 +93,17 @@ class UsageRecordCommandServiceTest {
     var captor = ArgumentCaptor.<UsageRecordModel>captor();
     verify(usageRecordStore).save(captor.capture());
     assertThat(captor.getValue().id()).isNotNull();
+  }
+
+  @Test
+  void record_skips_save_when_task_already_recorded() {
+    var taskId = UUID.randomUUID();
+    when(usageRecordStore.existsByTaskId(taskId)).thenReturn(true);
+
+    var result =
+        service.record(taskId, UUID.randomUUID(), UUID.randomUUID(), AgentRole.QA, "p", "r");
+
+    assertThat(result).isNull();
+    verify(usageRecordStore, never()).save(any());
   }
 }

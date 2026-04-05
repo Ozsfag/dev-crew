@@ -1,9 +1,10 @@
-package org.blacksoil.devcrew.notification.app.service;
+package org.blacksoil.devcrew.agent.app.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
+import org.blacksoil.devcrew.agent.domain.TaskParsingPort;
 import org.blacksoil.devcrew.agent.domain.agent.TaskParserAgent;
 import org.blacksoil.devcrew.agent.domain.model.ParsedTask;
 import org.springframework.stereotype.Service;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TaskParserService {
+public class TaskParserService implements TaskParsingPort {
 
   private final TaskParserAgent taskParserAgent;
   private final ObjectMapper objectMapper;
@@ -21,6 +22,7 @@ public class TaskParserService {
    * Парсит текст в ParsedTask. При ошибке десериализации возвращает задачу с пустым title (сигнал
    * для вызывающего кода отправить пользователю сообщение об ошибке).
    */
+  @Override
   public ParsedTask parse(String userMessage) {
     try {
       var json = taskParserAgent.parse(userMessage);

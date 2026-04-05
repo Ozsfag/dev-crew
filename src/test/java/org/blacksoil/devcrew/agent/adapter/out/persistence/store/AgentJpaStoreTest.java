@@ -43,7 +43,7 @@ class AgentJpaStoreTest extends IntegrationTestBase {
 
   @Test
   void findByRole_returns_empty_when_missing() {
-    var found = agentJpaStore.findByRole(AgentRole.PM);
+    var found = agentJpaStore.findByRole(AgentRole.DOC_WRITER);
 
     assertThat(found).isEmpty();
   }

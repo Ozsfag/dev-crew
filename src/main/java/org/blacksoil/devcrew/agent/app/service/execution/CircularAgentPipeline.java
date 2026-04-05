@@ -15,9 +15,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CircularAgentPipeline {
 
-  static final String BUILD_SUCCESSFUL_MARKER = "BUILD SUCCESSFUL";
-  static final String REQUEST_CHANGES_MARKER = "REQUEST_CHANGES";
-
   private final AgentDispatcher agentDispatcher;
   private final AgentProperties agentProperties;
 
@@ -40,12 +37,13 @@ public class CircularAgentPipeline {
       // Фаза 2: QA пишет и запускает тесты
       var qaResult = agentDispatcher.dispatch(AgentRole.QA, buildQaPrompt(task, codeResult));
 
-      if (qaResult.contains(BUILD_SUCCESSFUL_MARKER)) {
+      var pipeline = agentProperties.getPipeline();
+      if (qaResult.contains(pipeline.getBuildSuccessfulMarker())) {
         log.info("Тесты прошли на итерации {}", iteration + 1);
 
         // Фаза 3: CodeReview
         var reviewResult = agentDispatcher.dispatch(AgentRole.CODE_REVIEWER, codeResult);
-        if (!reviewResult.contains(REQUEST_CHANGES_MARKER)) {
+        if (!reviewResult.contains(pipeline.getRequestChangesMarker())) {
           log.info("CodeReview одобрил результат");
           return reviewResult;
         }

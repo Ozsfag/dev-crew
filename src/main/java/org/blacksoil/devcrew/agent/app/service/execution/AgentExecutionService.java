@@ -37,7 +37,7 @@ public class AgentExecutionService {
 
   @Async("agentExecutor")
   public void execute(UUID taskId, AgentRole role, String prompt) {
-    taskQueryService.getById(taskId);
+    var task = taskQueryService.getById(taskId);
     taskCommandService.updateStatus(taskId, TaskStatus.IN_PROGRESS);
 
     var sample = Timer.start(meterRegistry);
@@ -65,7 +65,7 @@ public class AgentExecutionService {
             .register(meterRegistry));
     recordTaskCounter(role, "COMPLETED");
     taskCommandService.complete(taskId, result);
-    notifyHooks(taskId, role, result);
+    notifyHooks(taskId, task.projectId(), role, result);
   }
 
   private void recordTaskCounter(AgentRole role, String status) {
@@ -77,7 +77,7 @@ public class AgentExecutionService {
         .increment();
   }
 
-  private void notifyHooks(UUID taskId, AgentRole role, String result) {
-    postAgentHooks.forEach(hook -> hook.onAgentCompleted(taskId, role, result));
+  private void notifyHooks(UUID taskId, UUID projectId, AgentRole role, String result) {
+    postAgentHooks.forEach(hook -> hook.onAgentCompleted(taskId, projectId, role, result));
   }
 }

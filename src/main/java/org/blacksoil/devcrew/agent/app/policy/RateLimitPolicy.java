@@ -1,5 +1,6 @@
 package org.blacksoil.devcrew.agent.app.policy;
 
+import dev.langchain4j.model.anthropic.internal.client.AnthropicHttpException;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.agent.app.config.RateLimitProperties;
@@ -9,7 +10,8 @@ import org.springframework.stereotype.Component;
  * Определяет, является ли исключение ошибкой rate-limit от LLM, и вычисляет время повтора.
  *
  * <p>Anthropic возвращает HTTP 429 (rate_limit_error) и 529 (overloaded_error). LangChain4j
- * оборачивает их в RuntimeException с текстом ошибки в сообщении.
+ * оборачивает их в {@link AnthropicHttpException}; сохраняем строковый fallback для обратной
+ * совместимости.
  */
 @Component
 @RequiredArgsConstructor
@@ -35,9 +37,9 @@ public class RateLimitPolicy {
   }
 
   private boolean matchesRateLimit(Throwable ex) {
-    String className = ex.getClass().getSimpleName().toLowerCase();
-    if (className.contains("ratelimit") || className.contains("rate_limit")) {
-      return true;
+    if (ex instanceof AnthropicHttpException httpEx) {
+      Integer code = httpEx.statusCode();
+      return code != null && (code == 429 || code == 529);
     }
     String message = ex.getMessage();
     if (message == null) {

@@ -17,4 +17,65 @@ public record TaskModel(
     Instant createdAt,
     Instant updatedAt,
     /** Момент, после которого задачу можно повторить. Заполняется при статусе RATE_LIMITED. */
-    Instant retryAt) {}
+    Instant retryAt) {
+
+  public TaskModel withStatus(TaskStatus status) {
+    return new TaskModel(
+        id,
+        projectId,
+        parentTaskId,
+        title,
+        description,
+        assignedTo,
+        status,
+        result,
+        createdAt,
+        updatedAt,
+        retryAt);
+  }
+
+  public TaskModel withResult(String result) {
+    return new TaskModel(
+        id,
+        projectId,
+        parentTaskId,
+        title,
+        description,
+        assignedTo,
+        status,
+        result,
+        createdAt,
+        updatedAt,
+        retryAt);
+  }
+
+  public TaskModel withRetryAt(Instant retryAt) {
+    return new TaskModel(
+        id,
+        projectId,
+        parentTaskId,
+        title,
+        description,
+        assignedTo,
+        status,
+        result,
+        createdAt,
+        updatedAt,
+        retryAt);
+  }
+
+  public TaskModel withUpdatedAt(Instant updatedAt) {
+    return new TaskModel(
+        id,
+        projectId,
+        parentTaskId,
+        title,
+        description,
+        assignedTo,
+        status,
+        result,
+        createdAt,
+        updatedAt,
+        retryAt);
+  }
+}

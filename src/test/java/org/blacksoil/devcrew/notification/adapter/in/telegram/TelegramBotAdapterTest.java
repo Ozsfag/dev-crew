@@ -1,13 +1,14 @@
 package org.blacksoil.devcrew.notification.adapter.in.telegram;
 
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.Instant;
 import java.util.List;
 import org.blacksoil.devcrew.notification.adapter.out.telegram.TelegramApiClient;
 import org.blacksoil.devcrew.notification.adapter.out.telegram.dto.TelegramChat;
@@ -24,8 +25,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class TelegramBotAdapterTest {
-
-  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
 
   @Mock private TelegramApiClient telegramApiClient;
   @Mock private TelegramInboundService inboundService;
@@ -107,6 +106,40 @@ class TelegramBotAdapterTest {
 
     verify(inboundService, never()).handleText(anyLong(), any());
     verify(inboundService, never()).handleVoice(anyLong(), any());
+  }
+
+  @Test
+  void pollUpdates_skips_message_with_null_chat() {
+    var message = new TelegramMessage(null, "hello", null);
+    var update = new TelegramUpdate(6L, message);
+    when(telegramApiClient.getUpdates(0L)).thenReturn(List.of(update));
+
+    adapter.pollUpdates();
+
+    verify(inboundService, never()).handleText(anyLong(), any());
+    verify(inboundService, never()).handleVoice(anyLong(), any());
+  }
+
+  @Test
+  void pollUpdates_does_not_throw_when_api_client_fails() {
+    when(telegramApiClient.getUpdates(0L)).thenThrow(new RuntimeException("network error"));
+
+    assertThatNoException().isThrownBy(() -> adapter.pollUpdates());
+  }
+
+  @Test
+  void pollUpdates_resets_error_counter_after_successful_call() {
+    when(telegramApiClient.getUpdates(0L))
+        .thenThrow(new RuntimeException("fail"))
+        .thenReturn(List.of())
+        .thenThrow(new RuntimeException("fail again"));
+
+    adapter.pollUpdates(); // error 1
+    adapter.pollUpdates(); // success — resets counter
+    adapter.pollUpdates(); // error 1 again (counter reset)
+
+    // после сброса ошибка снова логируется (1й раз); 2 раза из 3 вызовов бросали исключение
+    verify(telegramApiClient, times(3)).getUpdates(0L);
   }
 
   private TelegramUpdate update(long updateId, long chatId, String text, TelegramVoice voice) {
