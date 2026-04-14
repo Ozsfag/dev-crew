@@ -8,6 +8,9 @@ import org.blacksoil.devcrew.audit.adapter.out.persistence.mapper.AuditPersisten
 import org.blacksoil.devcrew.audit.adapter.out.persistence.repository.AuditEventRepository;
 import org.blacksoil.devcrew.audit.domain.AuditEventModel;
 import org.blacksoil.devcrew.audit.domain.AuditStore;
+import org.blacksoil.devcrew.common.PageResult;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +37,19 @@ public class AuditJpaStore implements AuditStore {
 
   @Override
   @Transactional(readOnly = true)
+  public PageResult<AuditEventModel> findByTimestampBetween(
+      Instant from, Instant to, int page, int size) {
+    var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
+    var result = auditEventRepository.findByTimestampBetween(from, to, pageable);
+    return new PageResult<>(
+        result.getContent().stream().map(mapper::toModel).toList(),
+        result.getNumber(),
+        result.getSize(),
+        result.getTotalElements());
+  }
+
+  @Override
+  @Transactional(readOnly = true)
   public List<AuditEventModel> findByProjectIdAndTimestampBetween(
       UUID projectId, Instant from, Instant to) {
     return auditEventRepository
@@ -41,5 +57,19 @@ public class AuditJpaStore implements AuditStore {
         .stream()
         .map(mapper::toModel)
         .toList();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public PageResult<AuditEventModel> findByProjectIdAndTimestampBetween(
+      UUID projectId, Instant from, Instant to, int page, int size) {
+    var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
+    var result =
+        auditEventRepository.findByProjectIdAndTimestampBetween(projectId, from, to, pageable);
+    return new PageResult<>(
+        result.getContent().stream().map(mapper::toModel).toList(),
+        result.getNumber(),
+        result.getSize(),
+        result.getTotalElements());
   }
 }

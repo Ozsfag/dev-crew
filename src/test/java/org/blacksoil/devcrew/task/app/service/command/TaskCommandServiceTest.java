@@ -1,6 +1,7 @@
 package org.blacksoil.devcrew.task.app.service.command;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -10,6 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.common.TimeProvider;
+import org.blacksoil.devcrew.common.exception.NotFoundException;
 import org.blacksoil.devcrew.task.domain.TaskModel;
 import org.blacksoil.devcrew.task.domain.TaskStatus;
 import org.blacksoil.devcrew.task.domain.TaskStore;
@@ -149,6 +151,38 @@ class TaskCommandServiceTest {
     var captor = ArgumentCaptor.<TaskModel>captor();
     verify(taskStore).save(captor.capture());
     assertThat(captor.getValue().result()).isEqualTo("partial result");
+  }
+
+  @Test
+  void updateStatus_throws_not_found_when_task_missing() {
+    var id = UUID.randomUUID();
+    when(taskStore.findById(id)).thenReturn(Optional.empty());
+    assertThatThrownBy(() -> taskCommandService.updateStatus(id, TaskStatus.IN_PROGRESS))
+        .isInstanceOf(NotFoundException.class);
+  }
+
+  @Test
+  void complete_throws_not_found_when_task_missing() {
+    var id = UUID.randomUUID();
+    when(taskStore.findById(id)).thenReturn(Optional.empty());
+    assertThatThrownBy(() -> taskCommandService.complete(id, "result"))
+        .isInstanceOf(NotFoundException.class);
+  }
+
+  @Test
+  void fail_throws_not_found_when_task_missing() {
+    var id = UUID.randomUUID();
+    when(taskStore.findById(id)).thenReturn(Optional.empty());
+    assertThatThrownBy(() -> taskCommandService.fail(id, "reason"))
+        .isInstanceOf(NotFoundException.class);
+  }
+
+  @Test
+  void rateLimited_throws_not_found_when_task_missing() {
+    var id = UUID.randomUUID();
+    when(taskStore.findById(id)).thenReturn(Optional.empty());
+    assertThatThrownBy(() -> taskCommandService.rateLimited(id, NOW.plusSeconds(60)))
+        .isInstanceOf(NotFoundException.class);
   }
 
   private TaskModel existingTask(TaskStatus status) {

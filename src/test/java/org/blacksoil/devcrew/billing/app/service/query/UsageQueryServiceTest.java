@@ -99,6 +99,19 @@ class UsageQueryServiceTest {
   }
 
   @Test
+  void getMonthlySummary_sets_plan_limit_minus_one_for_enterprise_plan() {
+    var orgId = UUID.randomUUID();
+    var month = YearMonth.of(2026, 1);
+    when(organizationQueryService.getById(orgId)).thenReturn(org(orgId, OrgPlan.ENTERPRISE));
+    when(usageRecordStore.findByOrgIdAndMonth(orgId, month)).thenReturn(List.of());
+
+    var summary = service.getMonthlySummary(orgId, month);
+
+    assertThat(summary.planLimit()).isEqualTo(-1);
+    assertThat(summary.limitReached()).isFalse();
+  }
+
+  @Test
   void countTasksThisMonth_returns_record_count() {
     var orgId = UUID.randomUUID();
     var month = YearMonth.of(2026, 1);

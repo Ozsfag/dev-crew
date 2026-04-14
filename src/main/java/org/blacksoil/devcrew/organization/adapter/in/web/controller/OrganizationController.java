@@ -46,10 +46,12 @@ public class OrganizationController {
 
   @GetMapping("/{orgId}/projects")
   public List<ProjectResponse> getProjects(
-      @PathVariable UUID orgId, @AuthenticationPrincipal AuthenticatedUser currentUser) {
-    // Пользователь может видеть только проекты своей организации
-    var targetOrgId = currentUser != null ? currentUser.orgId() : orgId;
-    return queryService.getProjectsByOrg(targetOrgId).stream().map(mapper::toResponse).toList();
+      @SuppressWarnings("unused") @PathVariable UUID orgId,
+      @AuthenticationPrincipal AuthenticatedUser currentUser) {
+    // Пользователь может видеть только проекты своей организации; path variable игнорируется
+    return queryService.getProjectsByOrg(currentUser.orgId()).stream()
+        .map(mapper::toResponse)
+        .toList();
   }
 
   @GetMapping("/me")

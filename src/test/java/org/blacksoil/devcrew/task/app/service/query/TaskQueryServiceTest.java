@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
+import org.blacksoil.devcrew.common.PageResult;
 import org.blacksoil.devcrew.common.exception.NotFoundException;
 import org.blacksoil.devcrew.task.domain.TaskModel;
 import org.blacksoil.devcrew.task.domain.TaskStatus;
@@ -72,6 +73,18 @@ class TaskQueryServiceTest {
   }
 
   @Test
+  void getByOrgId_pageable_returns_page() {
+    var orgId = UUID.randomUUID();
+    var tasks = List.of(taskModel(UUID.randomUUID(), null, TaskStatus.PENDING));
+    when(taskStore.findByOrgId(orgId, 0, 10)).thenReturn(new PageResult<>(tasks, 0, 10, 1));
+
+    var result = taskQueryService.getByOrgId(orgId, 0, 10);
+
+    assertThat(result.content()).hasSize(1);
+    assertThat(result.totalElements()).isEqualTo(1);
+  }
+
+  @Test
   void getSubtasks_returns_children_of_parent() {
     var parentId = UUID.randomUUID();
     var subtasks = List.of(taskModel(UUID.randomUUID(), parentId, TaskStatus.PENDING));
@@ -81,6 +94,30 @@ class TaskQueryServiceTest {
 
     assertThat(result).hasSize(1);
     assertThat(result.get(0).parentTaskId()).isEqualTo(parentId);
+  }
+
+  @Test
+  void getByProjectId_returns_tasks_for_project() {
+    var projectId = UUID.randomUUID();
+    var tasks = List.of(taskModel(UUID.randomUUID(), null, TaskStatus.PENDING));
+    when(taskStore.findByProjectId(projectId)).thenReturn(tasks);
+
+    var result = taskQueryService.getByProjectId(projectId);
+
+    assertThat(result).hasSize(1);
+  }
+
+  @Test
+  void getRateLimitedReadyToRetry_returns_tasks_whose_retryAt_has_passed() {
+    var tasks =
+        List.of(
+            taskModel(UUID.randomUUID(), null, TaskStatus.RATE_LIMITED),
+            taskModel(UUID.randomUUID(), null, TaskStatus.RATE_LIMITED));
+    when(taskStore.findRateLimitedReadyToRetry(NOW)).thenReturn(tasks);
+
+    var result = taskQueryService.getRateLimitedReadyToRetry(NOW);
+
+    assertThat(result).hasSize(2);
   }
 
   private TaskModel taskModel(UUID id, UUID parentId, TaskStatus status) {

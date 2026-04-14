@@ -242,5 +242,5 @@ public class CircularAgentPipeline {
 - ✅ `TelegramNotificationAdapter` — уже реализован
 - ✅ `AgentOrchestrator` — уже реализован
 - ✅ `AgentDispatcher` — уже реализован
-- 🔲 Нужен `OPENAI_API_KEY` в `.env` для Whisper (или замена на Cloudflare AI / другой провайдер)
+- 🔲 Нужен `OPENAI_API_KEY` в `.env` для Whisper (или замена на Cloudflare AI / другой провайдер). Необходимо рассмотреть другие варианты.
 - 🔲 Нужен Telegram Bot Token с настроенным webhook / long-polling

@@ -1,12 +1,12 @@
 package org.blacksoil.devcrew.task.adapter.in.web.controller;
 
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.agent.domain.AgentOrchestrator;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.bootstrap.AuthenticatedUser;
+import org.blacksoil.devcrew.common.PageResult;
 import org.blacksoil.devcrew.task.adapter.in.web.dto.CreateTaskRequest;
 import org.blacksoil.devcrew.task.adapter.in.web.dto.CreateTaskResponse;
 import org.blacksoil.devcrew.task.adapter.in.web.dto.TaskResponse;
@@ -37,10 +37,16 @@ public class TaskController {
   }
 
   @GetMapping
-  public List<TaskResponse> getByOrg(@AuthenticationPrincipal AuthenticatedUser currentUser) {
-    return taskQueryService.getByOrgId(currentUser.orgId()).stream()
-        .map(mapper::toResponse)
-        .toList();
+  public PageResult<TaskResponse> getByOrg(
+      @AuthenticationPrincipal AuthenticatedUser currentUser,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size) {
+    var result = taskQueryService.getByOrgId(currentUser.orgId(), page, size);
+    return new PageResult<>(
+        result.content().stream().map(mapper::toResponse).toList(),
+        result.page(),
+        result.size(),
+        result.totalElements());
   }
 
   @PostMapping("/{id}/run")

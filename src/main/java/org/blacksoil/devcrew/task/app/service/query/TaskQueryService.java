@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.blacksoil.devcrew.common.PageResult;
 import org.blacksoil.devcrew.common.exception.NotFoundException;
 import org.blacksoil.devcrew.task.domain.TaskModel;
 import org.blacksoil.devcrew.task.domain.TaskStatus;
@@ -36,6 +37,10 @@ public class TaskQueryService {
 
   public List<TaskModel> getByOrgId(UUID orgId) {
     return taskStore.findByOrgId(orgId);
+  }
+
+  public PageResult<TaskModel> getByOrgId(UUID orgId, int page, int size) {
+    return taskStore.findByOrgId(orgId, page, size);
   }
 
   /** Возвращает задачи RATE_LIMITED, чей retryAt уже наступил. */

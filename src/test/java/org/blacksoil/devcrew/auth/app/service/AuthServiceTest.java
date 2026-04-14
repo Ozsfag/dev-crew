@@ -218,6 +218,38 @@ class AuthServiceTest {
     assertThatThrownBy(() -> authService.refresh("raw")).isInstanceOf(AuthException.class);
   }
 
+  @Test
+  void refresh_throws_AuthException_when_user_not_found() {
+    var userId = UUID.randomUUID();
+    var tokenModel =
+        new RefreshTokenModel(
+            UUID.randomUUID(), userId, "hash", Instant.parse("2099-01-01T00:00:00Z"), false, NOW);
+
+    when(jwtService.hashToken("raw")).thenReturn("hash");
+    when(refreshTokenStore.findByTokenHash("hash")).thenReturn(Optional.of(tokenModel));
+    when(userStore.findById(userId)).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> authService.refresh("raw")).isInstanceOf(AuthException.class);
+  }
+
+  @Test
+  void register_uses_full_email_as_org_name_when_no_at_sign() {
+    when(organizationCreationPort.createForUser("noemail's Organization"))
+        .thenReturn(UUID.randomUUID());
+    when(userStore.findByEmail(anyString())).thenReturn(Optional.empty());
+    when(userStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
+    when(refreshTokenStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
+    when(jwtService.generateAccessToken(any(), any(), anyString(), any())).thenReturn("access");
+    when(jwtService.generateRefreshToken(any())).thenReturn("refresh");
+    when(jwtService.hashToken(anyString())).thenReturn("hash");
+    when(jwtService.getAccessTokenTtlSeconds()).thenReturn(3600L);
+    when(jwtService.getRefreshTokenTtlSeconds()).thenReturn(604800L);
+
+    authService.register("noemail", "password", null);
+
+    verify(organizationCreationPort).createForUser("noemail's Organization");
+  }
+
   private UserModel userModel(String email, UserRole role) {
     return new UserModel(UUID.randomUUID(), UUID.randomUUID(), email, "hash", role, NOW, NOW);
   }

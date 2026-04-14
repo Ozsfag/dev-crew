@@ -3,6 +3,7 @@ package org.blacksoil.devcrew.task.app.service.command;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.common.TimeProvider;
 import org.blacksoil.devcrew.common.exception.NotFoundException;
@@ -12,6 +13,7 @@ import org.blacksoil.devcrew.task.domain.TaskStore;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -36,6 +38,7 @@ public class TaskCommandService {
             now,
             now,
             null);
+    log.info("Задача создана: id={}, role={}", task.id(), assignedTo);
     return taskStore.save(task);
   }
 
@@ -46,6 +49,7 @@ public class TaskCommandService {
 
   public TaskModel complete(UUID taskId, String result) {
     var task = findOrThrow(taskId);
+    log.info("Задача завершена: taskId={}", taskId);
     return taskStore.save(
         task.withStatus(TaskStatus.COMPLETED)
             .withResult(result)
@@ -55,6 +59,7 @@ public class TaskCommandService {
 
   public TaskModel fail(UUID taskId, String reason) {
     var task = findOrThrow(taskId);
+    log.warn("Задача провалена: taskId={}, reason={}", taskId, reason);
     return taskStore.save(
         task.withStatus(TaskStatus.FAILED)
             .withResult(reason)
@@ -64,6 +69,7 @@ public class TaskCommandService {
 
   public TaskModel rateLimited(UUID taskId, Instant retryAt) {
     var task = findOrThrow(taskId);
+    log.warn("Задача в rate-limit: taskId={}, retryAt={}", taskId, retryAt);
     return taskStore.save(
         task.withStatus(TaskStatus.RATE_LIMITED)
             .withRetryAt(retryAt)

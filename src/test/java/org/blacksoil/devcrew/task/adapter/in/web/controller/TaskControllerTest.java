@@ -16,6 +16,7 @@ import org.blacksoil.devcrew.agent.domain.AgentOrchestrator;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.auth.domain.UserRole;
 import org.blacksoil.devcrew.bootstrap.AuthenticatedUser;
+import org.blacksoil.devcrew.common.PageResult;
 import org.blacksoil.devcrew.common.exception.NotFoundException;
 import org.blacksoil.devcrew.common.web.GlobalExceptionHandler;
 import org.blacksoil.devcrew.task.adapter.in.web.mapper.TaskWebMapper;
@@ -100,14 +101,34 @@ class TaskControllerTest {
   }
 
   @Test
-  void GET_tasks_returns_list_filtered_by_org() throws Exception {
+  void GET_tasks_returns_page_filtered_by_org() throws Exception {
     var taskId = UUID.randomUUID();
-    when(taskQueryService.getByOrgId(ORG_ID)).thenReturn(List.of(taskModel(taskId)));
+    var pageResult = new PageResult<>(List.of(taskModel(taskId)), 0, 20, 1);
+    when(taskQueryService.getByOrgId(ORG_ID, 0, 20)).thenReturn(pageResult);
 
     mockMvc
         .perform(get("/api/tasks").with(principalAuth()).accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].id").value(taskId.toString()));
+        .andExpect(jsonPath("$.content[0].id").value(taskId.toString()))
+        .andExpect(jsonPath("$.totalElements").value(1));
+  }
+
+  @Test
+  void GET_tasks_passes_pagination_params() throws Exception {
+    var pageResult = new PageResult<>(List.<TaskModel>of(), 1, 5, 0);
+    when(taskQueryService.getByOrgId(ORG_ID, 1, 5)).thenReturn(pageResult);
+
+    mockMvc
+        .perform(
+            get("/api/tasks")
+                .param("page", "1")
+                .param("size", "5")
+                .with(principalAuth())
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isArray())
+        .andExpect(jsonPath("$.page").value(1))
+        .andExpect(jsonPath("$.size").value(5));
   }
 
   @Test

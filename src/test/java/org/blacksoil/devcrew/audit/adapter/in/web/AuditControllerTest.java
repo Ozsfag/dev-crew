@@ -15,6 +15,7 @@ import java.util.UUID;
 import org.blacksoil.devcrew.audit.adapter.in.web.mapper.AuditWebMapper;
 import org.blacksoil.devcrew.audit.app.service.query.AuditQueryService;
 import org.blacksoil.devcrew.audit.domain.AuditEventModel;
+import org.blacksoil.devcrew.common.PageResult;
 import org.blacksoil.devcrew.common.web.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,7 +51,9 @@ class AuditControllerTest {
     var event =
         new AuditEventModel(
             UUID.randomUUID(), null, "system", "TASK_COMPLETED", UUID.randomUUID(), "details", NOW);
-    when(auditQueryService.findByTimestampBetween(any(), any())).thenReturn(List.of(event));
+    var pageResult = new PageResult<>(List.of(event), 0, 20, 1);
+    when(auditQueryService.findByTimestampBetween(any(), any(), eq(0), eq(20)))
+        .thenReturn(pageResult);
 
     mockMvc
         .perform(
@@ -59,13 +62,15 @@ class AuditControllerTest {
                 .param("to", "2024-12-31T23:59:59Z")
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].action").value("TASK_COMPLETED"))
-        .andExpect(jsonPath("$[0].actorEmail").value("system"));
+        .andExpect(jsonPath("$.content[0].action").value("TASK_COMPLETED"))
+        .andExpect(jsonPath("$.content[0].actorEmail").value("system"))
+        .andExpect(jsonPath("$.totalElements").value(1));
   }
 
   @Test
-  void GET_audit_returns_empty_list_when_no_events() throws Exception {
-    when(auditQueryService.findByTimestampBetween(any(), any())).thenReturn(List.of());
+  void GET_audit_returns_empty_page_when_no_events() throws Exception {
+    when(auditQueryService.findByTimestampBetween(any(), any(), eq(0), eq(20)))
+        .thenReturn(new PageResult<>(List.of(), 0, 20, 0));
 
     mockMvc
         .perform(
@@ -74,8 +79,8 @@ class AuditControllerTest {
                 .param("to", "2024-01-02T00:00:00Z")
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$").isArray())
-        .andExpect(jsonPath("$.length()").value(0));
+        .andExpect(jsonPath("$.content").isArray())
+        .andExpect(jsonPath("$.totalElements").value(0));
   }
 
   @Test
@@ -90,7 +95,9 @@ class AuditControllerTest {
             UUID.randomUUID(),
             "details",
             Instant.parse("2026-01-01T10:00:00Z"));
-    when(auditQueryService.findByProjectId(eq(projectId), any(), any())).thenReturn(List.of(event));
+    var pageResult = new PageResult<>(List.of(event), 0, 20, 1);
+    when(auditQueryService.findByProjectId(eq(projectId), any(), any(), eq(0), eq(20)))
+        .thenReturn(pageResult);
 
     mockMvc
         .perform(
@@ -100,10 +107,10 @@ class AuditControllerTest {
                 .param("projectId", projectId.toString())
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(1));
+        .andExpect(jsonPath("$.totalElements").value(1));
 
-    verify(auditQueryService).findByProjectId(eq(projectId), any(), any());
-    verify(auditQueryService, never()).findByTimestampBetween(any(), any());
+    verify(auditQueryService).findByProjectId(eq(projectId), any(), any(), eq(0), eq(20));
+    verify(auditQueryService, never()).findByTimestampBetween(any(), any(), eq(0), eq(20));
   }
 
   @Test

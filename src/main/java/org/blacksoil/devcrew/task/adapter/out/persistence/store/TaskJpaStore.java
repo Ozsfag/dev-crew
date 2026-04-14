@@ -5,11 +5,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.blacksoil.devcrew.common.PageResult;
 import org.blacksoil.devcrew.task.adapter.out.persistence.mapper.TaskPersistenceMapper;
 import org.blacksoil.devcrew.task.adapter.out.persistence.repository.TaskRepository;
 import org.blacksoil.devcrew.task.domain.TaskModel;
 import org.blacksoil.devcrew.task.domain.TaskStatus;
 import org.blacksoil.devcrew.task.domain.TaskStore;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +57,18 @@ public class TaskJpaStore implements TaskStore {
   @Transactional(readOnly = true)
   public List<TaskModel> findByOrgId(UUID orgId) {
     return taskRepository.findByOrgId(orgId).stream().map(mapper::toModel).toList();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public PageResult<TaskModel> findByOrgId(UUID orgId, int page, int size) {
+    var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+    var result = taskRepository.findByOrgId(orgId, pageable);
+    return new PageResult<>(
+        result.getContent().stream().map(mapper::toModel).toList(),
+        result.getNumber(),
+        result.getSize(),
+        result.getTotalElements());
   }
 
   @Override

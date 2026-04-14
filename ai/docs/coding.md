@@ -93,6 +93,34 @@ AppDto       ←→ WebMapper         ←→ Request/Response
 - `@Transactional(readOnly = true)` — на query-сервисах
 - В контроллерах — **никогда**
 
+### Пагинация
+
+Domain-порты не зависят от Spring `Page`/`Pageable`. Используй `PageResult<T>` из `common/`:
+
+```java
+// domain/TaskStore.java — port принимает примитивы page/size
+PageResult<TaskModel> findByOrgId(UUID orgId, int page, int size);
+
+// adapter/out/persistence/store/TaskJpaStore.java — конвертирует Spring Page → PageResult
+@Override
+public PageResult<TaskModel> findByOrgId(UUID orgId, int page, int size) {
+    var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+    var result = taskRepository.findByOrgId(orgId, pageable);
+    return new PageResult<>(
+        result.getContent().stream().map(mapper::toModel).toList(),
+        result.getNumber(), result.getSize(), result.getTotalElements());
+}
+
+// controller — принимает page/size как @RequestParam
+@GetMapping
+public PageResult<TaskResponse> getByOrg(
+    @AuthenticationPrincipal AuthenticatedUser currentUser,
+    @RequestParam(defaultValue = "0") int page,
+    @RequestParam(defaultValue = "20") int size) { ... }
+```
+
+**Запрещено**: использовать Spring `Page`/`Pageable` в `domain/` — нарушает ArchUnit.
+
 ### Тестируемость времени
 
 Используй `TimeProvider` вместо `Instant.now()` / `LocalDate.now()` напрямую.

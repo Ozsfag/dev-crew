@@ -8,3 +8,4 @@ build/
 docker/.env
 *.log
 deploy/secrets/
+**/.DS_Store
