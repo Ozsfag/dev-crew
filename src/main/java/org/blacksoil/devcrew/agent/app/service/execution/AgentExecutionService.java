@@ -14,6 +14,7 @@ import org.blacksoil.devcrew.common.TimeProvider;
 import org.blacksoil.devcrew.task.app.service.command.TaskCommandService;
 import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
 import org.blacksoil.devcrew.task.domain.TaskStatus;
+import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +38,16 @@ public class AgentExecutionService {
 
   @Async("agentExecutor")
   public void execute(UUID taskId, AgentRole role, String prompt) {
+    MDC.put("taskId", taskId.toString());
+    MDC.put("agentRole", role.name());
+    try {
+      executeInternal(taskId, role, prompt);
+    } finally {
+      MDC.clear();
+    }
+  }
+
+  private void executeInternal(UUID taskId, AgentRole role, String prompt) {
     var task = taskQueryService.getById(taskId);
     taskCommandService.updateStatus(taskId, TaskStatus.IN_PROGRESS);
 
@@ -47,11 +58,11 @@ public class AgentExecutionService {
     } catch (Exception e) {
       if (rateLimitPolicy.isRateLimit(e)) {
         var retryAt = rateLimitPolicy.retryAt(timeProvider.now());
-        log.warn("Rate limit от LLM для задачи {} (агент {}), повтор в {}", taskId, role, retryAt);
+        log.warn("Rate limit от LLM, повтор в {}", retryAt);
         taskCommandService.rateLimited(taskId, retryAt);
         recordTaskCounter(role, "RATE_LIMITED");
       } else {
-        log.error("Агент {} упал при выполнении задачи {}", role, taskId, e);
+        log.error("Агент упал при выполнении задачи", e);
         taskCommandService.fail(taskId, e.getMessage());
         recordTaskCounter(role, "FAILED");
       }
@@ -64,6 +75,7 @@ public class AgentExecutionService {
             .tag("role", role.name())
             .register(meterRegistry));
     recordTaskCounter(role, "COMPLETED");
+    log.info("Агент завершил задачу");
     taskCommandService.complete(taskId, result);
     notifyHooks(taskId, task.projectId(), role, result);
   }

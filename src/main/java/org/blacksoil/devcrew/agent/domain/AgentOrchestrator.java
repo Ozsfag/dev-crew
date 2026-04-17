@@ -14,7 +14,7 @@ public interface AgentOrchestrator {
    * @param projectId проект, в рамках которого создаётся задача (тенант-изоляция)
    * @return id созданной задачи
    */
-  UUID submit(String title, String description, AgentRole role, UUID projectId);
+  UUID submit(String title, String description, AgentRole role, UUID projectId, UUID orgId);
 
   /** Запускает уже созданную задачу по id. */
   void run(UUID taskId, AgentRole role);

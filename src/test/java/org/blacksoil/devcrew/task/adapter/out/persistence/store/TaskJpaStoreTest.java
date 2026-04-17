@@ -62,6 +62,7 @@ class TaskJpaStoreTest extends IntegrationTestBase {
         new TaskModel(
             saved.id(),
             saved.projectId(),
+            saved.orgId(),
             saved.parentTaskId(),
             saved.title(),
             saved.description(),
@@ -81,6 +82,7 @@ class TaskJpaStoreTest extends IntegrationTestBase {
   private TaskModel taskModel(UUID parentId, AgentRole role, TaskStatus status) {
     return new TaskModel(
         UUID.randomUUID(),
+        null,
         null,
         parentId,
         "Task for " + role,

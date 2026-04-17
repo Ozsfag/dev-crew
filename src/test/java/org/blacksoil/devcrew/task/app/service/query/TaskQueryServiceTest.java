@@ -124,6 +124,7 @@ class TaskQueryServiceTest {
     return new TaskModel(
         id,
         null,
+        null,
         parentId,
         "title",
         "description",

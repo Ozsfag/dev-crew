@@ -28,7 +28,8 @@ public class TelegramInboundService {
       return;
     }
     var taskId =
-        agentOrchestrator.submit(parsed.title(), parsed.description(), parsed.agentRole(), null);
+        agentOrchestrator.submit(
+            parsed.title(), parsed.description(), parsed.agentRole(), null, null);
     agentOrchestrator.run(taskId, parsed.agentRole());
     notificationPort.send(
         "Задача принята: " + taskId + "\nАгент " + parsed.agentRole() + " приступил к работе.");

@@ -35,6 +35,8 @@ management:
       application: ${spring.application.name}
 
 logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [taskId=%X{taskId}] [agentRole=%X{agentRole}] - %msg%n"
   level:
     org.springframework.web.client: WARN
 

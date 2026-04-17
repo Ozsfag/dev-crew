@@ -6,6 +6,7 @@ import java.util.UUID;
 public record AuditEventModel(
     UUID id,
     UUID projectId,
+    UUID actorId,
     String actorEmail,
     String action,
     UUID entityId,

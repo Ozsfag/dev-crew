@@ -11,7 +11,7 @@ services:
     volumes:
       # Локальная машина: монтируем папку с проектами.
       # На сервере переопределяется в docker-compose.prod.yml
-      - ${PROJECTS_ROOT:-/Users/artemsergienko/IdeaProjects}:/projects
+      - ${PROJECTS_ROOT:?Set PROJECTS_ROOT in .env}:/projects
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/devcrew
       SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-devcrew}

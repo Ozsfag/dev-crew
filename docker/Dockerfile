@@ -12,7 +12,7 @@ COPY ../src ./src
 RUN ./gradlew bootJar --no-daemon -x test --quiet
 
 # ─── Stage 2: Runtime ─────────────────────────────────────────────────────────
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
 
 # Добавляем curl для healthcheck

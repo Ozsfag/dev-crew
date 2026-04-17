@@ -39,7 +39,7 @@ class TaskCommandServiceTest {
     when(timeProvider.now()).thenReturn(now);
     when(taskStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-    taskCommandService.create("Write tests", "TDD for module X", AgentRole.QA, null, null);
+    taskCommandService.create("Write tests", "TDD for module X", AgentRole.QA, null, null, null);
 
     var captor = ArgumentCaptor.<TaskModel>captor();
     verify(taskStore).save(captor.capture());
@@ -58,7 +58,7 @@ class TaskCommandServiceTest {
     when(timeProvider.now()).thenReturn(NOW);
     when(taskStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-    taskCommandService.create("Subtask", "desc", AgentRole.BACKEND_DEV, null, parentId);
+    taskCommandService.create("Subtask", "desc", AgentRole.BACKEND_DEV, null, null, parentId);
 
     var captor = ArgumentCaptor.<TaskModel>captor();
     verify(taskStore).save(captor.capture());
@@ -134,6 +134,7 @@ class TaskCommandServiceTest {
             UUID.randomUUID(),
             null,
             null,
+            null,
             "title",
             "desc",
             AgentRole.BACKEND_DEV,
@@ -188,6 +189,7 @@ class TaskCommandServiceTest {
   private TaskModel existingTask(TaskStatus status) {
     return new TaskModel(
         UUID.randomUUID(),
+        null,
         null,
         null,
         "title",

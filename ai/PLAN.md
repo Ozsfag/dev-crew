@@ -1,6 +1,6 @@
 # Dev Crew — Roadmap
 
-## Текущее состояние: Рефакторинг П10 (фазы 1–4 завершены)
+## Текущее состояние: Рефакторинг П10 завершён ✅
 
 MVP готов. REST API, JWT-аутентификация, 5 агентов, мультитенантность (org/project),
 биллинг, rate-limit recovery, Telegram-уведомления — реализованы.
@@ -20,7 +20,7 @@ MVP готов. REST API, JWT-аутентификация, 5 агентов, м
 | П10.2 | Устранение архитектурных нарушений     | ✅     | [plans/p10.2](plans/p10.2-architecture.md)         |
 | П10.3 | Качество кода: DRY / SRP              | ✅     | [plans/p10.3](plans/p10.3-code-quality.md)         |
 | П10.4 | API: пагинация (OpenAPI/SSE отложены)  | ✅     | [plans/p10.4](plans/p10.4-api.md)                  |
-| П10.5 | Observability: метрики и трейсинг     | 🔲     | [plans/p10.5](plans/p10.5-observability.md)        |
-| П10.6 | Инфраструктура: Docker и CI/CD        | 🔲     | [plans/p10.6](plans/p10.6-infrastructure.md)       |
-| П10.7 | База данных: схема и производительность| 🔲     | [plans/p10.7](plans/p10.7-database.md)             |
-| П10.8 | Тесты: пробелы в покрытии             | 🔲     | [plans/p10.8](plans/p10.8-test-coverage.md)        |
+| П10.5 | Observability: метрики и трейсинг     | ✅     | [plans/p10.5](plans/p10.5-observability.md)        |
+| П10.6 | Инфраструктура: Docker и CI/CD        | ✅     | [plans/p10.6](plans/p10.6-infrastructure.md)       |
+| П10.7 | База данных: схема и производительность| ✅     | [plans/p10.7](plans/p10.7-database.md)             |
+| П10.8 | Тесты: пробелы в покрытии             | ✅     | [plans/p10.8](plans/p10.8-test-coverage.md)        |

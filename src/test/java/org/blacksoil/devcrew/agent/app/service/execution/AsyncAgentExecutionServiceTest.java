@@ -106,6 +106,7 @@ class AsyncAgentExecutionServiceTest {
         id,
         null,
         null,
+        null,
         "title",
         "description",
         AgentRole.BACKEND_DEV,

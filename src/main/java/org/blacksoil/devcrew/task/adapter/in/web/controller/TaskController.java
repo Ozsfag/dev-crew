@@ -32,7 +32,11 @@ public class TaskController {
       @AuthenticationPrincipal AuthenticatedUser currentUser) {
     var taskId =
         agentOrchestrator.submit(
-            request.title(), request.description(), request.role(), request.projectId());
+            request.title(),
+            request.description(),
+            request.role(),
+            request.projectId(),
+            currentUser.orgId());
     return new CreateTaskResponse(taskId);
   }
 

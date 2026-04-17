@@ -21,6 +21,9 @@ public class AuditEventEntity {
   @Column(name = "project_id")
   private UUID projectId;
 
+  @Column(name = "actor_id")
+  private UUID actorId;
+
   @Column(name = "actor_email", nullable = false)
   private String actorEmail;
 

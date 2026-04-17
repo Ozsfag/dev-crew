@@ -28,6 +28,7 @@ public class AuditPostAgentHook implements PostAgentHook {
         new AuditEventModel(
             UUID.randomUUID(),
             projectId,
+            null,
             "system",
             "TASK_COMPLETED",
             taskId,

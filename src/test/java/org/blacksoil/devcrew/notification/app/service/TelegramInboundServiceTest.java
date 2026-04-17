@@ -43,13 +43,13 @@ class TelegramInboundServiceTest {
     var parsed = new ParsedTask("Fix bug", "Fix the NPE in UserService", AgentRole.BACKEND_DEV);
     when(taskParsingPort.parse("Fix the bug")).thenReturn(parsed);
     when(agentOrchestrator.submit(
-            "Fix bug", "Fix the NPE in UserService", AgentRole.BACKEND_DEV, null))
+            "Fix bug", "Fix the NPE in UserService", AgentRole.BACKEND_DEV, null, null))
         .thenReturn(taskId);
 
     service.handleText(123L, "Fix the bug");
 
     verify(agentOrchestrator)
-        .submit("Fix bug", "Fix the NPE in UserService", AgentRole.BACKEND_DEV, null);
+        .submit("Fix bug", "Fix the NPE in UserService", AgentRole.BACKEND_DEV, null, null);
     verify(agentOrchestrator).run(taskId, AgentRole.BACKEND_DEV);
     verify(notificationPort).send(contains(taskId.toString()));
   }
@@ -72,12 +72,12 @@ class TelegramInboundServiceTest {
     var parsed = new ParsedTask("Write tests", "Write unit tests", AgentRole.QA);
     when(voiceTranscriptionPort.transcribe(audioBytes)).thenReturn("Write unit tests for me");
     when(taskParsingPort.parse("Write unit tests for me")).thenReturn(parsed);
-    when(agentOrchestrator.submit(any(), any(), any(), any())).thenReturn(taskId);
+    when(agentOrchestrator.submit(any(), any(), any(), any(), any())).thenReturn(taskId);
 
     service.handleVoice(123L, audioBytes);
 
     verify(voiceTranscriptionPort).transcribe(audioBytes);
-    verify(agentOrchestrator).submit("Write tests", "Write unit tests", AgentRole.QA, null);
+    verify(agentOrchestrator).submit("Write tests", "Write unit tests", AgentRole.QA, null, null);
   }
 
   @Test

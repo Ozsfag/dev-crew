@@ -34,6 +34,7 @@ class AuditCommandServiceTest {
     return new AuditEventModel(
         UUID.randomUUID(),
         UUID.randomUUID(),
+        null,
         "user@example.com",
         "TASK_CREATED",
         UUID.randomUUID(),

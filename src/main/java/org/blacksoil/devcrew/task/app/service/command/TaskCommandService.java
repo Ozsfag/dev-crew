@@ -23,12 +23,18 @@ public class TaskCommandService {
   private final TimeProvider timeProvider;
 
   public TaskModel create(
-      String title, String description, AgentRole assignedTo, UUID projectId, UUID parentTaskId) {
+      String title,
+      String description,
+      AgentRole assignedTo,
+      UUID projectId,
+      UUID orgId,
+      UUID parentTaskId) {
     var now = timeProvider.now();
     var task =
         new TaskModel(
             UUID.randomUUID(),
             projectId,
+            orgId,
             parentTaskId,
             title,
             description,

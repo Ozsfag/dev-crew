@@ -25,6 +25,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.MDC;
 
 @ExtendWith(MockitoExtension.class)
 class AgentExecutionServiceTest {
@@ -294,9 +295,56 @@ class AgentExecutionServiceTest {
     assertThat(counter.count()).isEqualTo(1.0);
   }
 
+  @Test
+  void execute_clears_mdc_after_successful_execution() {
+    var taskId = UUID.randomUUID();
+    var task = taskModel(taskId, TaskStatus.PENDING);
+    when(taskQueryService.getById(taskId)).thenReturn(task);
+    when(agentDispatcher.dispatch(any(), any())).thenReturn("done");
+    when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+    when(taskCommandService.complete(any(), any())).thenReturn(task);
+
+    agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "prompt");
+
+    assertThat(MDC.get("taskId")).isNull();
+    assertThat(MDC.get("agentRole")).isNull();
+  }
+
+  @Test
+  void execute_clears_mdc_after_exception() {
+    var taskId = UUID.randomUUID();
+    var task = taskModel(taskId, TaskStatus.PENDING);
+    when(taskQueryService.getById(taskId)).thenReturn(task);
+    when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+    when(agentDispatcher.dispatch(any(), any())).thenThrow(new RuntimeException("LLM error"));
+    when(taskCommandService.fail(any(), any())).thenReturn(task);
+
+    agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "prompt");
+
+    assertThat(MDC.get("taskId")).isNull();
+    assertThat(MDC.get("agentRole")).isNull();
+  }
+
+  @Test
+  void execute_clears_mdc_after_rate_limit() {
+    var taskId = UUID.randomUUID();
+    var task = taskModel(taskId, TaskStatus.PENDING);
+    when(taskQueryService.getById(taskId)).thenReturn(task);
+    when(taskCommandService.updateStatus(any(), any())).thenReturn(task);
+    when(agentDispatcher.dispatch(any(), any())).thenThrow(new RuntimeException("HTTP 429"));
+    when(timeProvider.now()).thenReturn(Instant.parse("2026-01-01T10:00:00Z"));
+    when(taskCommandService.rateLimited(any(), any())).thenReturn(task);
+
+    agentExecutionService.execute(taskId, AgentRole.BACKEND_DEV, "prompt");
+
+    assertThat(MDC.get("taskId")).isNull();
+    assertThat(MDC.get("agentRole")).isNull();
+  }
+
   private TaskModel taskModel(UUID id, TaskStatus status) {
     return new TaskModel(
         id,
+        null,
         null,
         null,
         "title",

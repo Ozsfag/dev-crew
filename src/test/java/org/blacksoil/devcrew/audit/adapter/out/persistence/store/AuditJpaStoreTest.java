@@ -52,6 +52,13 @@ class AuditJpaStoreTest extends IntegrationTestBase {
 
   private AuditEventModel auditEvent(Instant timestamp, UUID entityId) {
     return new AuditEventModel(
-        UUID.randomUUID(), null, "system", "TASK_COMPLETED", entityId, "result details", timestamp);
+        UUID.randomUUID(),
+        null,
+        null,
+        "system",
+        "TASK_COMPLETED",
+        entityId,
+        "result details",
+        timestamp);
   }
 }

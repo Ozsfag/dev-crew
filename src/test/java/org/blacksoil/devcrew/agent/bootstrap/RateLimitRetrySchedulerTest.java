@@ -62,6 +62,7 @@ class RateLimitRetrySchedulerTest {
         UUID.randomUUID(),
         null,
         null,
+        null,
         "title",
         "description",
         role,

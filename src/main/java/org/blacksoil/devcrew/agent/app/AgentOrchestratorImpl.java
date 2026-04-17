@@ -32,8 +32,13 @@ public class AgentOrchestratorImpl implements AgentOrchestrator {
 
   /** Создаёт задачу в статусе PENDING. Не запускает агента — только регистрирует задачу. */
   @Override
-  public UUID submit(String title, String description, AgentRole role, @Nullable UUID projectId) {
-    var task = taskCommandService.create(title, description, role, projectId, null);
+  public UUID submit(
+      String title,
+      String description,
+      AgentRole role,
+      @Nullable UUID projectId,
+      @Nullable UUID orgId) {
+    var task = taskCommandService.create(title, description, role, projectId, orgId, null);
     return task.id();
   }
 

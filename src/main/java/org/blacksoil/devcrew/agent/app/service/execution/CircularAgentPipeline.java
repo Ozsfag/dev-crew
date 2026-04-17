@@ -38,12 +38,12 @@ public class CircularAgentPipeline {
       var qaResult = agentDispatcher.dispatch(AgentRole.QA, buildQaPrompt(task, codeResult));
 
       var pipeline = agentProperties.getPipeline();
-      if (qaResult.contains(pipeline.getBuildSuccessfulMarker())) {
+      if (qaResult != null && qaResult.contains(pipeline.getBuildSuccessfulMarker())) {
         log.info("Тесты прошли на итерации {}", iteration + 1);
 
         // Фаза 3: CodeReview
         var reviewResult = agentDispatcher.dispatch(AgentRole.CODE_REVIEWER, codeResult);
-        if (!reviewResult.contains(pipeline.getRequestChangesMarker())) {
+        if (reviewResult == null || !reviewResult.contains(pipeline.getRequestChangesMarker())) {
           log.info("CodeReview одобрил результат");
           return reviewResult;
         }

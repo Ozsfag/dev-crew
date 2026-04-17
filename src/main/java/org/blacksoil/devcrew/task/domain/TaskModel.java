@@ -8,6 +8,7 @@ import org.blacksoil.devcrew.agent.domain.AgentRole;
 public record TaskModel(
     UUID id,
     UUID projectId,
+    UUID orgId,
     UUID parentTaskId,
     String title,
     String description,
@@ -23,6 +24,7 @@ public record TaskModel(
     return new TaskModel(
         id,
         projectId,
+        orgId,
         parentTaskId,
         title,
         description,
@@ -38,6 +40,7 @@ public record TaskModel(
     return new TaskModel(
         id,
         projectId,
+        orgId,
         parentTaskId,
         title,
         description,
@@ -53,6 +56,7 @@ public record TaskModel(
     return new TaskModel(
         id,
         projectId,
+        orgId,
         parentTaskId,
         title,
         description,
@@ -68,6 +72,7 @@ public record TaskModel(
     return new TaskModel(
         id,
         projectId,
+        orgId,
         parentTaskId,
         title,
         description,

@@ -1,6 +1,8 @@
 package org.blacksoil.devcrew.agent.app.service.execution;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -99,5 +101,27 @@ class CircularAgentPipelineTest {
     // maxIterations=3, все 3 провалились — возвращаем последний codeResult
     assertThat(result).isEqualTo("code attempt");
     verify(agentDispatcher, times(3)).dispatch(eq(AgentRole.QA), contains("code attempt"));
+  }
+
+  @Test
+  void execute_handles_null_from_backend_dev_gracefully() {
+    // BackendDev возвращает null — pipeline не должен бросать NPE
+    when(agentDispatcher.dispatch(eq(AgentRole.BACKEND_DEV), any())).thenReturn(null);
+    when(agentDispatcher.dispatch(eq(AgentRole.QA), any())).thenReturn("BUILD SUCCESSFUL");
+    when(agentDispatcher.dispatch(eq(AgentRole.CODE_REVIEWER), any())).thenReturn("LGTM");
+
+    assertThatCode(() -> pipeline.execute("task")).doesNotThrowAnyException();
+  }
+
+  @Test
+  void execute_handles_null_from_qa_gracefully() {
+    // QA возвращает null — pipeline не должен бросать NPE, null трактуется как "тесты не прошли"
+    when(agentDispatcher.dispatch(eq(AgentRole.BACKEND_DEV), any())).thenReturn("code");
+    when(agentDispatcher.dispatch(eq(AgentRole.QA), any())).thenReturn(null);
+
+    assertThatCode(() -> pipeline.execute("task")).doesNotThrowAnyException();
+    var result = pipeline.execute("task: fix");
+    // Все итерации провалились (QA всегда null), возвращаем последний codeResult
+    assertThat(result).isNotNull();
   }
 }

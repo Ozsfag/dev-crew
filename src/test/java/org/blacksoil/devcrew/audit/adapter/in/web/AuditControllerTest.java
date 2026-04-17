@@ -50,7 +50,14 @@ class AuditControllerTest {
   void GET_audit_returns_200_with_events() throws Exception {
     var event =
         new AuditEventModel(
-            UUID.randomUUID(), null, "system", "TASK_COMPLETED", UUID.randomUUID(), "details", NOW);
+            UUID.randomUUID(),
+            null,
+            null,
+            "system",
+            "TASK_COMPLETED",
+            UUID.randomUUID(),
+            "details",
+            NOW);
     var pageResult = new PageResult<>(List.of(event), 0, 20, 1);
     when(auditQueryService.findByTimestampBetween(any(), any(), eq(0), eq(20)))
         .thenReturn(pageResult);
@@ -90,6 +97,7 @@ class AuditControllerTest {
         new AuditEventModel(
             UUID.randomUUID(),
             projectId,
+            null,
             "system",
             "TASK_COMPLETED",
             UUID.randomUUID(),
