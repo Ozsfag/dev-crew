@@ -2,7 +2,7 @@ package org.blacksoil.devcrew.auth.adapter.in.web.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -153,5 +153,48 @@ class AuthControllerTest {
                     {"refreshToken":"bad-token"}
                     """))
         .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void POST_logout_returns_204_on_success() throws Exception {
+    doNothing().when(authService).logout(anyString());
+
+    mockMvc
+        .perform(
+            post("/api/auth/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"refreshToken":"my-refresh-token"}
+                    """))
+        .andExpect(status().isNoContent());
+  }
+
+  @Test
+  void POST_logout_returns_401_when_token_not_found() throws Exception {
+    doThrow(new AuthException("Токен не найден")).when(authService).logout(anyString());
+
+    mockMvc
+        .perform(
+            post("/api/auth/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"refreshToken":"unknown-token"}
+                    """))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void POST_logout_returns_400_when_token_blank() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/auth/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"refreshToken":""}
+                    """))
+        .andExpect(status().isBadRequest());
   }
 }

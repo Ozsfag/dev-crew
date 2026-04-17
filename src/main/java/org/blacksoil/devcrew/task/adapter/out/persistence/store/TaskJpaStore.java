@@ -59,10 +59,14 @@ public class TaskJpaStore implements TaskStore {
     return taskRepository.findByOrgId(orgId).stream().map(mapper::toModel).toList();
   }
 
+  private static final int MAX_PAGE_SIZE = 100;
+
   @Override
   @Transactional(readOnly = true)
   public PageResult<TaskModel> findByOrgId(UUID orgId, int page, int size) {
-    var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+    var pageable =
+        PageRequest.of(
+            page, Math.min(size, MAX_PAGE_SIZE), Sort.by(Sort.Direction.DESC, "createdAt"));
     var result = taskRepository.findByOrgId(orgId, pageable);
     return new PageResult<>(
         result.getContent().stream().map(mapper::toModel).toList(),

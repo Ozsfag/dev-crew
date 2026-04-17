@@ -51,7 +51,7 @@ langchain4j:
 devcrew:
   auth:
     jwt:
-      secret: ${DEVCREW_AUTH_JWT_SECRET:change-me-min-32-chars-long-secret!!}
+      secret: ${DEVCREW_AUTH_JWT_SECRET}
       access-token-ttl-seconds: ${DEVCREW_AUTH_JWT_ACCESS_TTL:3600}
       refresh-token-ttl-seconds: ${DEVCREW_AUTH_JWT_REFRESH_TTL:604800}
   sandbox:
@@ -63,6 +63,7 @@ devcrew:
     pipeline:
       build-successful-marker: "BUILD SUCCESSFUL"
       request-changes-marker: "REQUEST_CHANGES"
+    command-timeout-seconds: 300
     rate-limit:
       retry-delay: 60s
       retry-check-delay: 30000

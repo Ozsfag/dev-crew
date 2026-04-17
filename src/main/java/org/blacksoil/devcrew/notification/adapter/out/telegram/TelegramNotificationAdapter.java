@@ -31,7 +31,8 @@ public class TelegramNotificationAdapter implements NotificationPort, PostAgentH
   }
 
   @Override
-  public void onAgentCompleted(UUID taskId, UUID projectId, AgentRole role, String result) {
+  public void onAgentCompleted(
+      UUID taskId, UUID projectId, UUID orgId, AgentRole role, String result) {
     var message =
         """
             [Dev Crew] Агент завершил задачу

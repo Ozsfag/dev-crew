@@ -32,4 +32,10 @@ public class AuthController {
   public RefreshResponse refresh(@Valid @RequestBody RefreshRequest request) {
     return mapper.toResponse(authService.refresh(request.refreshToken()));
   }
+
+  @PostMapping("/logout")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void logout(@Valid @RequestBody LogoutRequest request) {
+    authService.logout(request.refreshToken());
+  }
 }

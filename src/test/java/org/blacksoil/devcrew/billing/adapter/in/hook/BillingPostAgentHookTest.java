@@ -7,37 +7,34 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.Instant;
 import java.util.UUID;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.billing.app.service.command.UsageRecordCommandService;
-import org.blacksoil.devcrew.organization.app.service.query.OrganizationQueryService;
-import org.blacksoil.devcrew.organization.domain.model.ProjectModel;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class BillingPostAgentHookTest {
 
-  private static final Instant NOW = Instant.parse("2026-01-01T10:00:00Z");
-
-  @Mock private OrganizationQueryService organizationQueryService;
   @Mock private UsageRecordCommandService usageRecordCommandService;
 
-  @InjectMocks private BillingPostAgentHook hook;
+  private BillingPostAgentHook hook;
+
+  @BeforeEach
+  void setUp() {
+    hook = new BillingPostAgentHook(usageRecordCommandService);
+  }
 
   @Test
-  void onAgentCompleted_records_usage_when_task_has_project() {
+  void onAgentCompleted_records_usage_when_task_has_project_and_org() {
     var taskId = UUID.randomUUID();
     var projectId = UUID.randomUUID();
     var orgId = UUID.randomUUID();
-    var project = project(projectId, orgId);
-    when(organizationQueryService.getProjectById(projectId)).thenReturn(project);
 
-    hook.onAgentCompleted(taskId, projectId, AgentRole.BACKEND_DEV, "result text");
+    hook.onAgentCompleted(taskId, projectId, orgId, AgentRole.BACKEND_DEV, "result text");
 
     verify(usageRecordCommandService)
         .record(
@@ -50,10 +47,21 @@ class BillingPostAgentHookTest {
   }
 
   @Test
-  void onAgentCompleted_skips_billing_when_task_has_no_project() {
+  void onAgentCompleted_skips_billing_when_projectId_is_null() {
     var taskId = UUID.randomUUID();
+    var orgId = UUID.randomUUID();
 
-    hook.onAgentCompleted(taskId, null, AgentRole.QA, "result");
+    hook.onAgentCompleted(taskId, null, orgId, AgentRole.QA, "result");
+
+    verify(usageRecordCommandService, never()).record(any(), any(), any(), any(), any(), any());
+  }
+
+  @Test
+  void onAgentCompleted_skips_billing_when_orgId_is_null() {
+    var taskId = UUID.randomUUID();
+    var projectId = UUID.randomUUID();
+
+    hook.onAgentCompleted(taskId, projectId, null, AgentRole.QA, "result");
 
     verify(usageRecordCommandService, never()).record(any(), any(), any(), any(), any(), any());
   }
@@ -65,19 +73,13 @@ class BillingPostAgentHookTest {
     var taskId = UUID.randomUUID();
     var projectId = UUID.randomUUID();
     var orgId = UUID.randomUUID();
-    when(organizationQueryService.getProjectById(projectId)).thenReturn(project(projectId, orgId));
     when(usageRecordCommandService.record(any(), any(), any(), any(), any(), any()))
-        .thenReturn(null); // второй вызов — уже записан, сервис вернёт null
+        .thenReturn(null);
 
-    hook.onAgentCompleted(taskId, projectId, AgentRole.BACKEND_DEV, "result");
-    hook.onAgentCompleted(taskId, projectId, AgentRole.BACKEND_DEV, "result");
+    hook.onAgentCompleted(taskId, projectId, orgId, AgentRole.BACKEND_DEV, "result");
+    hook.onAgentCompleted(taskId, projectId, orgId, AgentRole.BACKEND_DEV, "result");
 
-    // Hook делегирует дважды, но сервис сам предотвращает двойное списание
     verify(usageRecordCommandService, times(2))
         .record(eq(taskId), eq(projectId), eq(orgId), eq(AgentRole.BACKEND_DEV), any(), any());
-  }
-
-  private ProjectModel project(UUID id, UUID orgId) {
-    return new ProjectModel(id, orgId, "my-project", "/projects/repo", NOW, NOW);
   }
 }

@@ -77,7 +77,7 @@ public class AgentExecutionService {
     recordTaskCounter(role, "COMPLETED");
     log.info("Агент завершил задачу");
     taskCommandService.complete(taskId, result);
-    notifyHooks(taskId, task.projectId(), role, result);
+    notifyHooks(taskId, task.projectId(), task.orgId(), role, result);
   }
 
   private void recordTaskCounter(AgentRole role, String status) {
@@ -89,7 +89,7 @@ public class AgentExecutionService {
         .increment();
   }
 
-  private void notifyHooks(UUID taskId, UUID projectId, AgentRole role, String result) {
-    postAgentHooks.forEach(hook -> hook.onAgentCompleted(taskId, projectId, role, result));
+  private void notifyHooks(UUID taskId, UUID projectId, UUID orgId, AgentRole role, String result) {
+    postAgentHooks.forEach(hook -> hook.onAgentCompleted(taskId, projectId, orgId, role, result));
   }
 }

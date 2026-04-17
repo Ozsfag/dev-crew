@@ -99,6 +99,23 @@ public class AuthService {
     return new LoginResult(accessToken, rawRefresh, jwtService.getAccessTokenTtlSeconds());
   }
 
+  @Transactional
+  public void logout(String rawRefreshToken) {
+    var hash = jwtService.hashToken(rawRefreshToken);
+    var token =
+        refreshTokenStore
+            .findByTokenHash(hash)
+            .orElseThrow(() -> new AuthException("Refresh token не найден"));
+    refreshTokenStore.save(
+        new RefreshTokenModel(
+            token.id(),
+            token.userId(),
+            token.tokenHash(),
+            token.expiresAt(),
+            true,
+            token.createdAt()));
+  }
+
   public record LoginResult(String accessToken, String refreshToken, long expiresIn) {}
 
   public record RefreshResult(String accessToken, long expiresIn) {}

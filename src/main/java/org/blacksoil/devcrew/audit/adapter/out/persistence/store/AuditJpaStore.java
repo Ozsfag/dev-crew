@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuditJpaStore implements AuditStore {
 
+  private static final int MAX_PAGE_SIZE = 100;
+
   private final AuditEventRepository auditEventRepository;
   private final AuditPersistenceMapper mapper;
 
@@ -39,7 +41,9 @@ public class AuditJpaStore implements AuditStore {
   @Transactional(readOnly = true)
   public PageResult<AuditEventModel> findByTimestampBetween(
       Instant from, Instant to, int page, int size) {
-    var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
+    var pageable =
+        PageRequest.of(
+            page, Math.min(size, MAX_PAGE_SIZE), Sort.by(Sort.Direction.DESC, "timestamp"));
     var result = auditEventRepository.findByTimestampBetween(from, to, pageable);
     return new PageResult<>(
         result.getContent().stream().map(mapper::toModel).toList(),
@@ -63,7 +67,9 @@ public class AuditJpaStore implements AuditStore {
   @Transactional(readOnly = true)
   public PageResult<AuditEventModel> findByProjectIdAndTimestampBetween(
       UUID projectId, Instant from, Instant to, int page, int size) {
-    var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
+    var pageable =
+        PageRequest.of(
+            page, Math.min(size, MAX_PAGE_SIZE), Sort.by(Sort.Direction.DESC, "timestamp"));
     var result =
         auditEventRepository.findByProjectIdAndTimestampBetween(projectId, from, to, pageable);
     return new PageResult<>(

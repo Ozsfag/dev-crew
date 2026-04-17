@@ -5,3 +5,8 @@ spring:
     username: test
     password: test
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+
+devcrew:
+  auth:
+    jwt:
+      secret: test-secret-for-integration-tests-min-32-chars

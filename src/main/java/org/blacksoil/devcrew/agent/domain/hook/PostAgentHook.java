@@ -10,5 +10,5 @@ import org.blacksoil.devcrew.agent.domain.AgentRole;
  */
 public interface PostAgentHook {
 
-  void onAgentCompleted(UUID taskId, UUID projectId, AgentRole role, String result);
+  void onAgentCompleted(UUID taskId, UUID projectId, UUID orgId, AgentRole role, String result);
 }

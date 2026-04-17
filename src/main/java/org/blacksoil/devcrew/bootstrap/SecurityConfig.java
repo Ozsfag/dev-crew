@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,8 +26,18 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    return http.csrf(AbstractHttpConfigurer::disable)
+    return http
+        // CSRF отключён: API использует stateless JWT — CSRF-атаки неприменимы
+        .csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .headers(
+            headers ->
+                headers
+                    .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
+                    .contentTypeOptions(Customizer.withDefaults())
+                    .httpStrictTransportSecurity(
+                        hsts ->
+                            hsts.includeSubDomains(true).maxAgeInSeconds(31536000).preload(true)))
         .exceptionHandling(
             e ->
                 e.authenticationEntryPoint(jwtAuthenticationEntryPoint)
@@ -34,8 +46,13 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers("/api/auth/**")
                     .permitAll()
-                    .requestMatchers("/actuator/**")
+                    // /actuator/health открыт для load balancer и k8s probes
+                    .requestMatchers("/actuator/health")
                     .permitAll()
+                    // Метрики Prometheus и другие actuator-эндпоинты — только для
+                    // аутентифицированных
+                    .requestMatchers("/actuator/**")
+                    .hasAnyRole("ARCHITECT", "VIEWER")
                     .requestMatchers(
                         HttpMethod.GET, "/api/agents/**", "/api/tasks/**", "/api/audit/**")
                     .hasAnyRole("ARCHITECT", "VIEWER")

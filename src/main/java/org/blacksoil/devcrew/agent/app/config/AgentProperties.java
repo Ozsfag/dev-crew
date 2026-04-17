@@ -17,6 +17,9 @@ public class AgentProperties {
   /** Максимальное число итераций tool-use в одном вызове. */
   private int maxIterations = 20;
 
+  /** Таймаут выполнения одной внешней команды (git, gradle и т.д.) в секундах. */
+  private int commandTimeoutSeconds = 300;
+
   /** Параметры CircularAgentPipeline. */
   private Pipeline pipeline = new Pipeline();
 

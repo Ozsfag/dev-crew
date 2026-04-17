@@ -254,6 +254,37 @@ class AuthServiceTest {
     return new UserModel(UUID.randomUUID(), UUID.randomUUID(), email, "hash", role, NOW, NOW);
   }
 
+  // --- logout ---
+
+  @Test
+  void logout_revokes_refresh_token() {
+    var tokenModel =
+        new RefreshTokenModel(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "hash",
+            Instant.parse("2099-01-01T00:00:00Z"),
+            false,
+            NOW);
+    when(jwtService.hashToken("raw")).thenReturn("hash");
+    when(refreshTokenStore.findByTokenHash("hash")).thenReturn(Optional.of(tokenModel));
+    when(refreshTokenStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+    authService.logout("raw");
+
+    var captor = ArgumentCaptor.<RefreshTokenModel>captor();
+    verify(refreshTokenStore).save(captor.capture());
+    assertThat(captor.getValue().revoked()).isTrue();
+  }
+
+  @Test
+  void logout_throws_AuthException_when_token_not_found() {
+    when(jwtService.hashToken(anyString())).thenReturn("unknown");
+    when(refreshTokenStore.findByTokenHash("unknown")).thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> authService.logout("raw")).isInstanceOf(AuthException.class);
+  }
+
   private UserModel userModelWithPassword(String email, String encodedPassword, UserRole role) {
     return new UserModel(
         UUID.randomUUID(), UUID.randomUUID(), email, encodedPassword, role, NOW, NOW);

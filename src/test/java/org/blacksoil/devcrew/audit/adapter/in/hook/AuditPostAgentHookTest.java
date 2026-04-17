@@ -32,7 +32,8 @@ class AuditPostAgentHookTest {
     var taskId = UUID.randomUUID();
     var projectId = UUID.randomUUID();
 
-    hook.onAgentCompleted(taskId, projectId, AgentRole.BACKEND_DEV, "result text");
+    hook.onAgentCompleted(
+        taskId, projectId, UUID.randomUUID(), AgentRole.BACKEND_DEV, "result text");
 
     var captor = ArgumentCaptor.<AuditEventModel>captor();
     verify(auditCommandService).record(captor.capture());
@@ -44,7 +45,7 @@ class AuditPostAgentHookTest {
     var taskId = UUID.randomUUID();
     var projectId = UUID.randomUUID();
 
-    hook.onAgentCompleted(taskId, projectId, AgentRole.QA, "done");
+    hook.onAgentCompleted(taskId, projectId, UUID.randomUUID(), AgentRole.QA, "done");
 
     var captor = ArgumentCaptor.<AuditEventModel>captor();
     verify(auditCommandService).record(captor.capture());
@@ -56,7 +57,7 @@ class AuditPostAgentHookTest {
     var taskId = UUID.randomUUID();
     var projectId = UUID.randomUUID();
 
-    hook.onAgentCompleted(taskId, projectId, AgentRole.DEVOPS, "deployed");
+    hook.onAgentCompleted(taskId, projectId, UUID.randomUUID(), AgentRole.DEVOPS, "deployed");
 
     var captor = ArgumentCaptor.<AuditEventModel>captor();
     verify(auditCommandService).record(captor.capture());
@@ -68,7 +69,7 @@ class AuditPostAgentHookTest {
     var taskId = UUID.randomUUID();
     var projectId = UUID.randomUUID();
 
-    hook.onAgentCompleted(taskId, projectId, AgentRole.BACKEND_DEV, "ok");
+    hook.onAgentCompleted(taskId, projectId, UUID.randomUUID(), AgentRole.BACKEND_DEV, "ok");
 
     var captor = ArgumentCaptor.<AuditEventModel>captor();
     verify(auditCommandService).record(captor.capture());
@@ -81,7 +82,7 @@ class AuditPostAgentHookTest {
     var projectId = UUID.randomUUID();
     var longResult = "x".repeat(2000);
 
-    hook.onAgentCompleted(taskId, projectId, AgentRole.BACKEND_DEV, longResult);
+    hook.onAgentCompleted(taskId, projectId, UUID.randomUUID(), AgentRole.BACKEND_DEV, longResult);
 
     var captor = ArgumentCaptor.<AuditEventModel>captor();
     verify(auditCommandService).record(captor.capture());
@@ -94,7 +95,7 @@ class AuditPostAgentHookTest {
     var taskId = UUID.randomUUID();
     var projectId = UUID.randomUUID();
 
-    hook.onAgentCompleted(taskId, projectId, AgentRole.QA, "tests passed");
+    hook.onAgentCompleted(taskId, projectId, UUID.randomUUID(), AgentRole.QA, "tests passed");
 
     var captor = ArgumentCaptor.<AuditEventModel>captor();
     verify(auditCommandService).record(captor.capture());

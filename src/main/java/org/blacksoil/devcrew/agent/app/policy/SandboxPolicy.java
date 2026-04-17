@@ -1,18 +1,28 @@
 package org.blacksoil.devcrew.agent.app.policy;
 
+import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import org.blacksoil.devcrew.common.exception.DomainException;
 
 /**
  * Проверяет что путь находится внутри разрешённого корня (/projects по умолчанию). Защищает от path
- * traversal атак: ../../../etc/passwd и подобных.
+ * traversal атак: ../../../etc/passwd и подобных. Использует toRealPath() для существующих путей,
+ * чтобы предотвратить обход через символические ссылки.
  */
 public class SandboxPolicy {
 
   private final Path sandboxRoot;
 
   public SandboxPolicy(String sandboxRoot) {
-    this.sandboxRoot = Path.of(sandboxRoot).normalize().toAbsolutePath();
+    Path base;
+    try {
+      // toRealPath() разрешает симлинки в самом корне sandbox
+      base = Path.of(sandboxRoot).toRealPath();
+    } catch (IOException | RuntimeException e) {
+      base = Path.of(sandboxRoot).normalize().toAbsolutePath();
+    }
+    this.sandboxRoot = base;
   }
 
   /**
@@ -25,8 +35,27 @@ public class SandboxPolicy {
 
     Path normalized;
     try {
-      normalized = Path.of(path).normalize().toAbsolutePath();
-    } catch (Exception e) {
+      // toRealPath() разрешает символические ссылки — предотвращает симлинк-атаки
+      normalized = Path.of(path).toRealPath();
+    } catch (NoSuchFileException e) {
+      // Файл не существует — разрешаем симлинки в родительской директории,
+      // чтобы корректно работать на macOS где /var -> /private/var
+      try {
+        var absolute = Path.of(path).toAbsolutePath().normalize();
+        var parent = absolute.getParent();
+        if (parent != null) {
+          try {
+            normalized = parent.toRealPath().resolve(absolute.getFileName());
+          } catch (IOException ex) {
+            normalized = absolute;
+          }
+        } else {
+          normalized = absolute;
+        }
+      } catch (Exception ex) {
+        throw new DomainException("Некорректный путь — доступ запрещён: " + path);
+      }
+    } catch (IOException | RuntimeException e) {
       throw new DomainException("Некорректный путь — доступ запрещён: " + path);
     }
 

@@ -23,7 +23,8 @@ public class AuditPostAgentHook implements PostAgentHook {
   private final TimeProvider timeProvider;
 
   @Override
-  public void onAgentCompleted(UUID taskId, UUID projectId, AgentRole role, String result) {
+  public void onAgentCompleted(
+      UUID taskId, UUID projectId, UUID orgId, AgentRole role, String result) {
     auditCommandService.record(
         new AuditEventModel(
             UUID.randomUUID(),
