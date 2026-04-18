@@ -78,4 +78,18 @@ public class AuditJpaStore implements AuditStore {
         result.getSize(),
         result.getTotalElements());
   }
+
+  @Override
+  @Transactional(readOnly = true)
+  public PageResult<AuditEventModel> findByActorId(UUID actorId, int page, int size) {
+    var pageable =
+        PageRequest.of(
+            page, Math.min(size, MAX_PAGE_SIZE), Sort.by(Sort.Direction.DESC, "timestamp"));
+    var result = auditEventRepository.findByActorId(actorId, pageable);
+    return new PageResult<>(
+        result.getContent().stream().map(mapper::toModel).toList(),
+        result.getNumber(),
+        result.getSize(),
+        result.getTotalElements());
+  }
 }

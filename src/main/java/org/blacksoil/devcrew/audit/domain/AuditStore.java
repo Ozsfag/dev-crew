@@ -18,4 +18,6 @@ public interface AuditStore {
 
   PageResult<AuditEventModel> findByProjectIdAndTimestampBetween(
       UUID projectId, Instant from, Instant to, int page, int size);
+
+  PageResult<AuditEventModel> findByActorId(UUID actorId, int page, int size);
 }

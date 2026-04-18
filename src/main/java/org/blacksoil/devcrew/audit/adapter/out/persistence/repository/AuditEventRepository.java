@@ -19,4 +19,6 @@ public interface AuditEventRepository extends JpaRepository<AuditEventEntity, UU
 
   Page<AuditEventEntity> findByProjectIdAndTimestampBetween(
       UUID projectId, Instant from, Instant to, Pageable pageable);
+
+  Page<AuditEventEntity> findByActorId(UUID actorId, Pageable pageable);
 }

@@ -122,6 +122,37 @@ class AuditControllerTest {
   }
 
   @Test
+  void GET_audit_with_actorId_calls_findByActorId() throws Exception {
+    var actorId = UUID.randomUUID();
+    var event =
+        new AuditEventModel(
+            UUID.randomUUID(),
+            null,
+            actorId,
+            "user@example.com",
+            "TASK_CREATED",
+            UUID.randomUUID(),
+            "details",
+            NOW);
+    var pageResult = new PageResult<>(List.of(event), 0, 20, 1);
+    when(auditQueryService.findByActorId(eq(actorId), eq(0), eq(20))).thenReturn(pageResult);
+
+    mockMvc
+        .perform(
+            get("/api/audit")
+                .param("from", "2024-01-01T00:00:00Z")
+                .param("to", "2024-12-31T23:59:59Z")
+                .param("actorId", actorId.toString())
+                .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(1));
+
+    verify(auditQueryService).findByActorId(eq(actorId), eq(0), eq(20));
+    verify(auditQueryService, never()).findByTimestampBetween(any(), any(), eq(0), eq(20));
+    verify(auditQueryService, never()).findByProjectId(any(), any(), any(), eq(0), eq(20));
+  }
+
+  @Test
   void GET_audit_returns_400_when_from_missing() throws Exception {
     mockMvc
         .perform(

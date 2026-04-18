@@ -37,4 +37,9 @@ public class AuditQueryService {
       UUID projectId, Instant from, Instant to, int page, int size) {
     return auditStore.findByProjectIdAndTimestampBetween(projectId, from, to, page, size);
   }
+
+  @Transactional(readOnly = true)
+  public PageResult<AuditEventModel> findByActorId(UUID actorId, int page, int size) {
+    return auditStore.findByActorId(actorId, page, size);
+  }
 }
