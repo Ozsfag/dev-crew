@@ -1,6 +1,7 @@
 package org.blacksoil.devcrew.agent.app.service.execution;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
@@ -86,5 +87,13 @@ class AgentDispatcherTest {
     var result = dispatcher.dispatch(AgentRole.BACKEND_DEV, "task");
 
     assertThat(result).isEqualTo("agent result");
+  }
+
+  @Test
+  void dispatch_throws_UnsupportedOperationException_when_role_not_in_prompt_map() {
+    // null моделирует ситуацию, когда роль добавлена в enum, но не внесена в PROMPT_FILES
+    assertThatThrownBy(() -> dispatcher.dispatch(null, "task"))
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessageContaining("null");
   }
 }

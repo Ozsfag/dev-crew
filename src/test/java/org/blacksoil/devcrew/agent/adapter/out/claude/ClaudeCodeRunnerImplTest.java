@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import org.blacksoil.devcrew.agent.app.config.ClaudeCodeProperties;
 import org.blacksoil.devcrew.agent.domain.shell.CommandResult;
@@ -27,7 +28,7 @@ class ClaudeCodeRunnerImplTest {
   @BeforeEach
   void setUp() {
     var properties = new ClaudeCodeProperties();
-    runner = new ClaudeCodeRunnerImpl(commandRunner, properties);
+    runner = new ClaudeCodeRunnerImpl(commandRunner, properties, new ObjectMapper());
   }
 
   @Test
@@ -99,7 +100,7 @@ class ClaudeCodeRunnerImplTest {
   void run_uses_executable_from_properties() {
     var properties = new ClaudeCodeProperties();
     properties.setExecutable("/usr/local/bin/claude");
-    var customRunner = new ClaudeCodeRunnerImpl(commandRunner, properties);
+    var customRunner = new ClaudeCodeRunnerImpl(commandRunner, properties, new ObjectMapper());
 
     var json =
         """
@@ -119,7 +120,7 @@ class ClaudeCodeRunnerImplTest {
   void run_uses_max_turns_from_properties() {
     var properties = new ClaudeCodeProperties();
     properties.setMaxTurns(5);
-    var customRunner = new ClaudeCodeRunnerImpl(commandRunner, properties);
+    var customRunner = new ClaudeCodeRunnerImpl(commandRunner, properties, new ObjectMapper());
 
     var json =
         """

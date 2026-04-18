@@ -22,6 +22,7 @@ public class ClaudeCodeRunnerImpl implements ClaudeCodeRunner {
 
   private final CommandRunner commandRunner;
   private final ClaudeCodeProperties properties;
+  private final ObjectMapper objectMapper;
 
   @Override
   public String run(String systemPrompt, String userPrompt) {
@@ -56,8 +57,7 @@ public class ClaudeCodeRunnerImpl implements ClaudeCodeRunner {
   }
 
   private String parseResult(String json) throws IOException {
-    var mapper = new ObjectMapper();
-    var output = mapper.readValue(json, ClaudeCodeOutput.class);
+    var output = objectMapper.readValue(json, ClaudeCodeOutput.class);
     if (output.isError()) {
       throw new RuntimeException("Claude CLI вернул ошибку: " + output.result());
     }

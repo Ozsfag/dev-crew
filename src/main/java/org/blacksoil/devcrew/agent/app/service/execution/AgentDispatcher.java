@@ -31,7 +31,12 @@ public class AgentDispatcher {
 
   /** Запускает Claude Code CLI с системным промптом нужной роли и возвращает результат. */
   public String dispatch(AgentRole role, String prompt) {
-    var systemPrompt = loadPrompt(PROMPT_FILES.get(role));
+    var promptFile = role != null ? PROMPT_FILES.get(role) : null;
+    if (promptFile == null) {
+      throw new UnsupportedOperationException(
+          "Нет системного промпта для роли: " + role + ". Добавьте запись в PROMPT_FILES.");
+    }
+    var systemPrompt = loadPrompt(promptFile);
     log.debug("Диспетчеризация задачи агенту: role={}", role);
     return claudeCodeRunner.run(systemPrompt, prompt);
   }
