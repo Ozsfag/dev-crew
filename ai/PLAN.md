@@ -1,10 +1,11 @@
 # Dev Crew — Roadmap
 
-## Текущее состояние: Code Review П11 выявил 8 новых задач
+## Текущее состояние: П11 реализован частично (6/8 выполнены полностью)
 
 MVP готов. REST API, JWT-аутентификация, 5 агентов, мультитенантность (org/project),
 биллинг, rate-limit recovery, Telegram-уведомления — реализованы.
-Выполнен рефакторинг П10. Code review (апрель 2026) добавил П11.
+П10 выполнен полностью. П11 (code review апрель 2026): все исправления внесены,
+остались 5 тестов (11.1, 11.2×2, 11.3, 11.4, 11.6).
 
 ## Roadmap
 
@@ -17,11 +18,11 @@ MVP готов. REST API, JWT-аутентификация, 5 агентов, м
 | П8    | Telegram Bot входящие + голос + pipeline         | ✅     | [plans/p8](plans/p8-telegram-bot-input.md)                   |
 | П9    | IntelliJ IDEA Plugin                             | 🔲     | [plans/p9](plans/p9-intellij-plugin.md)                      |
 | П10.1 | Безопасность и корректность                      | ✅     | [plans/p10.1](plans/p10.1-security.md)                       |
-| П10.2 | Устранение архитектурных нарушений               | ✅⚠️   | [plans/p10.2](plans/p10.2-architecture.md) — 2.5 частично   |
+| П10.2 | Устранение архитектурных нарушений               | ✅     | [plans/p10.2](plans/p10.2-architecture.md)                   |
 | П10.3 | Качество кода: DRY / SRP                         | ✅     | [plans/p10.3](plans/p10.3-code-quality.md)                   |
 | П10.4 | API: пагинация (OpenAPI/SSE отложены)            | ✅     | [plans/p10.4](plans/p10.4-api.md)                            |
-| П10.5 | Observability: метрики и трейсинг                | ✅     | [plans/p10.5](plans/p10.5-observability.md)                  |
+| П10.5 | Observability: метрики и трейсинг                | ✅⚠️   | [plans/p10.5](plans/p10.5-observability.md) — 5.2 тест, 5.3 отложено |
 | П10.6 | Инфраструктура: Docker и CI/CD                   | ✅     | [plans/p10.6](plans/p10.6-infrastructure.md)                 |
-| П10.7 | База данных: схема и производительность          | ✅     | [plans/p10.7](plans/p10.7-database.md)                       |
+| П10.7 | База данных: схема и производительность          | ✅⚠️   | [plans/p10.7](plans/p10.7-database.md) — 7.2 не выполнено, 7.3 API-фильтр |
 | П10.8 | Тесты: пробелы в покрытии                        | ✅     | [plans/p10.8](plans/p10.8-test-coverage.md)                  |
-| П11   | Code Review: безопасность и корректность         | 🔲     | [plans/p11](plans/p11-code-review-findings.md)               |
+| П11   | Code Review: безопасность и корректность         | ✅⚠️   | [plans/p11](plans/p11-code-review-findings.md) — 5 тестов   |

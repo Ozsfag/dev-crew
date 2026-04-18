@@ -27,9 +27,9 @@ if (timedOut) {
 Добавить `command-timeout-seconds: 300` в `AgentProperties` (или `SandboxProperties`).
 
 **Acceptance Criteria**:
-- [ ] `ProcessBuilderCommandRunner.run()` завершается через не более `timeoutSeconds` секунд
-- [ ] Зависший процесс принудительно уничтожается (`destroyForcibly`)
-- [ ] Таймаут вынесен в конфиг (`devcrew.agent.command-timeout-seconds: 300`)
+- [x] `ProcessBuilderCommandRunner.run()` завершается через не более `timeoutSeconds` секунд
+- [x] Зависший процесс принудительно уничтожается (`destroyForcibly`)
+- [x] Таймаут вынесен в конфиг (`devcrew.agent.command-timeout-seconds: 300`)
 - [ ] Тест: `run_returns_timeout_result_when_process_exceeds_limit`
 
 ---
@@ -56,8 +56,8 @@ try {
 ```
 
 **Acceptance Criteria**:
-- [ ] `SandboxPolicy` использует `toRealPath()` для существующих путей
-- [ ] Симлинк вне sandbox правильно отклоняется
+- [x] `SandboxPolicy` использует `toRealPath()` для существующих путей
+- [x] Симлинк вне sandbox правильно отклоняется
 - [ ] Тест: `validatePath_throws_when_symlink_points_outside_sandbox`
 - [ ] Тест: `validatePath_allows_valid_nonexistent_path_inside_sandbox`
 
@@ -84,9 +84,9 @@ private String secret;
 ```
 
 **Acceptance Criteria**:
-- [ ] `application.yml` не содержит fallback-секрета
-- [ ] `JwtProperties.secret` помечен `@NotBlank @Size(min=32)`
-- [ ] Приложение не запускается если `DEVCREW_AUTH_JWT_SECRET` не задан
+- [x] `application.yml` не содержит fallback-секрета
+- [x] `JwtProperties.secret` помечен `@NotBlank @Size(min=32)`
+- [x] Приложение не запускается если `DEVCREW_AUTH_JWT_SECRET` не задан
 - [ ] Тест: `JwtPropertiesValidationTest` проверяет отказ при коротком секрете
 
 ---
@@ -109,8 +109,8 @@ private String secret;
 из публичного доступа в `application.yml` и создать отдельный management-порт).
 
 **Acceptance Criteria**:
-- [ ] `/actuator/prometheus` недоступен без аутентификации
-- [ ] `/actuator/health` остаётся публичным (нужен для probe)
+- [x] `/actuator/prometheus` недоступен без аутентификации
+- [x] `/actuator/health` остаётся публичным (нужен для probe)
 - [ ] Тест: `GET /actuator/prometheus` возвращает 401 без токена
 
 ---
@@ -134,10 +134,10 @@ public interface PostAgentHook {
 `BillingPostAgentHook` убирает `OrganizationQueryService` зависимость.
 
 **Acceptance Criteria**:
-- [ ] `PostAgentHook.onAgentCompleted` принимает `orgId`
-- [ ] `BillingPostAgentHook` не инжектирует `OrganizationQueryService`
-- [ ] `AuditPostAgentHook` также обновлён
-- [ ] Все тесты хуков обновлены
+- [x] `PostAgentHook.onAgentCompleted` принимает `orgId`
+- [x] `BillingPostAgentHook` не инжектирует `OrganizationQueryService`
+- [x] `AuditPostAgentHook` также обновлён
+- [x] Все тесты хуков обновлены
 
 ---
 
@@ -163,8 +163,8 @@ public PageResult<TaskModel> findByOrgId(UUID orgId, int page, int size) {
 Аналогично в `AuditJpaStore`.
 
 **Acceptance Criteria**:
-- [ ] `TaskJpaStore` ограничивает `size` до 100
-- [ ] `AuditJpaStore` ограничивает `size` до 100
+- [x] `TaskJpaStore` ограничивает `size` до 100
+- [x] `AuditJpaStore` ограничивает `size` до 100
 - [ ] Тест: запрос с `size=99999` возвращает не более 100 записей
 
 ---
@@ -189,9 +189,9 @@ public void logout(String rawRefreshToken) {
 ```
 
 **Acceptance Criteria**:
-- [ ] `POST /api/auth/logout` принимает refresh-токен и отзывает его
-- [ ] Отозванный токен не принимается в `POST /api/auth/refresh`
-- [ ] Тест: `logout_revokes_refresh_token` + `refresh_fails_with_revoked_token`
+- [x] `POST /api/auth/logout` принимает refresh-токен и отзывает его
+- [x] Отозванный токен не принимается в `POST /api/auth/refresh`
+- [x] Тест: `logout_revokes_refresh_token` + `refresh_fails_with_revoked_token`
 
 ---
 
@@ -213,9 +213,9 @@ Spring Security по умолчанию добавляет некоторые з
 ```
 
 **Acceptance Criteria**:
-- [ ] Ответы содержат `X-Frame-Options: DENY`
-- [ ] Ответы содержат `X-Content-Type-Options: nosniff`
-- [ ] Ответы содержат `Strict-Transport-Security`
+- [x] Ответы содержат `X-Frame-Options: DENY`
+- [x] Ответы содержат `X-Content-Type-Options: nosniff`
+- [x] Ответы содержат `Strict-Transport-Security`
 
 ---
 
