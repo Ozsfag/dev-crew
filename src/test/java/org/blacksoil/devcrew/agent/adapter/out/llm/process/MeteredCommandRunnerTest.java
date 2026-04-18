@@ -7,6 +7,8 @@ import static org.mockito.Mockito.when;
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.io.File;
+import org.blacksoil.devcrew.agent.domain.shell.CommandResult;
+import org.blacksoil.devcrew.agent.domain.shell.CommandRunner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

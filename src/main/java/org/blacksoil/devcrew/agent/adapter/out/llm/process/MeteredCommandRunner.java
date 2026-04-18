@@ -5,6 +5,8 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import java.io.File;
 import lombok.RequiredArgsConstructor;
+import org.blacksoil.devcrew.agent.domain.shell.CommandResult;
+import org.blacksoil.devcrew.agent.domain.shell.CommandRunner;
 
 /**
  * Декоратор над CommandRunner, добавляющий метрики Micrometer. Записывает Timer

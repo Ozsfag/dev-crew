@@ -40,25 +40,19 @@ logging:
   level:
     org.springframework.web.client: WARN
 
-langchain4j:
-  anthropic:
-    api-key: ${ANTHROPIC_API_KEY:}
-    model-name: claude-sonnet-4-6
-    max-tokens: 8096
-    log-requests: false
-    log-responses: false
-
 devcrew:
   auth:
     jwt:
       secret: ${DEVCREW_AUTH_JWT_SECRET}
       access-token-ttl-seconds: ${DEVCREW_AUTH_JWT_ACCESS_TTL:3600}
       refresh-token-ttl-seconds: ${DEVCREW_AUTH_JWT_REFRESH_TTL:604800}
+  claude-code:
+    executable: ${DEVCREW_CLAUDE_CODE_EXECUTABLE:claude}
+    max-turns: 20
+    sandbox-root: /projects
   sandbox:
     root: /projects
   agent:
-    model: claude-sonnet-4-6
-    max-tokens: 8096
     max-iterations: 20
     pipeline:
       build-successful-marker: "BUILD SUCCESSFUL"

@@ -1,4 +1,4 @@
-package org.blacksoil.devcrew.agent.adapter.out.llm.process;
+package org.blacksoil.devcrew.agent.domain.shell;
 
 /** Результат выполнения внешней команды. */
 public record CommandResult(int exitCode, String output) {

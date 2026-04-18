@@ -8,13 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "devcrew.agent")
 public class AgentProperties {
 
-  /** Модель Claude, используемая агентами по умолчанию. */
-  private String model = "claude-sonnet-4-6";
-
-  /** Максимальное число токенов в одном ответе агента. */
-  private int maxTokens = 8096;
-
-  /** Максимальное число итераций tool-use в одном вызове. */
+  /** Максимальное число итераций в CircularAgentPipeline. */
   private int maxIterations = 20;
 
   /** Таймаут выполнения одной внешней команды (git, gradle и т.д.) в секундах. */

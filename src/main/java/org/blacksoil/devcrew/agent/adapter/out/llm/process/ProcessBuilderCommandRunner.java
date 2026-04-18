@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.agent.app.config.AgentProperties;
+import org.blacksoil.devcrew.agent.domain.shell.CommandResult;
+import org.blacksoil.devcrew.agent.domain.shell.CommandRunner;
 import org.springframework.stereotype.Component;
 
 /** Реализация CommandRunner через ProcessBuilder. Применяет таймаут из AgentProperties. */

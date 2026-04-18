@@ -1,9 +1,9 @@
 package org.blacksoil.devcrew.agent.bootstrap;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import org.blacksoil.devcrew.agent.adapter.out.llm.process.CommandRunner;
 import org.blacksoil.devcrew.agent.adapter.out.llm.process.MeteredCommandRunner;
 import org.blacksoil.devcrew.agent.adapter.out.llm.process.ProcessBuilderCommandRunner;
+import org.blacksoil.devcrew.agent.domain.shell.CommandRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
