@@ -46,6 +46,9 @@ public class TaskEntity {
   @Column(columnDefinition = "TEXT")
   private String result;
 
+  @Column(name = "result_summary", length = 2000)
+  private String resultSummary;
+
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
 

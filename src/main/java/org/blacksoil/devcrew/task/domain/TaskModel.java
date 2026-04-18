@@ -15,6 +15,7 @@ public record TaskModel(
     AgentRole assignedTo,
     TaskStatus status,
     String result,
+    String resultSummary,
     Instant createdAt,
     Instant updatedAt,
     /** Момент, после которого задачу можно повторить. Заполняется при статусе RATE_LIMITED. */
@@ -31,6 +32,7 @@ public record TaskModel(
         assignedTo,
         status,
         result,
+        resultSummary,
         createdAt,
         updatedAt,
         retryAt);
@@ -47,6 +49,24 @@ public record TaskModel(
         assignedTo,
         status,
         result,
+        resultSummary,
+        createdAt,
+        updatedAt,
+        retryAt);
+  }
+
+  public TaskModel withResultSummary(String resultSummary) {
+    return new TaskModel(
+        id,
+        projectId,
+        orgId,
+        parentTaskId,
+        title,
+        description,
+        assignedTo,
+        status,
+        result,
+        resultSummary,
         createdAt,
         updatedAt,
         retryAt);
@@ -63,6 +83,7 @@ public record TaskModel(
         assignedTo,
         status,
         result,
+        resultSummary,
         createdAt,
         updatedAt,
         retryAt);
@@ -79,6 +100,7 @@ public record TaskModel(
         assignedTo,
         status,
         result,
+        resultSummary,
         createdAt,
         updatedAt,
         retryAt);

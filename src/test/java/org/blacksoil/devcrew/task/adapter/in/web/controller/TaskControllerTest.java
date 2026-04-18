@@ -200,6 +200,7 @@ class TaskControllerTest {
         AgentRole.BACKEND_DEV,
         TaskStatus.PENDING,
         null,
+        null,
         NOW,
         NOW,
         null);

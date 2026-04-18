@@ -94,6 +94,23 @@ class TaskCommandServiceTest {
     verify(taskStore).save(captor.capture());
     assertThat(captor.getValue().status()).isEqualTo(TaskStatus.COMPLETED);
     assertThat(captor.getValue().result()).isEqualTo("Done successfully");
+    assertThat(captor.getValue().resultSummary()).isEqualTo("Done successfully");
+  }
+
+  @Test
+  void complete_truncates_result_summary_to_2000_chars() {
+    var task = existingTask(TaskStatus.IN_PROGRESS);
+    var longResult = "x".repeat(5000);
+    when(taskStore.findById(task.id())).thenReturn(Optional.of(task));
+    when(timeProvider.now()).thenReturn(NOW);
+    when(taskStore.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+    taskCommandService.complete(task.id(), longResult);
+
+    var captor = ArgumentCaptor.<TaskModel>captor();
+    verify(taskStore).save(captor.capture());
+    assertThat(captor.getValue().result()).hasSize(5000);
+    assertThat(captor.getValue().resultSummary()).hasSize(2000);
   }
 
   @Test
@@ -140,6 +157,7 @@ class TaskCommandServiceTest {
             AgentRole.BACKEND_DEV,
             TaskStatus.IN_PROGRESS,
             "partial result",
+            null,
             NOW,
             NOW,
             null);
@@ -196,6 +214,7 @@ class TaskCommandServiceTest {
         "desc",
         AgentRole.BACKEND_DEV,
         status,
+        null,
         null,
         NOW,
         NOW,

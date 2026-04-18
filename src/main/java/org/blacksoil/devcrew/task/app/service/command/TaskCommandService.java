@@ -41,6 +41,7 @@ public class TaskCommandService {
             assignedTo,
             TaskStatus.PENDING,
             null,
+            null,
             now,
             now,
             null);
@@ -56,9 +57,11 @@ public class TaskCommandService {
   public TaskModel complete(UUID taskId, String result) {
     var task = findOrThrow(taskId);
     log.info("Задача завершена: taskId={}", taskId);
+    var summary = result != null ? result.substring(0, Math.min(2000, result.length())) : null;
     return taskStore.save(
         task.withStatus(TaskStatus.COMPLETED)
             .withResult(result)
+            .withResultSummary(summary)
             .withRetryAt(null)
             .withUpdatedAt(timeProvider.now()));
   }

@@ -50,6 +50,14 @@ class AuditJpaStoreTest extends IntegrationTestBase {
     assertThat(result.get(0).timestamp()).isBeforeOrEqualTo(result.get(1).timestamp());
   }
 
+  @Test
+  void findByTimestampBetween_clamps_size_to_100_when_requested_size_exceeds_limit() {
+    var result =
+        auditJpaStore.findByTimestampBetween(NOW.minusSeconds(1), NOW.plusSeconds(1), 0, 99999);
+
+    assertThat(result.size()).isEqualTo(100);
+  }
+
   private AuditEventModel auditEvent(Instant timestamp, UUID entityId) {
     return new AuditEventModel(
         UUID.randomUUID(),

@@ -353,6 +353,7 @@ class AgentExecutionServiceTest {
         AgentRole.BACKEND_DEV,
         status,
         null,
+        null,
         Instant.parse("2026-01-01T10:00:00Z"),
         Instant.parse("2026-01-01T10:00:00Z"),
         null);

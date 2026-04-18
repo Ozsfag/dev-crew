@@ -9,6 +9,7 @@ import org.blacksoil.devcrew.bootstrap.AuthenticatedUser;
 import org.blacksoil.devcrew.common.PageResult;
 import org.blacksoil.devcrew.task.adapter.in.web.dto.CreateTaskRequest;
 import org.blacksoil.devcrew.task.adapter.in.web.dto.CreateTaskResponse;
+import org.blacksoil.devcrew.task.adapter.in.web.dto.TaskDetailResponse;
 import org.blacksoil.devcrew.task.adapter.in.web.dto.TaskResponse;
 import org.blacksoil.devcrew.task.adapter.in.web.mapper.TaskWebMapper;
 import org.blacksoil.devcrew.task.app.service.query.TaskQueryService;
@@ -61,7 +62,7 @@ public class TaskController {
   }
 
   @GetMapping("/{id}")
-  public TaskResponse getById(@PathVariable UUID id) {
-    return mapper.toResponse(taskQueryService.getById(id));
+  public TaskDetailResponse getById(@PathVariable UUID id) {
+    return mapper.toDetailResponse(taskQueryService.getById(id));
   }
 }

@@ -1,0 +1,1 @@
+ALTER TABLE tasks ADD COLUMN result_summary VARCHAR(2000);

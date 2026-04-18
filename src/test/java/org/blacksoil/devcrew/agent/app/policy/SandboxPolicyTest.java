@@ -1,10 +1,14 @@
 package org.blacksoil.devcrew.agent.app.policy;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.blacksoil.devcrew.common.exception.DomainException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -59,5 +63,25 @@ class SandboxPolicyTest {
   @Test
   void root_itself_passes() {
     assertThatCode(() -> policy.validatePath("/projects")).doesNotThrowAnyException();
+  }
+
+  @Test
+  void validatePath_throws_when_symlink_points_outside_sandbox(
+      @TempDir Path sandbox, @TempDir Path outside) throws Exception {
+    var sandboxPolicy = new SandboxPolicy(sandbox.toString());
+    Files.createFile(outside.resolve("secret.txt"));
+    var symlink = sandbox.resolve("evil");
+    Files.createSymbolicLink(symlink, outside.resolve("secret.txt"));
+
+    assertThatThrownBy(() -> sandboxPolicy.validatePath(symlink.toString()))
+        .isInstanceOf(DomainException.class);
+  }
+
+  @Test
+  void validatePath_allows_valid_nonexistent_path_inside_sandbox(@TempDir Path sandbox) {
+    var sandboxPolicy = new SandboxPolicy(sandbox.toString());
+    var nonExistent = sandbox.resolve("NewFile.java").toString();
+
+    assertThatNoException().isThrownBy(() -> sandboxPolicy.validatePath(nonExistent));
   }
 }

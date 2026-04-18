@@ -68,6 +68,7 @@ class RateLimitRetrySchedulerTest {
         role,
         TaskStatus.RATE_LIMITED,
         null,
+        null,
         NOW,
         NOW,
         NOW.minusSeconds(1));

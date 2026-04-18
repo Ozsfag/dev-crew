@@ -69,6 +69,7 @@ class TaskJpaStoreTest extends IntegrationTestBase {
             saved.assignedTo(),
             TaskStatus.COMPLETED,
             "result text",
+            null,
             saved.createdAt(),
             NOW,
             null);
@@ -77,6 +78,13 @@ class TaskJpaStoreTest extends IntegrationTestBase {
 
     assertThat(result.status()).isEqualTo(TaskStatus.COMPLETED);
     assertThat(result.result()).isEqualTo("result text");
+  }
+
+  @Test
+  void findByOrgId_clamps_size_to_100_when_requested_size_exceeds_limit() {
+    var result = taskJpaStore.findByOrgId(UUID.randomUUID(), 0, 99999);
+
+    assertThat(result.size()).isEqualTo(100);
   }
 
   private TaskModel taskModel(UUID parentId, AgentRole role, TaskStatus status) {
@@ -89,6 +97,7 @@ class TaskJpaStoreTest extends IntegrationTestBase {
         "Description",
         role,
         status,
+        null,
         null,
         NOW,
         NOW,

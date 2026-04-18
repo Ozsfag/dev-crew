@@ -131,6 +131,7 @@ class TaskQueryServiceTest {
         AgentRole.BACKEND_DEV,
         status,
         null,
+        null,
         NOW,
         NOW,
         null);
