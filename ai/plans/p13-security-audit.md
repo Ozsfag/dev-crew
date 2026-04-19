@@ -2,7 +2,7 @@
 
 **Дата аудита:** 2026-04-19  
 **Аудитор:** Claude Security Review  
-**Статус:** ✅⚠️ Частично выполнено (IDOR, пароль, Stripe secret, prod-логи — закрыты; rate limiting, CORS, SSL, idempotency → П14)
+**Статус:** ✅ Выполнено полностью (П13.6/SSL → П15, остальное реализовано)
 
 ---
 
@@ -299,22 +299,22 @@ private static final Set<String> ALLOWED_EXTENSIONS =
 ## Чеклист реализации
 
 ### Спринт 1 — CRITICAL (немедленно)
-- [ ] П13.1 Удалить секреты из git, пересоздать токены
-- [ ] П13.2 Добавить org-проверку в GET /api/tasks/{id}
-- [ ] П13.3 Добавить org-проверку в POST /api/tasks/{id}/run
-- [ ] П13.4 Rate Limiting на /api/auth/**
-- [ ] П13.5 Валидация stripeWebhookSecret при старте
-- [ ] П13.6 SSL/TLS через nginx в docker-compose.prod.yml
+- [x] П13.1 Удалить секреты из git (.env не коммитился — действий не требовалось)
+- [x] П13.2 Добавить org-проверку в GET /api/tasks/{id}
+- [x] П13.3 Добавить org-проверку в POST /api/tasks/{id}/run
+- [x] П13.4 Rate Limiting на /api/auth/** → реализован в П14.1
+- [x] П13.5 Валидация stripeWebhookSecret при старте
+- [ ] П13.6 SSL/TLS → выделен в **П15**
 
 ### Спринт 2 — HIGH (эта неделя)
-- [ ] П13.7 Валидация пароля (сложность + длина)
-- [ ] П13.8 Telegram allowedChatId обязателен
-- [ ] П13.9 Production log levels
+- [x] П13.7 Валидация пароля (сложность + длина)
+- [x] П13.8 Telegram allowedChatId обязателен → реализован в П14.5
+- [x] П13.9 Production log levels
 
 ### Спринт 3 — MEDIUM (этот месяц)
-- [ ] П13.10 Idempotency на Stripe webhook
-- [ ] П13.11 CORS явная конфигурация
-- [ ] П13.12 Telegram file download валидация
+- [x] П13.10 Idempotency на Stripe webhook → реализован в П14.3
+- [x] П13.11 CORS явная конфигурация → реализована в П14.2
+- [x] П13.12 Telegram file download валидация (TelegramFileValidator)
 
 ---
 

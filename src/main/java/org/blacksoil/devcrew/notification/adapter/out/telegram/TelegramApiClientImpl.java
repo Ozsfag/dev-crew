@@ -64,6 +64,15 @@ public class TelegramApiClientImpl implements TelegramApiClient {
       if (fileResponse == null || !fileResponse.ok() || fileResponse.result() == null) {
         return new byte[0];
       }
+      var telegramFile = fileResponse.result();
+      if (!TelegramFileValidator.isAllowed(telegramFile)) {
+        log.warn(
+            "Файл отклонён: fileId={}, path={}, size={}",
+            fileId,
+            telegramFile.filePath(),
+            telegramFile.fileSize());
+        return new byte[0];
+      }
       var bytes =
           restClient
               .get()

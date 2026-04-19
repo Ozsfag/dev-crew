@@ -1,6 +1,6 @@
 # Dev Crew — Roadmap
 
-## Текущее состояние: П13 — Security Audit (в работе)
+## Текущее состояние: П13–П14 выполнены, П15 — SSL (инфраструктура)
 
 MVP готов. REST API, JWT-аутентификация, 5 агентов, мультитенантность (org/project),
 биллинг, rate-limit recovery, Telegram-уведомления — реализованы.
@@ -26,5 +26,6 @@ MVP готов. REST API, JWT-аутентификация, 5 агентов, м
 | П10.8 | Тесты: пробелы в покрытии                        | ✅     | [plans/p10.8](plans/p10.8-test-coverage.md)                  |
 | П11   | Code Review: безопасность и корректность         | ✅     | [plans/p11](plans/p11-code-review-findings.md)               |
 | П12   | Незакрытые пробелы из ревизии (тесты + фичи)    | 🔲     | [plans/p12](plans/p12-gaps-from-revision.md)                 |
-| П13   | Security Audit: 6 CRITICAL + 3 HIGH + 5 MEDIUM  | ✅⚠️   | [plans/p13](plans/p13-security-audit.md) — IDOR, пароль, Stripe secret, prod-логи |
-| П14   | Security Fixes: rate limit, CORS, SSL, idempotency | ✅⚠️ | [plans/p14](plans/p14-security-fixes.md) — П14.4 SSL отложен (инфраструктура) |
+| П13   | Security Audit: 6 CRITICAL + 3 HIGH + 5 MEDIUM  | ✅     | [plans/p13](plans/p13-security-audit.md) — SSL → П15                        |
+| П14   | Security Fixes: rate limit, CORS, idempotency, Telegram | ✅ | [plans/p14](plans/p14-security-fixes.md)                                   |
+| П15   | SSL/TLS: Nginx + Let's Encrypt для production    | 🔲     | [plans/p15](plans/p15-ssl-tls.md)                                            |
