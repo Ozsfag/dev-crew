@@ -97,6 +97,20 @@ class ClaudeCodeRunnerImplTest {
   }
 
   @Test
+  void run_returns_result_when_output_has_warnings_before_json() {
+    // Claude CLI на некоторых платформах выводит Warning: ... перед JSON
+    var output =
+        "Warning: some deprecation notice\n"
+            + """
+            {"type":"result","result":"Task completed","num_turns":1,"is_error":false}
+            """;
+    when(commandRunner.run(any(File.class), any(String[].class)))
+        .thenReturn(new CommandResult(0, output));
+
+    assertThat(runner.run("system", "task")).isEqualTo("Task completed");
+  }
+
+  @Test
   void run_uses_executable_from_properties() {
     var properties = new ClaudeCodeProperties();
     properties.setExecutable("/usr/local/bin/claude");

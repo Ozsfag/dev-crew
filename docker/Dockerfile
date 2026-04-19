@@ -15,8 +15,10 @@ RUN ./gradlew bootJar --no-daemon -x test --quiet
 FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
 
-# Добавляем curl для healthcheck
-RUN apk add --no-cache curl git
+# curl — healthcheck; git — агенты клонируют репозитории;
+# nodejs + npm — Claude Code CLI (заменяет Anthropic API)
+RUN apk add --no-cache curl git nodejs npm && \
+    npm install -g @anthropic-ai/claude-code --quiet
 
 # Копируем jar из builder-слоя
 COPY --from=builder /app/build/libs/*.jar app.jar

@@ -3,7 +3,7 @@ services:
   app:
     build:
       context: ..
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     image: dev-crew:latest
     container_name: dev-crew-app
     ports:
@@ -12,12 +12,17 @@ services:
       # Локальная машина: монтируем папку с проектами.
       # На сервере переопределяется в docker-compose.prod.yml
       - ${PROJECTS_ROOT:?Set PROJECTS_ROOT in .env}:/projects
+      # Credentials claude login — монтируем с хоста (уже аутентифицированы)
+      # ~/.claude.json — главный конфиг с токеном сессии
+      # ~/.claude/     — кеш, плагины, история сессий
+      # На удалённом сервере: заменить на named volume + claude login вручную
+      - ${CLAUDE_AUTH_DIR}:/root/.claude
+      - ${CLAUDE_AUTH_JSON}:/root/.claude.json
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/devcrew
       SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-devcrew}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-devcrew}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
-      LANGCHAIN4J_ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      DEVCREW_AUTH_JWT_SECRET: ${DEVCREW_AUTH_JWT_SECRET:?Set DEVCREW_AUTH_JWT_SECRET in .env}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
       DEVCREW_NOTIFICATION_TELEGRAM_ENABLED: ${TELEGRAM_ENABLED:-false}

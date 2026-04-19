@@ -56,8 +56,17 @@ public class ClaudeCodeRunnerImpl implements ClaudeCodeRunner {
     }
   }
 
-  private String parseResult(String json) throws IOException {
-    var output = objectMapper.readValue(json, ClaudeCodeOutput.class);
+  private String parseResult(String rawOutput) throws IOException {
+    // Claude CLI может выводить предупреждения или служебные строки перед JSON.
+    // Ищем первый символ '{', с которого начинается JSON-объект ответа.
+    var jsonStart = rawOutput.indexOf('{');
+    if (jsonStart < 0) {
+      throw new IOException("Не найден JSON в выводе Claude CLI: " + rawOutput);
+    }
+    if (jsonStart > 0) {
+      log.debug("Claude CLI вывел {} символов до JSON (предупреждения/служебный вывод)", jsonStart);
+    }
+    var output = objectMapper.readValue(rawOutput.substring(jsonStart), ClaudeCodeOutput.class);
     if (output.isError()) {
       throw new RuntimeException("Claude CLI вернул ошибку: " + output.result());
     }
