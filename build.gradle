@@ -49,6 +49,9 @@ dependencies {
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
 
+    // Rate Limiting
+    implementation 'com.bucket4j:bucket4j-core:8.10.1'
+
     // Stripe
     implementation 'com.stripe:stripe-java:28.3.0'
 

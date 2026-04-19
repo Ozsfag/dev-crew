@@ -9,11 +9,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.blacksoil.devcrew.auth.adapter.in.web.mapper.AuthWebMapper;
+import org.blacksoil.devcrew.auth.app.service.AuthRateLimitService;
 import org.blacksoil.devcrew.auth.app.service.AuthService;
 import org.blacksoil.devcrew.auth.app.service.AuthService.LoginResult;
 import org.blacksoil.devcrew.auth.app.service.AuthService.RefreshResult;
 import org.blacksoil.devcrew.auth.domain.AuthException;
 import org.blacksoil.devcrew.common.exception.ConflictException;
+import org.blacksoil.devcrew.common.exception.TooManyRequestsException;
 import org.blacksoil.devcrew.common.web.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,11 +32,13 @@ class AuthControllerTest {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
   @Mock private AuthService authService;
+  @Mock private AuthRateLimitService rateLimitService;
   private MockMvc mockMvc;
 
   @BeforeEach
   void setUp() {
-    var controller = new AuthController(authService, Mappers.getMapper(AuthWebMapper.class));
+    var controller =
+        new AuthController(authService, rateLimitService, Mappers.getMapper(AuthWebMapper.class));
     mockMvc =
         MockMvcBuilders.standaloneSetup(controller)
             .setControllerAdvice(new GlobalExceptionHandler())
@@ -74,6 +78,23 @@ class AuthControllerTest {
                     {"email":"dup@test.com","password":"Secret123"}
                     """))
         .andExpect(status().isConflict());
+  }
+
+  @Test
+  void POST_register_returns_429_when_rate_limited() throws Exception {
+    doThrow(new TooManyRequestsException("Слишком много попыток регистрации."))
+        .when(rateLimitService)
+        .checkRegisterAttempt(anyString());
+
+    mockMvc
+        .perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"email":"user@test.com","password":"Secret123"}
+                    """))
+        .andExpect(status().isTooManyRequests());
   }
 
   @Test
@@ -143,6 +164,23 @@ class AuthControllerTest {
                     """))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.accessToken").value("at"));
+  }
+
+  @Test
+  void POST_login_returns_429_when_rate_limited() throws Exception {
+    doThrow(new TooManyRequestsException("Слишком много попыток входа."))
+        .when(rateLimitService)
+        .checkLoginAttempt(anyString());
+
+    mockMvc
+        .perform(
+            post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"email":"user@test.com","password":"secret"}
+                    """))
+        .andExpect(status().isTooManyRequests());
   }
 
   @Test

@@ -6,6 +6,7 @@ import org.blacksoil.devcrew.common.exception.ConflictException;
 import org.blacksoil.devcrew.common.exception.DomainException;
 import org.blacksoil.devcrew.common.exception.ForbiddenException;
 import org.blacksoil.devcrew.common.exception.NotFoundException;
+import org.blacksoil.devcrew.common.exception.TooManyRequestsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,6 +26,12 @@ public class GlobalExceptionHandler {
   @ResponseStatus(HttpStatus.FORBIDDEN)
   public ErrorResponse handleForbidden(ForbiddenException ex) {
     return new ErrorResponse(HttpStatus.FORBIDDEN.value(), ex.getMessage());
+  }
+
+  @ExceptionHandler(TooManyRequestsException.class)
+  @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
+  public ErrorResponse handleTooManyRequests(TooManyRequestsException ex) {
+    return new ErrorResponse(HttpStatus.TOO_MANY_REQUESTS.value(), ex.getMessage());
   }
 
   @ExceptionHandler(ConflictException.class)
