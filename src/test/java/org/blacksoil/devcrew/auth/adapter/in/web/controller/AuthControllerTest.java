@@ -52,7 +52,7 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"email":"admin@test.com","password":"secret123"}
+                    {"email":"admin@test.com","password":"Secret123"}
                     """))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.accessToken").value("access-token"))
@@ -71,7 +71,7 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"email":"dup@test.com","password":"pass"}
+                    {"email":"dup@test.com","password":"Secret123"}
                     """))
         .andExpect(status().isConflict());
   }
@@ -84,7 +84,46 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"email":"","password":"pass"}
+                    {"email":"","password":"Secret123"}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void POST_register_returns_400_when_password_too_short() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"email":"user@test.com","password":"Sec1"}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void POST_register_returns_400_when_password_no_uppercase() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"email":"user@test.com","password":"secret123"}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void POST_register_returns_400_when_password_no_digit() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"email":"user@test.com","password":"SecretPass"}
                     """))
         .andExpect(status().isBadRequest());
   }

@@ -66,6 +66,7 @@ devcrew:
     cost-per-output-token: 0.000015
     chars-per-token: 4
     free-plan-task-limit: 50
+    stripe-webhook-secret: ${DEVCREW_BILLING_STRIPE_WEBHOOK_SECRET}
   notification:
     telegram:
       enabled: ${DEVCREW_NOTIFICATION_TELEGRAM_ENABLED:false}

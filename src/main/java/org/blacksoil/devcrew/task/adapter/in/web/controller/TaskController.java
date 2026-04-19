@@ -7,6 +7,7 @@ import org.blacksoil.devcrew.agent.domain.AgentOrchestrator;
 import org.blacksoil.devcrew.agent.domain.AgentRole;
 import org.blacksoil.devcrew.bootstrap.AuthenticatedUser;
 import org.blacksoil.devcrew.common.PageResult;
+import org.blacksoil.devcrew.common.exception.ForbiddenException;
 import org.blacksoil.devcrew.task.adapter.in.web.dto.CreateTaskRequest;
 import org.blacksoil.devcrew.task.adapter.in.web.dto.CreateTaskResponse;
 import org.blacksoil.devcrew.task.adapter.in.web.dto.TaskDetailResponse;
@@ -56,13 +57,24 @@ public class TaskController {
 
   @PostMapping("/{id}/run")
   @ResponseStatus(HttpStatus.ACCEPTED)
-  public void run(@PathVariable UUID id, @RequestParam AgentRole role) {
-    taskQueryService.getById(id);
+  public void run(
+      @PathVariable UUID id,
+      @RequestParam AgentRole role,
+      @AuthenticationPrincipal AuthenticatedUser currentUser) {
+    var task = taskQueryService.getById(id);
+    if (!task.orgId().equals(currentUser.orgId())) {
+      throw new ForbiddenException("Нет доступа к задаче");
+    }
     agentOrchestrator.run(id, role);
   }
 
   @GetMapping("/{id}")
-  public TaskDetailResponse getById(@PathVariable UUID id) {
-    return mapper.toDetailResponse(taskQueryService.getById(id));
+  public TaskDetailResponse getById(
+      @PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser currentUser) {
+    var task = taskQueryService.getById(id);
+    if (!task.orgId().equals(currentUser.orgId())) {
+      throw new ForbiddenException("Нет доступа к задаче");
+    }
+    return mapper.toDetailResponse(task);
   }
 }

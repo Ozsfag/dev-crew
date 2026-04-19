@@ -1,0 +1,17 @@
+# Локальный профиль для разработки — НЕ коммитить с реальными значениями
+devcrew:
+  claude-code:
+    executable: "/Users/artemsergienko/Library/Application Support/Claude/claude-code/2.1.111/claude.app/Contents/MacOS/claude"
+  notification:
+    telegram:
+      enabled: true
+      bot-enabled: true
+      bot-token: ${TELEGRAM_BOT_TOKEN}
+      chat-id: ${TELEGRAM_CHAT_ID}
+      allowed-chat-id: ${TELEGRAM_CHAT_ID:0}
+
+logging:
+  level:
+    org.blacksoil.devcrew.notification: DEBUG
+    org.springframework.context.annotation: DEBUG
+    org.springframework.boot.autoconfigure.condition: TRACE

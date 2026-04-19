@@ -1,10 +1,10 @@
 # Dev Crew — Roadmap
 
-## Текущее состояние: П11 реализован, пробелы вынесены в П12
+## Текущее состояние: П13 — Security Audit (в работе)
 
 MVP готов. REST API, JWT-аутентификация, 5 агентов, мультитенантность (org/project),
 биллинг, rate-limit recovery, Telegram-уведомления — реализованы.
-П10–П11 выполнены. Оставшиеся пробелы (5 тестов + 2 фичи) собраны в П12.
+П10–П12 выполнены. Проведён полный security audit — 6 CRITICAL, 3 HIGH, 5 MEDIUM уязвимостей.
 
 ## Roadmap
 
@@ -26,3 +26,5 @@ MVP готов. REST API, JWT-аутентификация, 5 агентов, м
 | П10.8 | Тесты: пробелы в покрытии                        | ✅     | [plans/p10.8](plans/p10.8-test-coverage.md)                  |
 | П11   | Code Review: безопасность и корректность         | ✅     | [plans/p11](plans/p11-code-review-findings.md)               |
 | П12   | Незакрытые пробелы из ревизии (тесты + фичи)    | 🔲     | [plans/p12](plans/p12-gaps-from-revision.md)                 |
+| П13   | Security Audit: 6 CRITICAL + 3 HIGH + 5 MEDIUM  | ✅⚠️   | [plans/p13](plans/p13-security-audit.md) — IDOR, пароль, Stripe secret, prod-логи |
+| П14   | Security Fixes: rate limit, CORS, SSL, idempotency | 🔲  | [plans/p14](plans/p14-security-fixes.md)                     |

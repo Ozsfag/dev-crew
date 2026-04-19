@@ -4,6 +4,7 @@ import java.time.format.DateTimeParseException;
 import org.blacksoil.devcrew.auth.domain.AuthException;
 import org.blacksoil.devcrew.common.exception.ConflictException;
 import org.blacksoil.devcrew.common.exception.DomainException;
+import org.blacksoil.devcrew.common.exception.ForbiddenException;
 import org.blacksoil.devcrew.common.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -18,6 +19,12 @@ public class GlobalExceptionHandler {
   @ResponseStatus(HttpStatus.UNAUTHORIZED)
   public ErrorResponse handleAuth(AuthException ex) {
     return new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
+  }
+
+  @ExceptionHandler(ForbiddenException.class)
+  @ResponseStatus(HttpStatus.FORBIDDEN)
+  public ErrorResponse handleForbidden(ForbiddenException ex) {
+    return new ErrorResponse(HttpStatus.FORBIDDEN.value(), ex.getMessage());
   }
 
   @ExceptionHandler(ConflictException.class)

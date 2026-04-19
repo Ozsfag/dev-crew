@@ -2,3 +2,9 @@ logging:
   structured:
     format:
       console: ecs
+  level:
+    root: WARN
+    org.blacksoil.devcrew: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: OFF
+    org.hibernate.type.descriptor.sql: OFF

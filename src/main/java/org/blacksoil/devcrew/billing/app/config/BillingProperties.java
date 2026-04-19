@@ -1,10 +1,13 @@
 package org.blacksoil.devcrew.billing.app.config;
 
+import jakarta.validation.constraints.NotBlank;
 import java.math.BigDecimal;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
 
 @Data
+@Validated
 @ConfigurationProperties(prefix = "devcrew.billing")
 public class BillingProperties {
 
@@ -20,6 +23,7 @@ public class BillingProperties {
   /** Лимит задач в месяц для плана FREE. */
   private int freePlanTaskLimit = 50;
 
-  /** Секрет для проверки подписи Stripe webhook (whsec_...). */
-  private String stripeWebhookSecret = "";
+  /** Секрет для проверки подписи Stripe webhook (whsec_...). Обязателен в production. */
+  @NotBlank(message = "devcrew.billing.stripe-webhook-secret обязателен")
+  private String stripeWebhookSecret;
 }
