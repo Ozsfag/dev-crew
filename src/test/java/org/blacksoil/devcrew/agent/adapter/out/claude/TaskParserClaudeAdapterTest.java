@@ -1,6 +1,7 @@
 package org.blacksoil.devcrew.agent.adapter.out.claude;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
@@ -32,7 +33,7 @@ class TaskParserClaudeAdapterTest {
   void parse_returns_parsed_task_from_valid_json() {
     var json =
         "{\"title\":\"Fix NPE\",\"description\":\"Fix null pointer\",\"agentRole\":\"BACKEND_DEV\"}";
-    when(claudeCodeRunner.run(anyString(), eq("Fix the bug"))).thenReturn(json);
+    when(claudeCodeRunner.run(anyString(), eq("Fix the bug"), eq(1))).thenReturn(json);
 
     var result = adapter.parse("Fix the bug");
 
@@ -44,17 +45,29 @@ class TaskParserClaudeAdapterTest {
   @Test
   void parse_passes_task_parser_system_prompt_to_runner() {
     var json = "{\"title\":\"t\",\"description\":\"d\",\"agentRole\":\"BACKEND_DEV\"}";
-    when(claudeCodeRunner.run(anyString(), eq("some message"))).thenReturn(json);
+    when(claudeCodeRunner.run(anyString(), eq("some message"), eq(1))).thenReturn(json);
 
     adapter.parse("some message");
 
     // Системный промпт загружается из prompts/task-parser.md
-    verify(claudeCodeRunner).run(contains("task parser"), eq("some message"));
+    verify(claudeCodeRunner).run(contains("task parser"), eq("some message"), eq(1));
+  }
+
+  @Test
+  void parse_calls_runner_with_max_turns_one() {
+    var json = "{\"title\":\"t\",\"description\":\"d\",\"agentRole\":\"QA\"}";
+    when(claudeCodeRunner.run(anyString(), anyString(), eq(1))).thenReturn(json);
+
+    adapter.parse("write tests");
+
+    // Парсер не должен использовать инструменты — max-turns=1 это гарантирует
+    verify(claudeCodeRunner).run(anyString(), anyString(), eq(1));
   }
 
   @Test
   void parse_returns_fallback_on_invalid_json() {
-    when(claudeCodeRunner.run(anyString(), eq("some message"))).thenReturn("not valid json");
+    when(claudeCodeRunner.run(anyString(), eq("some message"), anyInt()))
+        .thenReturn("not valid json");
 
     var result = adapter.parse("some message");
 
@@ -65,7 +78,7 @@ class TaskParserClaudeAdapterTest {
 
   @Test
   void parse_returns_fallback_when_runner_throws() {
-    when(claudeCodeRunner.run(anyString(), anyString()))
+    when(claudeCodeRunner.run(anyString(), anyString(), anyInt()))
         .thenThrow(new RuntimeException("claude CLI error"));
 
     var result = adapter.parse("task");

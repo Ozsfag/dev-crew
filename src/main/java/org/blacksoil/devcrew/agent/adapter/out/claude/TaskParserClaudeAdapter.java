@@ -29,7 +29,8 @@ public class TaskParserClaudeAdapter implements TaskParsingPort {
   public ParsedTask parse(String userMessage) {
     try {
       var systemPrompt = loadSystemPrompt();
-      var json = claudeCodeRunner.run(systemPrompt, userMessage);
+      // max-turns=1: парсер не должен использовать инструменты — только текстовый ответ
+      var json = claudeCodeRunner.run(systemPrompt, userMessage, 1);
       return objectMapper.readValue(json, ParsedTask.class);
     } catch (Exception e) {
       log.warn("Не удалось разобрать ответ TaskParser: {}", e.getMessage());

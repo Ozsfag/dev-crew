@@ -26,13 +26,27 @@ public class ClaudeCodeRunnerImpl implements ClaudeCodeRunner {
 
   @Override
   public String run(String systemPrompt, String userPrompt) {
+    // Агентный режим: инструменты разрешены, количество ходов из настроек
+    return doRun(systemPrompt, userPrompt, properties.getMaxTurns(), true);
+  }
+
+  @Override
+  public String run(String systemPrompt, String userPrompt, int maxTurns) {
+    // Режим без инструментов: парсинг/классификация, один ход → только текстовый ответ
+    return doRun(systemPrompt, userPrompt, maxTurns, false);
+  }
+
+  private String doRun(String systemPrompt, String userPrompt, int maxTurns, boolean withTools) {
     Path tempDir = null;
     try {
       tempDir = Files.createTempDirectory("devcrew-agent-");
       // Записать системный промпт как CLAUDE.md — Claude Code читает автоматически
       Files.writeString(tempDir.resolve("CLAUDE.md"), systemPrompt);
-      // Записать настройки разрешений чтобы не требовать интерактивного подтверждения
-      writeSettingsJson(tempDir);
+      if (withTools) {
+        writeSettingsJson(tempDir);
+      } else {
+        writeEmptySettingsJson(tempDir);
+      }
 
       var result =
           commandRunner.run(
@@ -43,7 +57,7 @@ public class ClaudeCodeRunnerImpl implements ClaudeCodeRunner {
               "--output-format",
               "json",
               "--max-turns",
-              String.valueOf(properties.getMaxTurns()));
+              String.valueOf(maxTurns));
 
       if (!result.isSuccess()) {
         throw new RuntimeException("Claude CLI завершился с ошибкой: " + result.output());
@@ -87,6 +101,13 @@ public class ClaudeCodeRunnerImpl implements ClaudeCodeRunner {
         "Bash(docker *)"]}}"""
             .formatted(sandboxRoot, sandboxRoot, sandboxRoot);
     Files.writeString(claudeDir.resolve("settings.json"), settings);
+  }
+
+  private void writeEmptySettingsJson(Path tempDir) throws IOException {
+    var claudeDir = Files.createDirectories(tempDir.resolve(".claude"));
+    // Запретить все инструменты — используется для задач без агентного выполнения (парсинг,
+    // классификация)
+    Files.writeString(claudeDir.resolve("settings.json"), "{\"permissions\":{\"allow\":[]}}");
   }
 
   private void deleteQuietly(Path dir) {

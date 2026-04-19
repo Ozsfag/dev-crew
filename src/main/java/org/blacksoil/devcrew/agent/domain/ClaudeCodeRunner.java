@@ -14,4 +14,14 @@ public interface ClaudeCodeRunner {
    * @return результат выполнения агента
    */
   String run(String systemPrompt, String userPrompt);
+
+  /**
+   * Запускает claude CLI с явным ограничением числа ходов (для задач без инструментов).
+   *
+   * @param systemPrompt содержимое CLAUDE.md
+   * @param userPrompt задание для агента
+   * @param maxTurns максимальное число ходов (1 — только текстовый ответ, без инструментов)
+   * @return результат выполнения агента
+   */
+  String run(String systemPrompt, String userPrompt, int maxTurns);
 }

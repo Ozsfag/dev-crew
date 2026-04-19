@@ -149,4 +149,22 @@ class ClaudeCodeRunnerImplTest {
     verify(commandRunner).run(any(File.class), captor.capture());
     assertThat(captor.getValue()).contains("5");
   }
+
+  @Test
+  void run_uses_explicit_max_turns_overriding_properties() {
+    var json =
+        """
+        {"type":"result","result":"ok","num_turns":1,"is_error":false}
+        """;
+    when(commandRunner.run(any(File.class), any(String[].class)))
+        .thenReturn(new CommandResult(0, json));
+
+    runner.run("system", "task", 1);
+
+    var captor = ArgumentCaptor.<String[]>captor();
+    verify(commandRunner).run(any(File.class), captor.capture());
+    assertThat(captor.getValue()).contains("1");
+    // Properties default maxTurns=20 must NOT appear when overridden
+    assertThat(captor.getValue()).doesNotContain("20");
+  }
 }
