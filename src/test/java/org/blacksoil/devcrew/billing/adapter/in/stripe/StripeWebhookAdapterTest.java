@@ -1,7 +1,10 @@
 package org.blacksoil.devcrew.billing.adapter.in.stripe;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -11,6 +14,7 @@ import java.util.HexFormat;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.blacksoil.devcrew.billing.app.config.BillingProperties;
+import org.blacksoil.devcrew.billing.app.service.command.StripeIdempotencyService;
 import org.blacksoil.devcrew.billing.domain.StripeWebhookPort;
 import org.blacksoil.devcrew.common.web.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +32,7 @@ class StripeWebhookAdapterTest {
   private static final String WEBHOOK_SECRET = "whsec_test_secret";
 
   @Mock private StripeWebhookPort stripeWebhookPort;
+  @Mock private StripeIdempotencyService idempotencyService;
 
   private MockMvc mockMvc;
 
@@ -35,11 +40,13 @@ class StripeWebhookAdapterTest {
   void setUp() {
     var properties = new BillingProperties();
     properties.setStripeWebhookSecret(WEBHOOK_SECRET);
-    var adapter = new StripeWebhookAdapter(stripeWebhookPort, properties);
+    var adapter = new StripeWebhookAdapter(stripeWebhookPort, properties, idempotencyService);
     mockMvc =
         MockMvcBuilders.standaloneSetup(adapter)
             .setControllerAdvice(new GlobalExceptionHandler())
             .build();
+    // дефолт: событие новое; тесты с невалидной подписью не доходят до этого вызова
+    lenient().when(idempotencyService.tryMarkProcessed(anyString())).thenReturn(true);
   }
 
   @Test
@@ -72,6 +79,23 @@ class StripeWebhookAdapterTest {
         .andExpect(status().isOk());
 
     verify(stripeWebhookPort).handleSubscriptionDeleted("cus_test_456");
+  }
+
+  @Test
+  void POST_webhook_returns_200_without_processing_when_event_already_processed() throws Exception {
+    when(idempotencyService.tryMarkProcessed(anyString())).thenReturn(false);
+    var payload = subscriptionPayload("customer.subscription.created", "cus_test_123");
+    var sig = stripeSignature(payload, WEBHOOK_SECRET);
+
+    mockMvc
+        .perform(
+            post("/api/stripe/webhook")
+                .contentType(MediaType.TEXT_PLAIN)
+                .header("Stripe-Signature", sig)
+                .content(payload))
+        .andExpect(status().isOk());
+
+    verifyNoInteractions(stripeWebhookPort);
   }
 
   @Test

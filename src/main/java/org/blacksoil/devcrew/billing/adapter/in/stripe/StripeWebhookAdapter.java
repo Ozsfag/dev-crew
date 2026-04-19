@@ -7,6 +7,7 @@ import com.stripe.net.Webhook;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.blacksoil.devcrew.billing.app.config.BillingProperties;
+import org.blacksoil.devcrew.billing.app.service.command.StripeIdempotencyService;
 import org.blacksoil.devcrew.billing.domain.StripeWebhookPort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +24,7 @@ public class StripeWebhookAdapter {
 
   private final StripeWebhookPort stripeWebhookPort;
   private final BillingProperties billingProperties;
+  private final StripeIdempotencyService idempotencyService;
 
   @PostMapping("/webhook")
   public ResponseEntity<Void> handleWebhook(
@@ -39,6 +41,11 @@ public class StripeWebhookAdapter {
     } catch (SignatureVerificationException e) {
       log.warn("Невалидная подпись Stripe webhook");
       return ResponseEntity.badRequest().build();
+    }
+
+    if (!idempotencyService.tryMarkProcessed(event.getId())) {
+      log.debug("Stripe event уже обработан: eventId={}", event.getId());
+      return ResponseEntity.ok().build();
     }
 
     switch (event.getType()) {
