@@ -1,6 +1,6 @@
 # П14 — Security Fixes: оставшиеся уязвимости
 
-**Статус:** 🔲 Не выполнено  
+**Статус:** ✅ Выполнено (П14.4 SSL → П15)  
 **Источник:** аудит П13 (2026-04-19) — закрытые пробелы после первого спринта
 
 ---
@@ -174,67 +174,7 @@ stripeProcessedEventRepository.save(
 
 ---
 
-## П14.4 SSL/TLS через Nginx
-
-**Критичность:** CRITICAL (в production)  
-**Файл:** `docker/docker-compose.prod.yml`
-
-**Проблема:** Трафик между клиентом и сервером не зашифрован.
-
-**Реализация — Nginx reverse proxy с Let's Encrypt:**
-
-`docker/nginx/nginx.conf`:
-```nginx
-server {
-    listen 80;
-    server_name ${DOMAIN};
-    return 301 https://$host$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name ${DOMAIN};
-
-    ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
-    ssl_protocols       TLSv1.2 TLSv1.3;
-    ssl_ciphers         HIGH:!aNULL:!MD5;
-
-    location / {
-        proxy_pass http://app:8081;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-В `docker-compose.prod.yml` добавить сервис `nginx`:
-```yaml
-nginx:
-  image: nginx:alpine
-  ports:
-    - "80:80"
-    - "443:443"
-  volumes:
-    - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    - /etc/letsencrypt:/etc/letsencrypt:ro
-  depends_on:
-    - app
-```
-
-В `application-prod.yml` добавить:
-```yaml
-server:
-  forward-headers-strategy: native  # доверять X-Forwarded-Proto от Nginx
-```
-
-**Чеклист:**
-- [ ] Создать `docker/nginx/nginx.conf`
-- [ ] Добавить nginx-сервис в `docker-compose.prod.yml`
-- [ ] Настроить Let's Encrypt (certbot) на сервере
-- [ ] Добавить `forward-headers-strategy` в `application-prod.yml`
+## ~~П14.4 SSL/TLS~~ → перенесён в [П15](p15-ssl-tls.md)
 
 ---
 
@@ -275,13 +215,13 @@ public class TelegramBotValidator implements InitializingBean {
 ## Чеклист реализации
 
 ### Спринт 1 — CRITICAL
-- [ ] П14.1 Rate Limiting (Bucket4j) на /api/auth/**
-- [ ] П14.4 SSL/TLS через Nginx
+- [x] П14.1 Rate Limiting (Bucket4j) на /api/auth/**
+- [ ] ~~П14.4 SSL/TLS~~ → П15
 
 ### Спринт 2 — HIGH / MEDIUM
-- [ ] П14.5 Telegram allowedChatId валидация при старте
-- [ ] П14.2 CORS явная конфигурация
-- [ ] П14.3 Stripe webhook idempotency
+- [x] П14.5 Telegram allowedChatId валидация при старте
+- [x] П14.2 CORS явная конфигурация
+- [x] П14.3 Stripe webhook idempotency
 
 ---
 
