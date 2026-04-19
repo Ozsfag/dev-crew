@@ -27,4 +27,4 @@ MVP готов. REST API, JWT-аутентификация, 5 агентов, м
 | П11   | Code Review: безопасность и корректность         | ✅     | [plans/p11](plans/p11-code-review-findings.md)               |
 | П12   | Незакрытые пробелы из ревизии (тесты + фичи)    | 🔲     | [plans/p12](plans/p12-gaps-from-revision.md)                 |
 | П13   | Security Audit: 6 CRITICAL + 3 HIGH + 5 MEDIUM  | ✅⚠️   | [plans/p13](plans/p13-security-audit.md) — IDOR, пароль, Stripe secret, prod-логи |
-| П14   | Security Fixes: rate limit, CORS, SSL, idempotency | 🔲  | [plans/p14](plans/p14-security-fixes.md)                     |
+| П14   | Security Fixes: rate limit, CORS, SSL, idempotency | ✅⚠️ | [plans/p14](plans/p14-security-fixes.md) — П14.4 SSL отложен (инфраструктура) |
