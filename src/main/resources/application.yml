@@ -67,6 +67,9 @@ devcrew:
     chars-per-token: 4
     free-plan-task-limit: 50
     stripe-webhook-secret: ${DEVCREW_BILLING_STRIPE_WEBHOOK_SECRET}
+  cors:
+    allowed-origins: ${DEVCREW_CORS_ALLOWED_ORIGINS:}
+    max-age: 3600
   notification:
     telegram:
       enabled: ${DEVCREW_NOTIFICATION_TELEGRAM_ENABLED:false}
