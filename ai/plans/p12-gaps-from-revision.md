@@ -1,4 +1,4 @@
-# П12 — Незакрытые пробелы из ревизии планов
+# П12 — Незакрытые пробелы из ревизии планов ✅
 
 ## Контекст
 
@@ -34,8 +34,8 @@ void run_returns_timeout_result_when_process_exceeds_limit() {
 ```
 
 **Acceptance Criteria**:
-- [ ] `ProcessBuilderCommandRunnerTest.run_returns_timeout_result_when_process_exceeds_limit` — зелёный
-- [ ] Тест использует таймаут 1 с и команду `sleep 10`
+- [x] `ProcessBuilderCommandRunnerTest.run_returns_timeout_result_when_process_exceeds_limit` — зелёный
+- [x] Тест использует таймаут 1 с и команду `sleep 10`
 
 ---
 
@@ -73,8 +73,8 @@ void validatePath_allows_valid_nonexistent_path_inside_sandbox(@TempDir Path san
 ```
 
 **Acceptance Criteria**:
-- [ ] Тест с symlink, указывающим наружу sandbox, — выбрасывает `DomainException`
-- [ ] Тест с несуществующим, но корректным путём внутри sandbox, — не выбрасывает
+- [x] Тест с symlink, указывающим наружу sandbox, — выбрасывает `DomainException`
+- [x] Тест с несуществующим, но корректным путём внутри sandbox, — не выбрасывает
 
 ---
 
@@ -130,7 +130,7 @@ class JwtPropertiesValidationTest {
 ```
 
 **Acceptance Criteria**:
-- [ ] `JwtPropertiesValidationTest` — все 3 сценария реализованы и зелёные
+- [x] `JwtPropertiesValidationTest` — все 3 сценария реализованы и зелёные
 
 ---
 
@@ -159,8 +159,8 @@ void GET_actuator_health_returns_200_without_token() throws Exception {
 ```
 
 **Acceptance Criteria**:
-- [ ] Тест `GET /actuator/prometheus` без токена → 401
-- [ ] Тест `GET /actuator/health` без токена → 200
+- [x] Тест `GET /actuator/prometheus` без токена → 401
+- [x] Тест `GET /actuator/health` без токена → 200
 
 ---
 
@@ -192,8 +192,8 @@ void findByOrgId_clamps_size_to_100_when_requested_size_exceeds_limit() {
 Аналогично для `AuditJpaStore`.
 
 **Acceptance Criteria**:
-- [ ] `TaskJpaStoreTest.findByOrgId_clamps_size_to_100_when_requested_size_exceeds_limit` — зелёный
-- [ ] `AuditJpaStoreTest` — аналогичный тест зелёный
+- [x] `TaskJpaStoreTest.findByOrgId_clamps_size_to_100_when_requested_size_exceeds_limit` — зелёный
+- [x] `AuditJpaStoreTest` — аналогичный тест зелёный
 
 ---
 
@@ -214,12 +214,12 @@ ALTER TABLE tasks ADD COLUMN result_summary VARCHAR(2000);
 `GET /api/tasks` (list) возвращает `resultSummary`, `GET /api/tasks/{id}` — полный `result`.
 
 **Acceptance Criteria**:
-- [ ] Миграция `V15__add_result_summary_to_tasks.sql` создана
-- [ ] `TaskModel` содержит поле `resultSummary`
-- [ ] `TaskCommandService.complete()` заполняет `resultSummary` (первые 2000 символов)
-- [ ] List endpoint возвращает `resultSummary`, не `result`
-- [ ] Detail endpoint возвращает полный `result`
-- [ ] Тесты для `TaskCommandService` и `TaskController` обновлены
+- [x] Миграция `V15__add_result_summary_to_tasks.sql` создана
+- [x] `TaskModel` содержит поле `resultSummary`
+- [x] `TaskCommandService.complete()` заполняет `resultSummary` (первые 2000 символов)
+- [x] List endpoint возвращает `resultSummary`, не `result`
+- [x] Detail endpoint возвращает полный `result`
+- [x] Тесты для `TaskCommandService` и `TaskController` обновлены
 
 ---
 
@@ -245,10 +245,10 @@ public PageResult<AuditEventResponse> list(
 ```
 
 **Acceptance Criteria**:
-- [ ] `AuditStore.findByActorId()` — port-метод добавлен
-- [ ] `AuditJpaStore.findByActorId()` — реализация через JPA derived query
-- [ ] `GET /api/audit?actorId={uuid}` фильтрует по `actor_id`
-- [ ] Тест контроллера: `GET_audit_with_actorId_calls_findByActorId`
+- [x] `AuditStore.findByActorId()` — port-метод добавлен
+- [x] `AuditJpaStore.findByActorId()` — реализация через JPA derived query
+- [x] `GET /api/audit?actorId={uuid}` фильтрует по `actor_id`
+- [x] Тест контроллера: `GET_audit_with_actorId_calls_findByActorId`
 
 ---
 
