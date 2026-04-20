@@ -13,3 +13,4 @@ MVP готов. REST API, JWT-аутентификация, 5 агентов, м
 | П9  | IntelliJ IDEA Plugin                              | 🔲     | [plans/p9](plans/p9-intellij-plugin.md)           |
 | П12 | Незакрытые пробелы из ревизии (тесты + фичи)     | ✅     | [plans/p12](plans/p12-gaps-from-revision.md)      |
 | П15 | SSL/TLS: Nginx + Let's Encrypt для production     | 🔲     | [plans/p15](plans/p15-ssl-tls.md)                 |
+| П16 | Security Audit #2: 3 CRITICAL + 4 HIGH + 3 MEDIUM | 🔲    | [plans/p16](plans/p16-security-audit-2.md)        |
