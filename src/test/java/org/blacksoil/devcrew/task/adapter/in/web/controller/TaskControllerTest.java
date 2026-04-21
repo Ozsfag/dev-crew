@@ -203,6 +203,36 @@ class TaskControllerTest {
         .andExpect(status().isBadRequest());
   }
 
+  @Test
+  void POST_tasks_returns_400_when_title_too_long() throws Exception {
+    var body =
+        "{\"title\":\"" + "x".repeat(501) + "\",\"description\":\"desc\",\"role\":\"BACKEND_DEV\"}";
+
+    mockMvc
+        .perform(
+            post("/api/tasks")
+                .with(principalAuth())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void POST_tasks_returns_400_when_description_too_long() throws Exception {
+    var body =
+        "{\"title\":\"title\",\"description\":\""
+            + "x".repeat(20001)
+            + "\",\"role\":\"BACKEND_DEV\"}";
+
+    mockMvc
+        .perform(
+            post("/api/tasks")
+                .with(principalAuth())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isBadRequest());
+  }
+
   private static org.springframework.test.web.servlet.request.RequestPostProcessor principalAuth() {
     return request -> {
       var principal = new AuthenticatedUser(USER_ID, ORG_ID, UserRole.ARCHITECT);

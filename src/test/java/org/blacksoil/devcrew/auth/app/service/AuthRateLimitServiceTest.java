@@ -66,4 +66,31 @@ class AuthRateLimitServiceTest {
     // register исчерпан, но login — свой бакет
     assertThatCode(() -> service.checkLoginAttempt("user@test.com")).doesNotThrowAnyException();
   }
+
+  @Test
+  void checkRefresh_allows_up_to_20_attempts() {
+    for (int i = 0; i < 20; i++) {
+      assertThatCode(() -> service.checkRefreshAttempt("some-refresh-token-prefix"))
+          .doesNotThrowAnyException();
+    }
+  }
+
+  @Test
+  void checkRefresh_throws_after_20_attempts() {
+    for (int i = 0; i < 20; i++) {
+      service.checkRefreshAttempt("some-refresh-token-prefix");
+    }
+    assertThatThrownBy(() -> service.checkRefreshAttempt("some-refresh-token-prefix"))
+        .isInstanceOf(TooManyRequestsException.class);
+  }
+
+  @Test
+  void checkRefresh_tracks_buckets_by_token_prefix() {
+    for (int i = 0; i < 20; i++) {
+      service.checkRefreshAttempt("token-aaaaaaaaaaaaaaa");
+    }
+    // другой префикс — свой бакет
+    assertThatCode(() -> service.checkRefreshAttempt("token-bbbbbbbbbbbbbbb"))
+        .doesNotThrowAnyException();
+  }
 }

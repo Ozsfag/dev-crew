@@ -51,6 +51,7 @@ dependencies {
 
     // Rate Limiting
     implementation 'com.bucket4j:bucket4j-core:8.10.1'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
 
     // Stripe
     implementation 'com.stripe:stripe-java:28.3.0'

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.bootstrap.AuthenticatedUser;
+import org.blacksoil.devcrew.common.exception.ForbiddenException;
 import org.blacksoil.devcrew.organization.adapter.in.web.dto.CreateOrganizationRequest;
 import org.blacksoil.devcrew.organization.adapter.in.web.dto.CreateProjectRequest;
 import org.blacksoil.devcrew.organization.adapter.in.web.dto.OrganizationResponse;
@@ -32,14 +33,23 @@ public class OrganizationController {
   }
 
   @GetMapping("/{id}")
-  public OrganizationResponse getById(@PathVariable UUID id) {
+  public OrganizationResponse getById(
+      @PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser currentUser) {
+    if (!id.equals(currentUser.orgId())) {
+      throw new ForbiddenException("Нет доступа к этой организации");
+    }
     return mapper.toResponse(queryService.getById(id));
   }
 
   @PostMapping("/{orgId}/projects")
   @ResponseStatus(HttpStatus.CREATED)
   public ProjectResponse createProject(
-      @PathVariable UUID orgId, @Valid @RequestBody CreateProjectRequest request) {
+      @PathVariable UUID orgId,
+      @Valid @RequestBody CreateProjectRequest request,
+      @AuthenticationPrincipal AuthenticatedUser currentUser) {
+    if (!orgId.equals(currentUser.orgId())) {
+      throw new ForbiddenException("Нет доступа к этой организации");
+    }
     return mapper.toResponse(
         commandService.createProject(orgId, request.name(), request.repoPath()));
   }

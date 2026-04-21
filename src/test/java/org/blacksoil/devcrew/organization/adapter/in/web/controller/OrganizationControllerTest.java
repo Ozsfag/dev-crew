@@ -88,36 +88,54 @@ class OrganizationControllerTest {
 
   @Test
   void GET_organizations_id_returns_200_when_found() throws Exception {
-    var id = UUID.randomUUID();
-    when(queryService.getById(id)).thenReturn(org(id, "Acme Corp"));
+    // id совпадает с ORG_ID текущего пользователя — доступ разрешён
+    when(queryService.getById(ORG_ID)).thenReturn(org(ORG_ID, "Acme Corp"));
 
     mockMvc
-        .perform(get("/api/organizations/{id}", id))
+        .perform(get("/api/organizations/{id}", ORG_ID))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(id.toString()));
+        .andExpect(jsonPath("$.id").value(ORG_ID.toString()));
+  }
+
+  @Test
+  void GET_organizations_id_returns_403_when_wrong_org() throws Exception {
+    var otherId = UUID.randomUUID();
+
+    mockMvc.perform(get("/api/organizations/{id}", otherId)).andExpect(status().isForbidden());
   }
 
   @Test
   void GET_organizations_id_returns_404_when_not_found() throws Exception {
-    var id = UUID.randomUUID();
-    when(queryService.getById(id)).thenThrow(new NotFoundException("Organization", id));
+    when(queryService.getById(ORG_ID)).thenThrow(new NotFoundException("Organization", ORG_ID));
 
-    mockMvc.perform(get("/api/organizations/{id}", id)).andExpect(status().isNotFound());
+    mockMvc.perform(get("/api/organizations/{id}", ORG_ID)).andExpect(status().isNotFound());
   }
 
   @Test
   void POST_organizations_orgId_projects_returns_201() throws Exception {
-    var orgId = UUID.randomUUID();
-    when(commandService.createProject(eq(orgId), eq("Backend"), eq("/repos/backend")))
-        .thenReturn(project(orgId));
+    // orgId совпадает с ORG_ID текущего пользователя — доступ разрешён
+    when(commandService.createProject(eq(ORG_ID), eq("Backend"), eq("/repos/backend")))
+        .thenReturn(project(ORG_ID));
 
     mockMvc
         .perform(
-            post("/api/organizations/{orgId}/projects", orgId)
+            post("/api/organizations/{orgId}/projects", ORG_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Backend\",\"repoPath\":\"/repos/backend\"}"))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.name").value("Backend"));
+  }
+
+  @Test
+  void POST_organizations_orgId_projects_returns_403_when_wrong_org() throws Exception {
+    var otherOrgId = UUID.randomUUID();
+
+    mockMvc
+        .perform(
+            post("/api/organizations/{orgId}/projects", otherOrgId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Backend\",\"repoPath\":\"/repos/backend\"}"))
+        .andExpect(status().isForbidden());
   }
 
   @Test
@@ -127,6 +145,16 @@ class OrganizationControllerTest {
             post("/api/organizations/{orgId}/projects", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"\"}"))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void POST_organizations_orgId_projects_returns_400_when_repoPath_traversal() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/organizations/{orgId}/projects", ORG_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Backend\",\"repoPath\":\"../../etc/passwd\"}"))
         .andExpect(status().isBadRequest());
   }
 

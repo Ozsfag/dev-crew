@@ -150,6 +150,17 @@ class AuthControllerTest {
   }
 
   @Test
+  void POST_login_returns_400_when_email_too_long() throws Exception {
+    var longEmail = "a".repeat(250) + "@x.com";
+    mockMvc
+        .perform(
+            post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"" + longEmail + "\",\"password\":\"Secret123\"}"))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
   void POST_login_returns_200_with_tokens() throws Exception {
     when(authService.login(anyString(), anyString()))
         .thenReturn(new LoginResult("at", "rt", 3600L));
@@ -230,6 +241,23 @@ class AuthControllerTest {
                     {"refreshToken":"bad-token"}
                     """))
         .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void POST_refresh_returns_429_when_rate_limited() throws Exception {
+    doThrow(new TooManyRequestsException("Слишком много попыток обновления токена."))
+        .when(rateLimitService)
+        .checkRefreshAttempt(anyString());
+
+    mockMvc
+        .perform(
+            post("/api/auth/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"refreshToken":"my-refresh-token"}
+                    """))
+        .andExpect(status().isTooManyRequests());
   }
 
   @Test

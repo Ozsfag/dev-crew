@@ -1,7 +1,7 @@
 # П16 — Security Audit #2: новые уязвимости
 
 **Дата аудита:** 2026-04-20
-**Статус:** 🔲 Не выполнено
+**Статус:** ✅ Выполнено (2026-04-21)
 
 ---
 
@@ -435,20 +435,20 @@ EXPOSE 8081
 ## Чеклист реализации
 
 ### Спринт 1 — CRITICAL
-- [ ] П16.1 IDOR: BillingController.getUsage() берёт orgId из currentUser
-- [ ] П16.2 IDOR: OrganizationController.getById() проверяет ownership
-- [ ] П16.3 IDOR: OrganizationController.createProject() проверяет ownership
+- [x] П16.1 IDOR: BillingController.getUsage() берёт orgId из currentUser
+- [x] П16.2 IDOR: OrganizationController.getById() проверяет ownership
+- [x] П16.3 IDOR: OrganizationController.createProject() проверяет ownership
 
 ### Спринт 2 — HIGH
-- [ ] П16.4 Rate limiting на /auth/refresh
-- [ ] П16.5 @Size на всех входящих DTO + server.tomcat limits
-- [ ] П16.6 repoPath валидация (@Pattern + SandboxPolicy)
-- [ ] П16.7 Content-Security-Policy заголовок
+- [x] П16.4 Rate limiting на /auth/refresh
+- [x] П16.5 @Size на всех входящих DTO + server.tomcat limits
+- [x] П16.6 repoPath валидация (@Pattern + SandboxPolicy)
+- [x] П16.7 Content-Security-Policy заголовок
 
 ### Спринт 3 — MEDIUM
-- [ ] П16.8 AuthRateLimitService: Caffeine с TTL и maximumSize
-- [ ] П16.9 Actuator: убрать info, show-details: never
-- [ ] П16.10 Docker: запуск от непривилегированного пользователя
+- [x] П16.8 AuthRateLimitService: Caffeine с TTL и maximumSize
+- [x] П16.9 Actuator: убрать info, show-details: never
+- [x] П16.10 Docker: запуск от непривилегированного пользователя
 
 ---
 

@@ -1,5 +1,6 @@
 package org.blacksoil.devcrew.auth.adapter.in.web.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-public record LogoutRequest(@NotBlank String refreshToken) {}
+public record LogoutRequest(@NotBlank @Size(max = 2048) String refreshToken) {}

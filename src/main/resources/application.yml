@@ -1,5 +1,9 @@
 server:
   port: 8081
+  tomcat:
+    max-http-form-post-size: 2MB
+    max-swallow-size: 2MB
+  max-http-request-header-size: 16KB
 
 spring:
   application:
@@ -26,10 +30,12 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, prometheus
+        include: health, prometheus
   endpoint:
     health:
-      show-details: when-authorized
+      show-details: never
+      probes:
+        enabled: true
   metrics:
     tags:
       application: ${spring.application.name}

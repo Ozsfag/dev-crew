@@ -43,6 +43,8 @@ public class SecurityConfig {
                 headers
                     .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
                     .contentTypeOptions(Customizer.withDefaults())
+                    .contentSecurityPolicy(
+                        csp -> csp.policyDirectives("default-src 'none'; frame-ancestors 'none'"))
                     .httpStrictTransportSecurity(
                         hsts ->
                             hsts.includeSubDomains(true).maxAgeInSeconds(31536000).preload(true)))

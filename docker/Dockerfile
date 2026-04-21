@@ -18,10 +18,16 @@ WORKDIR /app
 # curl — healthcheck; git — агенты клонируют репозитории;
 # nodejs + npm — Claude Code CLI (заменяет Anthropic API)
 RUN apk add --no-cache curl git nodejs npm && \
-    npm install -g @anthropic-ai/claude-code --quiet
+    npm install -g @anthropic-ai/claude-code --quiet && \
+    addgroup -S appgroup && adduser -S appuser -G appgroup && \
+    mkdir -p /projects && chown appuser:appgroup /projects
 
 # Копируем jar из builder-слоя
 COPY --from=builder /app/build/libs/*.jar app.jar
+RUN chown appuser:appgroup app.jar
+
+# Запускаем от непривилегированного пользователя — уменьшает ущерб при container escape
+USER appuser
 
 # Директория для монтирования проектов
 VOLUME /projects

@@ -34,6 +34,7 @@ public class AuthController {
 
   @PostMapping("/refresh")
   public RefreshResponse refresh(@Valid @RequestBody RefreshRequest request) {
+    rateLimitService.checkRefreshAttempt(request.refreshToken());
     return mapper.toResponse(authService.refresh(request.refreshToken()));
   }
 

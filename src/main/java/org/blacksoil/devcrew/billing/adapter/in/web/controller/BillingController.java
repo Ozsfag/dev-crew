@@ -1,12 +1,13 @@
 package org.blacksoil.devcrew.billing.adapter.in.web.controller;
 
 import java.time.YearMonth;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.blacksoil.devcrew.billing.adapter.in.web.dto.UsageSummaryResponse;
 import org.blacksoil.devcrew.billing.adapter.in.web.mapper.BillingWebMapper;
 import org.blacksoil.devcrew.billing.app.service.query.UsageQueryService;
+import org.blacksoil.devcrew.bootstrap.AuthenticatedUser;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,14 +24,13 @@ public class BillingController {
   /**
    * Возвращает агрегированный отчёт об использовании за месяц.
    *
-   * @param orgId идентификатор организации
    * @param month год и месяц в формате YYYY-MM (например, "2026-01")
    */
   @GetMapping("/usage")
   public ResponseEntity<UsageSummaryResponse> getUsage(
-      @RequestParam UUID orgId, @RequestParam String month) {
+      @RequestParam String month, @AuthenticationPrincipal AuthenticatedUser currentUser) {
     var yearMonth = YearMonth.parse(month);
-    var summary = usageQueryService.getMonthlySummary(orgId, yearMonth);
+    var summary = usageQueryService.getMonthlySummary(currentUser.orgId(), yearMonth);
     return ResponseEntity.ok(mapper.toResponse(summary));
   }
 }
