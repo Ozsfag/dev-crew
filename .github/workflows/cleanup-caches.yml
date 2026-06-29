@@ -1,0 +1,73 @@
+name: Cleanup Actions Caches
+
+# Очистка GitHub Actions caches (free-tier лимит 10GB/репо).
+#   - Вручную (workflow_dispatch): mode=all — полная зачистка, mode=stale — только
+#     не от main + старше 3 дней.
+#   - По расписанию каждую ночь — удаляет stale caches автоматически.
+# API: https://docs.github.com/en/rest/actions/cache
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "all = удалить ВСЕ caches, stale = только не от main + старше 3д"
+        required: true
+        default: "stale"
+        type: choice
+        options:
+          - stale
+          - all
+  schedule:
+    # Ежедневно в 03:00 UTC.
+    - cron: '0 3 * * *'
+
+permissions:
+  actions: write   # требуется для DELETE /actions/caches
+
+jobs:
+  cleanup:
+    name: Delete caches
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete caches
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          MODE: ${{ inputs.mode || 'stale' }}
+        run: |
+          set -e
+          echo "🧹 Cleanup mode: $MODE"
+
+          response=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$REPO/actions/caches?per_page=100")
+
+          total=$(echo "$response" | jq '.total_count')
+          echo "📊 Total caches: $total"
+          total_bytes=$(echo "$response" | jq '[.actions_caches[].size_in_bytes] | add // 0')
+          echo "📦 Total size: $((total_bytes / 1024 / 1024))MB"
+
+          if [ "$MODE" = "all" ]; then
+            ids=$(echo "$response" | jq -r '.actions_caches[].id')
+          else
+            # stale: всё что не main ИЛИ старше 3 дней
+            cutoff=$(date -u -d '3 days ago' +%s 2>/dev/null || date -u -v-3d +%s)
+            ids=$(echo "$response" | jq -r --argjson cutoff "$cutoff" '
+              .actions_caches[]
+              | select(
+                  (.ref != "refs/heads/main")
+                  or ((.last_accessed_at | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601) < $cutoff)
+                )
+              | .id
+            ')
+          fi
+
+          count=0
+          for id in $ids; do
+            curl -sS -X DELETE \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$REPO/actions/caches/$id" >/dev/null
+            count=$((count + 1))
+          done
+          echo "✅ Deleted $count caches"

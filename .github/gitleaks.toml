@@ -1,0 +1,26 @@
+# Gitleaks config для dev-crew.
+#
+# Расширяет полный дефолтный ruleset (useDefault = true) и добавляет узкий
+# allowlist под доказанные false-positive'ы. Скан fail-closed — конфиг ТОЛЬКО
+# сужает шум, не отключая ни одного правила.
+title = "dev-crew gitleaks"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = """
+Тестовые плейсхолдеры — не настоящие секреты:
+- dummy-key-for-tests (ANTHROPIC_API_KEY в CI и тестах),
+- значения из application*.yml вида ${VAR:default} (env-плейсхолдеры, не секреты),
+- bootstrap-секреты в docker-compose объявлены как ${VAR:?...} без значений.
+"""
+regexTarget = "line"
+regexes = [
+  '''dummy-key-for-tests''',
+  '''\$\{[A-Z_]+:[^}]*\}''',
+]
+paths = [
+  '''.*Test\.java''',
+  '''src/test/resources/.*''',
+]
