@@ -1,3 +1,86 @@
+> **Когда читать**: проектируешь bounded context / порт / адаптер, межконтекстный
+> вызов, новый поток выполнения; нужны C4-обзор, поток задачи, гексагональные
+> слои, naming, SOLID, границы.
+
+# Architecture
+
+Обзор архитектуры Dev Crew: C4-обзор, поток выполнения задачи, гексагональные
+слои, bounded contexts, SOLID. Стиль кода — [coding.md](coding.md);
+тесты — [testing.md](testing.md); инфраструктура — [infra.md](infra.md).
+
+## C4 Level 1 — Context
+
+```
+   ┌──────────────────┐  REST / Telegram   ┌───────────────────────────────┐
+   │   Архитектор     │ ─────────────────► │        Dev Crew (:8081)       │
+   │    (человек)     │ ◄───────────────── │  оркестрирует команду агентов │
+   └──────────────────┘   уведомления      └───────┬───────────────┬───────┘
+                                                   │               │
+                          claude CLI (subprocess)  │               │ JPA
+                          в sandbox /projects       ▼               ▼
+                                          ┌──────────────┐  ┌──────────────┐
+                                          │  Claude Code │  │ PostgreSQL   │
+                                          │     CLI      │  │ (задачи,     │
+                                          │ (пишет код,  │  │  агенты,     │
+                                          │  гоняет тесты)│  │  org, биллинг)│
+                                          └──────────────┘  └──────────────┘
+```
+
+## C4 Level 2 — Containers
+
+```
+                 ┌──────────────────────────────────────────┐
+ external HTTP ─►│         Dev Crew Spring Boot :8081        │
+   + JWT         │  adapter/in (REST) → app (@Service) →     │
+                 │  domain (порты) → adapter/out             │
+                 └──┬─────────────┬──────────────┬───────────┘
+                    │ subprocess  │ HTTP         │ JDBC
+                    ▼             ▼              ▼
+            ┌──────────────┐ ┌──────────┐ ┌──────────────┐
+            │  claude CLI  │ │ Telegram │ │ PostgreSQL   │
+            │ (per-task    │ │  / Stripe│ │  + Flyway    │
+            │  temp dir)   │ │   API    │ │              │
+            └──────────────┘ └──────────┘ └──────────────┘
+```
+
+> Ядро исполнения — **не LangChain4j**, а `claude` CLI, запускаемый подпроцессом
+> (`ClaudeCodeRunnerImpl`). Роль агента = системный промпт `prompts/<role>.md`,
+> записываемый во временный `CLAUDE.md`.
+
+## Поток: выполнение задачи агентом
+
+```
+1. POST /api/tasks               → AgentOrchestrator.submit → задача PENDING в БД
+2. POST /api/tasks/{id}/run      → AgentOrchestrator.run (проверка org-тенанта)
+3. AgentExecutionService.execute (@Async, virtual thread): статус → IN_PROGRESS
+4. AgentDispatcher: грузит prompts/<role>.md → ClaudeCodeRunner
+5. ClaudeCodeRunnerImpl: temp-dir + CLAUDE.md + .claude/settings.json →
+   ProcessBuilder `claude --print <task> --output-format json` в sandbox /projects
+6. результат распарсен → статус COMPLETED / FAILED / RATE_LIMITED; метрики записаны
+7. PostAgentHook(s) → TelegramNotificationAdapter уведомляет архитектора
+8. RateLimitRetryScheduler (@Scheduled): повторяет RATE_LIMITED, когда retryAt наступил
+```
+
+## Технологический стек
+
+| Слой          | Технология                                                        |
+|---------------|-------------------------------------------------------------------|
+| JVM           | Java 21 (Eclipse Temurin)                                         |
+| Framework     | Spring Boot 3.5                                                   |
+| Build         | Gradle + Spotless (Google Java Format, 2 пробела, 100 символов)   |
+| ORM / DB      | Hibernate + Spring Data JPA · PostgreSQL + Flyway (`ddl-auto: validate`) |
+| Mapping       | MapStruct 1.6.3 (`componentModel = "spring"`)                     |
+| Auth          | Spring Security + JWT (jjwt 0.12.6)                               |
+| Rate limiting | Bucket4j 8.10 + Caffeine                                          |
+| Биллинг       | Stripe Java 28.3 (webhook)                                        |
+| Исполнение LLM| Claude Code CLI (`@anthropic-ai/claude-code`) через subprocess    |
+| Уведомления   | Telegram                                                          |
+| Метрики       | Micrometer → Prometheus (`/actuator/prometheus`)                  |
+| Тесты         | JUnit 5, Mockito 5, AssertJ, Testcontainers, MockMvc (standalone) |
+| Арх-инварианты| ArchUnit (закрепляет `adapter → app → domain`)                   |
+
+---
+
 ## Архитектура: Hexagonal (Ports & Adapters)
 
 ```

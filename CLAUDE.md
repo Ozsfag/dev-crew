@@ -70,6 +70,29 @@ PR description: **Что изменилось** / **Почему** / **Как п
 | `/new`   | TDD-workflow для новой фичи                        |
 | `/fix`   | Отладка: reproduce → isolate → fix → тест          |
 | `/task`  | Создать файл плана для нового пункта roadmap       |
+| `/review`| DoD-ревью перед merge (gate + judgment-субагенты)  |
+
+---
+
+## Code-review агенты
+
+Read-only субагенты-ревьюеры в `ai/agents/` (канон) — спавнятся по затронутому
+домену. Детерминированное закрывает **`./gradlew build`** (ArchUnit + Spotless +
+тесты); агенты несут только judgment. Точка входа — Skill `/review`.
+
+| Триггер в diff'е | Агент |
+|------------------|-------|
+| `*.java` (нетривиально) | `java-reviewer` (оркестратор делегаций) |
+| auth/ввод/секреты/PII + sandbox исполнения агента | `security-reviewer` |
+| `@Async`/`@Scheduled`/subprocess/`catch{}` | `silent-failure-hunter` |
+| `*Test`/`*IT` или новые ветки | `test-reviewer` |
+| границы bounded contexts, порты/адаптеры | `architecture-reviewer` |
+| `docker/**`, `*.gradle`, `db/migration/**`, `application*.yml` | `infra-reviewer` |
+| Refactoring-фаза (touched code) | `refactor-cleaner` |
+
+Авто-дискавери: канон в `ai/agents/` (под git), live-копия в `.claude/agents/`.
+Правил канон → `cp ai/agents/*.md .claude/agents/ && rm -f .claude/agents/README.md`
+и перезапуск Claude Code. Подробнее — [ai/agents/README.md](ai/agents/README.md).
 
 ---
 
