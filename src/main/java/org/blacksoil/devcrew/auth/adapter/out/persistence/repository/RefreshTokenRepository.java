@@ -12,7 +12,10 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshTokenEntity
 
   Optional<RefreshTokenEntity> findByTokenHash(String tokenHash);
 
-  @Modifying
+  // flushAutomatically — сбросить ожидающие insert'ы в БД до bulk-UPDATE;
+  // clearAutomatically — очистить persistence context, чтобы последующее чтение
+  // вернуло обновлённое revoked=true, а не закэшированную сущность.
+  @Modifying(flushAutomatically = true, clearAutomatically = true)
   @Query("UPDATE RefreshTokenEntity t SET t.revoked = true WHERE t.userId = :userId")
   void revokeByUserId(@Param("userId") UUID userId);
 }
