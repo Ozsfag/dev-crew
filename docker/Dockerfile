@@ -12,7 +12,9 @@ COPY ../src ./src
 RUN ./gradlew bootJar --no-daemon -x test --quiet
 
 # ─── Stage 2: Runtime ─────────────────────────────────────────────────────────
-FROM eclipse-temurin:21-jdk-alpine
+# JDK 25 в рантайме — приложение собрано под Java 21 и работает на нём.
+# Builder намеренно остаётся на 21-jdk (toolchain проекта = 21).
+FROM eclipse-temurin:25-jdk-alpine
 WORKDIR /app
 
 # curl — healthcheck; git — агенты клонируют репозитории;
