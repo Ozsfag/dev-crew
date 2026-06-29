@@ -56,6 +56,11 @@ devcrew:
     executable: ${DEVCREW_CLAUDE_CODE_EXECUTABLE:claude}
     max-turns: 20
     sandbox-root: /projects
+    # Аргументы claude для интерактивного сеанса Telegram. acceptEdits — авто-приём правок файлов.
+    # Для полной автономии (запуск тестов/bash без подтверждения) задать ["--dangerously-skip-permissions"].
+    session-args:
+      - --permission-mode
+      - acceptEdits
   sandbox:
     root: /projects
   agent:
@@ -76,6 +81,11 @@ devcrew:
   cors:
     allowed-origins: ${DEVCREW_CORS_ALLOWED_ORIGINS:}
     max-age: 3600
+  interactive:
+    # Карта «имя проекта (для /project) → путь к репозиторию», где claude ведёт разработку.
+    projects:
+      dev-crew: /projects/dev-crew
+      vpn-app: /projects/vpn-app
   notification:
     telegram:
       enabled: ${DEVCREW_NOTIFICATION_TELEGRAM_ENABLED:false}

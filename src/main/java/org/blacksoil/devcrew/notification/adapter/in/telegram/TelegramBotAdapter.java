@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.blacksoil.devcrew.notification.adapter.out.telegram.TelegramApiClient;
 import org.blacksoil.devcrew.notification.adapter.out.telegram.dto.TelegramUpdate;
 import org.blacksoil.devcrew.notification.app.config.TelegramProperties;
-import org.blacksoil.devcrew.notification.app.service.TelegramInboundService;
+import org.blacksoil.devcrew.notification.app.service.TelegramSessionService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -24,7 +24,7 @@ public class TelegramBotAdapter {
 
   private final TelegramApiClient telegramApiClient;
   private final TelegramProperties telegramProperties;
-  private final TelegramInboundService inboundService;
+  private final TelegramSessionService inboundService;
 
   private final AtomicLong offset = new AtomicLong(0);
   private final AtomicInteger consecutiveErrors = new AtomicInteger(0);

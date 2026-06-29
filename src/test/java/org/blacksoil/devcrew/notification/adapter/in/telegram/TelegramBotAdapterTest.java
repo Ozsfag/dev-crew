@@ -16,7 +16,7 @@ import org.blacksoil.devcrew.notification.adapter.out.telegram.dto.TelegramMessa
 import org.blacksoil.devcrew.notification.adapter.out.telegram.dto.TelegramUpdate;
 import org.blacksoil.devcrew.notification.adapter.out.telegram.dto.TelegramVoice;
 import org.blacksoil.devcrew.notification.app.config.TelegramProperties;
-import org.blacksoil.devcrew.notification.app.service.TelegramInboundService;
+import org.blacksoil.devcrew.notification.app.service.TelegramSessionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class TelegramBotAdapterTest {
 
   @Mock private TelegramApiClient telegramApiClient;
-  @Mock private TelegramInboundService inboundService;
+  @Mock private TelegramSessionService inboundService;
 
   private TelegramBotAdapter adapter;
   private TelegramProperties properties;
