@@ -10,5 +10,6 @@ public interface UsageRecordRepository extends JpaRepository<UsageRecordEntity, 
 
   boolean existsByTaskId(UUID taskId);
 
-  List<UsageRecordEntity> findByOrgIdAndRecordedAtBetween(UUID orgId, Instant from, Instant to);
+  List<UsageRecordEntity> findByOrgIdAndRecordedAtGreaterThanEqualAndRecordedAtLessThan(
+      UUID orgId, Instant fromInclusive, Instant toExclusive);
 }
