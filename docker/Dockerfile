@@ -1,5 +1,5 @@
 # ─── Stage 1: Build ───────────────────────────────────────────────────────────
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM eclipse-temurin:25-jdk-alpine AS builder
 WORKDIR /app
 
 # Копируем только файлы для загрузки зависимостей — слой кешируется пока не изменится build.gradle
@@ -12,7 +12,7 @@ COPY ../src ./src
 RUN ./gradlew bootJar --no-daemon -x test --quiet
 
 # ─── Stage 2: Runtime ─────────────────────────────────────────────────────────
-FROM eclipse-temurin:21-jdk-alpine
+FROM eclipse-temurin:25-jdk-alpine
 WORKDIR /app
 
 # curl — healthcheck; git — агенты клонируют репозитории;
