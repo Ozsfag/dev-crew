@@ -54,7 +54,7 @@ dependencies {
     implementation 'com.github.ben-manes.caffeine:caffeine'
 
     // Stripe
-    implementation 'com.stripe:stripe-java:28.3.0'
+    implementation 'com.stripe:stripe-java:33.1.0'
 
     // Security + JWT
     implementation 'org.springframework.boot:spring-boot-starter-security'
