@@ -7,4 +7,5 @@ public record ClaudeCodeOutput(
     String type,
     String result,
     @JsonProperty("num_turns") int numTurns,
-    @JsonProperty("is_error") boolean isError) {}
+    @JsonProperty("is_error") boolean isError,
+    @JsonProperty("session_id") String sessionId) {}
