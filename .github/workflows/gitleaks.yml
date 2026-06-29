@@ -1,0 +1,37 @@
+name: Secret Scan (gitleaks)
+
+# Скан утечки секретов (JWT-secret, ключи Stripe, токены Telegram/Claude) в коде
+# и истории коммитов. Fail-closed: находка high-severity роняет PR.
+# Конфиг (useDefault + узкий allowlist) — .github/gitleaks.toml.
+# gitleaks-action@v2 бесплатен для личных репозиториев (лицензия нужна только
+# GitHub Organizations).
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 6 * * 1'   # еженедельно, понедельник 06:00 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: gitleaks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # полная история — gitleaks сканирует все коммиты
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # требуется для скана PR
+          GITLEAKS_CONFIG: .github/gitleaks.toml
