@@ -1,5 +1,5 @@
 # ─── Stage 1: Build ───────────────────────────────────────────────────────────
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM eclipse-temurin:24-jdk-alpine AS builder
 WORKDIR /app
 
 # Копируем только файлы для загрузки зависимостей — слой кешируется пока не изменится build.gradle
